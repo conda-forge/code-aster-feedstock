@@ -24,7 +24,7 @@ python:
 python_impl:
 - cpython
 scotch:
-- 6.0.9
+- 7.0.2
 target_platform:
 - linux-64
 zip_keys:
