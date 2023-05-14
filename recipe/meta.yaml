@@ -26,7 +26,7 @@ source:
     
 build:
   number: 0
-  skip: true  # [py>=39 or osx or win or (python_impl == 'pypy')]
+  skip: true  # [osx or win or (python_impl == 'pypy')]
   detect_binary_files_with_prefix: true
   run_exports:
     - {{ pin_subpackage('code-aster', max_pin='x.x') }}
