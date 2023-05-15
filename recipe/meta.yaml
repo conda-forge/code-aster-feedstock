@@ -1,6 +1,6 @@
 {% set name = "code-aster" %}
-{% set version = "14.7.9" %}
-{% set sha256 = "fee28d966f68a7cf3646f68d2fe8ac4882f58e328f17e42038ce841b05778c44" %}
+{% set version = "15.0.7" %}
+{% set sha256 = "400a010418f62dacc2e17ad06f71bf909d00e075db66904c7c1b6b78c4fd17e8" %}
 
 package:
   name: {{ name|lower }}
@@ -23,9 +23,9 @@ source:
   - url: https://netcologne.dl.sourceforge.net/project/prereq/homard-11.12_aster2.tar.gz
     sha256: 80425cee117349df8425f801f9a82aadb85fd41a95af25b4397f0e69dd655304
     folder: homard
-    
+
 build:
-  number: 1
+  number: 0
   skip: true  # [py >= 310 or osx or win or (python_impl == 'pypy')]
   detect_binary_files_with_prefix: true
   run_exports:
@@ -74,7 +74,7 @@ test:
     - asrun
 #    - code_aster
   commands:
-    - as_run --info 
+    - as_run --info
     - homard || true  # [unix]
     - as_run --test forma01a
     - as_run --test sslp114a
