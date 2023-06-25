@@ -1,6 +1,6 @@
 {% set name = "code-aster" %}
-{% set version = "14.7.9" %}
-{% set sha256 = "fee28d966f68a7cf3646f68d2fe8ac4882f58e328f17e42038ce841b05778c44" %}
+{% set version = "14.8.0" %}
+{% set sha256 = "ff61ea747b516e0f9eec4ed333b0faeb1d9aab98b54f878853c2693c558ee13f" %}
 
 package:
   name: {{ name|lower }}
@@ -25,7 +25,7 @@ source:
     folder: homard
     
 build:
-  number: 2
+  number: 0
   skip: true  # [py >= 310 or osx or win or (python_impl == 'pypy')]
   detect_binary_files_with_prefix: true
   run_exports:
@@ -59,7 +59,7 @@ requirements:
     - {{ pin_compatible('miss3d', max_pin='x.x') }}
     - {{ pin_compatible('numpy', max_pin='x.x') }}
     - {{ pin_compatible('libmed', max_pin='x.x') }}
-    - {{ pin_compatible('hdf5', max_pin='x.x') }}
+    - {{ pin_compatible('hdf5', max_pin='x.x.x') }}
     - libblas
     - liblapack
     - scotch
