@@ -53,6 +53,7 @@ requirements:
     - scotch
     - libblas
     - liblapack
+    - libxml2    
   run:
     - python
     - {{ pin_compatible('mgis', max_pin='x.x') }}    
@@ -66,6 +67,7 @@ requirements:
     - liblapack
     - scotch
     - libopenblas
+    - libxml2    
     - libgcc-ng  # [linux]
     - libstdcxx-ng  # [linux]
     - libgfortran5  # [linux]

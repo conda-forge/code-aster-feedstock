@@ -18,12 +18,12 @@ export DEST="${BUILD}/dest"
 
 echo "**************** M E D C O U P L I N G  B U I L D  S T A R T S  H E R E ****************"
 
-mkdir -p ${BUILD}/medcouping/
+mkdir ${BUILD}/medcouping/
 tar xzf ${BUILD}/archives/medcoupling-${MEDCOUPLING}.tar.gz -C ${BUILD}/medcouping/ --strip-components 1
 cd ${BUILD}/medcouping/
-mkdir -p ${BUILD}/medcouping/configuration
+mkdir ${BUILD}/medcouping/configuration
 tar xzf ${BUILD}/archives/configuration-${MEDCOUPLING}.tar.gz -C ${BUILD}/medcouping/configuration --strip-components 1
-mkdir -p ${BUILD}/medcouping/build
+mkdir ${BUILD}/medcouping/build
 cd ${BUILD}/medcouping/build
 cmake ${BUILD}/medcouping/ \
     -DCMAKE_INSTALL_PREFIX=${PREFIX} \
