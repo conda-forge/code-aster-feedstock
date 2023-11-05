@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Use 'run_aster --help' for detailed description of the options.
+
+python3 -m run_aster.run_aster_main "${@}"
+exit ${?}

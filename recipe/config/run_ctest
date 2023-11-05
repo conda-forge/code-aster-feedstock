@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Use 'run_ctest --help' for detailed description of the options.
+
+python3 -m run_aster.run_ctest_main "${@}"
+exit ${?}

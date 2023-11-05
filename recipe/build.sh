@@ -15,6 +15,7 @@ source VERSION
 export ROOT="$BUILD"
 export ARCH=seq
 export DEST="${BUILD}/dest"
+cd ${SRC_DIR}
 
 echo "**************** M E D C O U P L I N G  B U I L D  S T A R T S  H E R E ****************"
 
