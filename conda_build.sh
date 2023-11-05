@@ -1,3 +1,6 @@
+if [ -z ${CONDA_BUILD+x} ]; then
+    source /home/conda/feedstock_root/build_artifacts/debug_1699208442023/work/build_env_setup.sh
+fi
 #!/bin/bash
 set -e
 
@@ -174,7 +177,7 @@ FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
      --enable-mumps \
      --embed-mumps \
      --enable-mfront \
-     --disable-mpi \
+     --disable-mpi \     
      --disable-petsc \
      --without-hg \
      configure
@@ -202,6 +205,7 @@ cp $PREFIX/bin/run_ctest $PREFIX/bin/_run_ctest_old
 
 cp $RECIPE_DIR/config/run_aster $PREFIX/bin/run_aster
 cp $RECIPE_DIR/config/run_ctest $PREFIX/bin/run_ctest
+
 # Alternative, I could move the entire code_aster subdirectory to site-packages granted I am able to relocate all
 # relevant .so files
 # Add activation/deactivation scripts to set/unset required env variables for code-aster
