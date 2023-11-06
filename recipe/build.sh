@@ -156,7 +156,7 @@ export LIBPATH_METIS="${DEST}/metis-${METIS}/lib $PREFIX/lib"
 export INCLUDES_METIS="${DEST}/metis-${METIS}/include $PREFIX/include"
 
 export LIBPATH_MUMPS="${DEST}/mumps-${MUMPS_GPL}/lib $PREFIX/lib"
-export INCLUDES_MUMPS="${DEST}/mumps-${MUMPS_GPL}/include $PREFIX/include ${DEST}/mumps-${MUMPS_GPL}/include $PREFIX/include_seq"
+export INCLUDES_MUMPS="${DEST}/mumps-${MUMPS_GPL}/include $PREFIX/include ${DEST}/mumps-${MUMPS_GPL}/include_seq"
 
 ./waf_std \
      --python=$PYTHON \
