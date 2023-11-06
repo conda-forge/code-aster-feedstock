@@ -53,6 +53,7 @@ requirements:
     - scotch
     - libblas
     - liblapack
+    - libopenblas
     - libxml2    
   run:
     - python

@@ -156,17 +156,17 @@ export LIBPATH_METIS="${DEST}/metis-${METIS}/lib $PREFIX/lib"
 export INCLUDES_METIS="${DEST}/metis-${METIS}/include $PREFIX/include"
 
 export LIBPATH_MUMPS="${DEST}/mumps-${MUMPS_GPL}/lib $PREFIX/lib"
-export INCLUDES_MUMPS="${DEST}/mumps-${MUMPS_GPL}/include $PREFIX/include"
+export INCLUDES_MUMPS="${DEST}/mumps-${MUMPS_GPL}/include $PREFIX/include ${DEST}/mumps-${MUMPS_GPL}/include $PREFIX/include_seq"
 
 ./waf_std \
      --python=$PYTHON \
      --help
 
+#    --use-config=wafcfg_conda \
+ #    --use-config-dir="$RECIPE_DIR"/config \
 FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
 ./waf_std \
      --python=$PYTHON \
-     --use-config=wafcfg_conda \
-     --use-config-dir="$RECIPE_DIR"/config \
      --prefix="${PREFIX}" \
      --libdir="${PREFIX}/lib" \
      --install-tests \
