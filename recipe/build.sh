@@ -183,6 +183,7 @@ FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
 ./waf_std \
      --python=$PYTHON \
      --prefix="${PREFIX}" \
+     --pythondir="${SP_DIR}" \
      --libdir="${PREFIX}/lib" \
      --install-tests \
      --enable-metis \

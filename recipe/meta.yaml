@@ -92,7 +92,6 @@ about:
   license: GPL-3.0-only AND CECILL-C AND Apache-2.0 AND LGPL-3.0-only
   license_family: GPL
   license_file:
-    - LICENSE.txt
     - dep-licenses/
   summary: 'Code_Aster : a finite element solver'
   description: |
