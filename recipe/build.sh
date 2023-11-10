@@ -91,6 +91,25 @@ cd ${SRC_DIR}
 
 echo "**************** M E T I S  B U I L D  E N D S  H E R E ****************"
 
+#echo "**************** S C O T C H  B U I L D  S T A R T S  H E R E ****************"
+#
+#mkdir ${BUILD}/scotch/
+#tar xzf ${BUILD}/archives/scotch-${SCOTCH}.tar.gz -C ${BUILD}/scotch/ --strip-components 1
+#cd ${BUILD}/scotch/src
+#mkinc=Make.inc/Makefile.inc.x86-64_pc_linux2
+#sed -e "s|CFLAGS\s*=|CFLAGS = ${CFLAGS} -Wl,--no-as-needed -DINTSIZE64|g" \
+#     -e "s|CCD\s*=.*$|CCD = ${GCC}|g" \
+#     -e "s|CCS\s*=.*$|CCS = ${GCC}|g" \
+#     -e "s|LDFLAGS\s*=|LDFLAGS = -L${PREFIX}/lib |g" \
+#     ${mkinc} > Makefile.inc
+#make scotch -j $CPU_COUNT
+#make esmumps -j $CPU_COUNT
+#mkdir -p ${DEST}/scotch-${SCOTCH}
+#make install prefix=${DEST}/scotch-${SCOTCH}
+#cd ${SRC_DIR}
+#
+#echo "**************** S C O T C H  B U I L D  E N D S  H E R E ****************"
+
 #echo "**************** P A R M E T I S  B U I L D  S T A R T S  H E R E ****************"
 
 #mkdir ${BUILD}/parmetis/
@@ -111,13 +130,13 @@ cd ${BUILD}/mumps/
 
 CFLAGS="-DUSE_SCHEDAFFINITY -Dtry_null_space ${CFLAGS}" \
 FCFLAGS="-DUSE_SCHEDAFFINITY -Dtry_null_space -fallow-argument-mismatch ${FCFLAGS}" \
-LIBPATH="${PREFIX}/lib ${DEST}/metis-${METIS}/lib ${DEST}/parmetis-${PARMETIS}/lib $LIBPATH" \
-INCLUDES="${PREFIX}/include ${DEST}/metis-${METIS}/include ${DEST}/parmetis-${PARMETIS}/include $INCLUDES" \
+LIBPATH="${PREFIX}/lib ${DEST}/metis-${METIS}/lib ${DEST}/parmetis-${PARMETIS}/lib ${DEST}/scotch-${SCOTCH}/lib $LIBPATH" \
+INCLUDES="${PREFIX}/include ${DEST}/metis-${METIS}/include ${DEST}/parmetis-${PARMETIS}/include ${DEST}/scotch-${SCOTCH}/include $INCLUDES" \
 $PYTHON ./waf configure --enable-openmp \
                --enable-metis \
                --embed-metis \
                --disable-parmetis \
-               --enable-scotch \
+               --disable-scotch \
                --install-tests \
                --prefix=${DEST}/mumps-${MUMPS_GPL}
 
@@ -131,8 +150,6 @@ echo "**************** M U M P S  B U I L D  E N D S  H E R E ****************"
 echo "**************** A S T E R  B U I L D  S T A R T S  H E R E ****************"
 
 $PYTHON "${RECIPE_DIR}/config/update_version.py"
-#cp -Rf $RECIPE_DIR/contrib/asrun $SP_DIR/
-#cp -Rf $RECIPE_DIR/contrib/scripts/* $PREFIX/bin
 
 export CONFIG_PARAMETERS_addmem=3000
 
@@ -162,8 +179,6 @@ export INCLUDES_MUMPS="${DEST}/mumps-${MUMPS_GPL}/include $PREFIX/include ${DEST
      --python=$PYTHON \
      --help
 
-#    --use-config=wafcfg_conda \
- #    --use-config-dir="$RECIPE_DIR"/config \
 FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
 ./waf_std \
      --python=$PYTHON \
@@ -184,35 +199,10 @@ FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
 
 ./waf_std --python=$PYTHON install
 
-#find $PREFIX -name "profile.sh" -exec sed -i 's/PYTHONHOME=/#PYTHONHOME=/g' {} \;
-#find $PREFIX -name "profile.sh" -exec sed -i 's/export PYTHONHOME/#export PYTHONHOME/g' {} \;
+ln -rs $PREFIX/share/aster $PREFIX/stable
 
-#mkdir -p $PREFIX/etc/codeaster/
-#cp -Rf $RECIPE_DIR/contrib/etc/* $PREFIX/etc/codeaster/
-
-# Change the PYTHONPATH just for pybind11_stubgen to find the necessary module
-# Generate stubs for pybind11
-PYTHONPATH="$PREFIX/lib/aster:$SRC_DIR/stubgen" \
-LD_LIBRARY_PATH="${PREFIX}/lib/aster" \
-$PYTHON  ${RECIPE_DIR}/stubs/custom_stubs_gen.py
-echo "Stubs generation completed"
-
-# copy modified shell scripts and create backups of the ones we don't want.
-cp $PREFIX/bin/run_aster $PREFIX/bin/_run_aster_old
-cp $PREFIX/bin/run_ctest $PREFIX/bin/_run_ctest_old
-
-cp $RECIPE_DIR/config/run_aster $PREFIX/bin/run_aster
-cp $RECIPE_DIR/config/run_ctest $PREFIX/bin/run_ctest
-# Alternative, I could move the entire code_aster subdirectory to site-packages granted I am able to relocate all
-# relevant .so files
-# Add activation/deactivation scripts to set/unset required env variables for code-aster
-mkdir -p $PREFIX/etc/conda/activate.d
-cp $RECIPE_DIR/config/code_aster_activate.sh $PREFIX/etc/conda/activate.d/code_aster_activate.sh
-chmod +x $PREFIX/etc/conda/activate.d/code_aster_activate.sh
-
-mkdir -p $PREFIX/etc/conda/deactivate.d
-cp $RECIPE_DIR/config/code_aster_deactivate.sh $PREFIX/etc/conda/deactivate.d/code_aster_deactivate.sh
-chmod +x $PREFIX/etc/conda/deactivate.d/code_aster_deactivate.sh
+find $PREFIX -name "profile.sh" -exec sed -i 's/PYTHONHOME=/#PYTHONHOME=/g' {} \;
+find $PREFIX -name "profile.sh" -exec sed -i 's/export PYTHONHOME/#export PYTHONHOME/g' {} \;
 
 echo "**************** A S T E R  B U I L D  E N D S  H E R E ****************"
 

@@ -33,28 +33,25 @@ requirements:
     - "{{ compiler('fortran') }}"
     - libgomp  # [linux]
     - llvm-openmp  # [osx]
-    - sysroot_linux-64 =2.17  # [linux64]
-    - pyyaml    
+    - sysroot_linux-64 =2.17  # [linux64]  
     - cmake
     - make  # [not win]
     - bison
     - flex
     - swig
   host:
-    - python
-    - pybind11-stubgen 2.1
-    - astor        
+    - python    
     - numpy
     - mfront 4.1.0
     - mgis 2.1
     - miss3d
     - libmed 4.1.1
     - hdf5 1.10
-    - scotch
     - libblas
     - liblapack
     - libxml2
     - openblas
+    - zlib
   run:
     - python
     - {{ pin_compatible('mgis', max_pin='x.x') }}    
@@ -66,8 +63,8 @@ requirements:
     - pyyaml    
     - libblas
     - liblapack
-    - scotch
     - openblas
+    - zlib
     - libxml2    
     - libgcc-ng  # [linux]
     - libstdcxx-ng  # [linux]
@@ -76,7 +73,7 @@ requirements:
 test:
   imports:
     - asrun
-#    - code_aster
+    - code_aster
   commands:
     - as_run --info 
     - homard || true  # [unix]
@@ -86,7 +83,7 @@ test:
     - as_run --test mumps01a
     - as_run --test umat001a
     - as_run --test zzzz121a
-    #- as_run --test mfron01a
+    - as_run --test mfron01a
     - test -f $PREFIX/include/aster/aster.h
 
 about:
