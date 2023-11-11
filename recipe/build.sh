@@ -198,9 +198,10 @@ FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
 
 ./waf_std build -j $CPU_COUNT
 
-./waf_std --python=$PYTHON install
+./waf_std --python=$PYTHON --pythondir="${SP_DIR}" install
 
 ln -rs $PREFIX/share/aster $PREFIX/stable
+mv ${SRC_DIR}/code_aster ${SP_DIR}
 
 find $PREFIX -name "profile.sh" -exec sed -i 's/PYTHONHOME=/#PYTHONHOME=/g' {} \;
 find $PREFIX -name "profile.sh" -exec sed -i 's/export PYTHONHOME/#export PYTHONHOME/g' {} \;
