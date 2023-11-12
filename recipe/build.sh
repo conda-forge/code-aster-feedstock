@@ -17,19 +17,67 @@ export ARCH=seq
 export DEST="${BUILD}/dest"
 cd ${SRC_DIR}
 
+#echo "**************** H D F 5  B U I L D  S T A R T S  H E R E ****************"
+#
+#mkdir -p ${BUILD}/hdf5/
+#tar xzf ${BUILD}/archives/hdf5-${HDF5}.tar.gz -C ${BUILD}/hdf5/ --strip-components 1
+#cd ${BUILD}/hdf5
+#CFLAGS="-fPIC ${CFLAGS}" \
+#    FCFLAGS="-fPIC ${FCFLAGS}" \
+#    ./configure --enable-static=yes --enable-shared=no --enable-fortran=yes --prefix=${DEST}/hdf5-${HDF5}
+#make -j $CPU_COUNT
+#make install
+#cd ${SRC_DIR}
+#
+#echo "**************** H D F 5  B U I L D  E N D S  H E R E ****************"
+#
+#echo "**************** M E D  B U I L D  S T A R T S  H E R E ****************"
+#
+#mkdir -p ${BUILD}/med/
+#tar xzf ${BUILD}/archives/med-${MED}.tar.gz -C ${BUILD}/med/ --strip-components 1
+#cd ${BUILD}/med
+#if [ ${MED} = "4.1.1" ]; then
+#    patch -p1 < ${BUILD}/patches/med-4.1.1-check-hdf5-with-tabs.diff
+#    patch -p1 < ${BUILD}/patches/med-4.1.1-check-hdf5-parallel.diff
+#fi
+#sed -i 's/.*find hdf5 library/##/' configure # disabling non-working check
+#
+## Set only fortran length for integer, C/C++ flags will be automatically adapted
+#FFLAGS="-fdefault-integer-8 ${FFLAGS}" \
+#    CFLAGS="-fPIC ${CFLAGS}" \
+#    FCFLAGS="-fdefault-integer-8 -fPIC ${FCFLAGS}" \
+#    F77=${FC} \
+#    CXXFLAGS='-std=gnu++98' \
+#    ./configure \
+#        --enable-mesgerr \
+#        --with-swig=no \
+#        --enable-static=yes \
+#        --enable-shared=no \
+#        --disable-python \
+#        --with-hdf5=${DEST}/hdf5-${HDF5} \
+#        --prefix=${DEST}/med-${MED}
+#make -j $CPU_COUNT
+#make install
+#cd ${SRC_DIR}
+#
+#echo "**************** M E D  B U I L D  E N D S  H E R E ****************"
+
 echo "**************** M E D C O U P L I N G  B U I L D  S T A R T S  H E R E ****************"
 
-mkdir ${BUILD}/medcouping/
+mkdir -p ${BUILD}/medcouping/
 tar xzf ${BUILD}/archives/medcoupling-${MEDCOUPLING}.tar.gz -C ${BUILD}/medcouping/ --strip-components 1
 cd ${BUILD}/medcouping/
-mkdir ${BUILD}/medcouping/configuration
+mkdir -p ${BUILD}/medcouping/configuration
 tar xzf ${BUILD}/archives/configuration-${MEDCOUPLING}.tar.gz -C ${BUILD}/medcouping/configuration --strip-components 1
-mkdir ${BUILD}/medcouping/build
+mkdir -p ${BUILD}/medcouping/build
 cd ${BUILD}/medcouping/build
 cmake ${BUILD}/medcouping/ \
     -DCMAKE_INSTALL_PREFIX=${PREFIX} \
     -DCONFIGURATION_ROOT_DIR=${BUILD}/medcouping/configuration \
+    -DLIBXML2_ROOT_DIR=${PREFIX} \
     -DPYTHON_ROOT_DIR=${PREFIX} \
+    -DBOOST_ROOT_DIR=${PREFIX} \
+    -DSWIG_ROOT_DIR=${PREFIX} \
     -Wno-dev \
     -DSALOME_CMAKE_DEBUG=ON \
     -DSALOME_USE_MPI=OFF \
@@ -43,9 +91,12 @@ cmake ${BUILD}/medcouping/ \
     -DMEDCOUPLING_PARTITIONER_METIS=OFF \
     -DMEDCOUPLING_PARTITIONER_SCOTCH=OFF \
     -DMEDCOUPLING_PARTITIONER_PTSCOTCH=OFF \
+    -DMEDCOUPLING_ENABLE_PYTHON=ON \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    -DHDF5_ROOT_DIR=${PREFIX} \
+    -DMEDFILE_ROOT_DIR=${PREFIX} \
     -DMPI_C_COMPILER:PATH=$(which mpicc) \
     -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON} \
-    -DBOOST_ROOT=${PREFIX} \
     -DCMAKE_BUILD_TYPE=Release
 make -j $CPU_COUNT
 make install
@@ -56,7 +107,7 @@ echo "**************** M E D C O U P L I N G  B U I L D  E N D S  H E R E ******
 
 echo "**************** H O M A R D  B U I L D  S T A R T S  H E R E ****************"
 
-mkdir ${BUILD}/homard/
+mkdir -p ${BUILD}/homard/
 tar xzf ${BUILD}/archives/homard-${HOMARD}.tar.gz -C ${BUILD}/homard/ --strip-components 1
 cd ${BUILD}/homard/
 $PYTHON setup_homard.py --prefix=${PREFIX}/bin -en -v
@@ -66,7 +117,7 @@ echo "**************** H O M A R D  B U I L D  E N D S  H E R E ****************
 
 echo "**************** A S R U N  B U I L D  S T A R T S  H E R E ****************"
 
-mkdir ${BUILD}/asrun/
+mkdir -p ${BUILD}/asrun/
 tar xzf ${BUILD}/archives/codeaster-frontend-${ASRUN}.tar.gz -C ${BUILD}/asrun/ --strip-components 1
 cd ${BUILD}/asrun/
 # add configuration for editor, terminal, platform...
@@ -85,15 +136,19 @@ echo "**************** A S R U N  B U I L D  E N D S  H E R E ****************"
 
 echo "**************** M E T I S  B U I L D  S T A R T S  H E R E ****************"
 
-cd ${BUILD}
-LDFLAGS="-L${STDLIB_DIR}" make metis
+mkdir -p ${BUILD}/metis/
+tar xzf ${BUILD}/archives/metis-${METIS}.tar.gz -C ${BUILD}/metis/ --strip-components 1
+cd ${BUILD}/metis
+make config CFLAGS="-fPIC ${CFLAGS}" prefix=${DEST}/metis-${METIS}
+make -j $CPU_COUNT
+make install
 cd ${SRC_DIR}
 
 echo "**************** M E T I S  B U I L D  E N D S  H E R E ****************"
 
 #echo "**************** S C O T C H  B U I L D  S T A R T S  H E R E ****************"
 #
-#mkdir ${BUILD}/scotch/
+#mkdir -p ${BUILD}/scotch/
 #tar xzf ${BUILD}/archives/scotch-${SCOTCH}.tar.gz -C ${BUILD}/scotch/ --strip-components 1
 #cd ${BUILD}/scotch/src
 #mkinc=Make.inc/Makefile.inc.x86-64_pc_linux2
@@ -112,7 +167,7 @@ echo "**************** M E T I S  B U I L D  E N D S  H E R E ****************"
 
 #echo "**************** P A R M E T I S  B U I L D  S T A R T S  H E R E ****************"
 
-#mkdir ${BUILD}/parmetis/
+#mkdir -p ${BUILD}/parmetis/
 #tar xzf ${BUILD}/archives/parmetis-${PARMETIS}.tar.gz -C ${BUILD}/parmetis/ --strip-components 1
 #cd ${BUILD}/parmetis/
 #make config CFLAGS="-fPIC ${CFLAGS}" prefix=${DEST}/parmetis-${PARMETIS}
@@ -124,15 +179,15 @@ echo "**************** M E T I S  B U I L D  E N D S  H E R E ****************"
 
 echo "**************** M U M P S  B U I L D  S T A R T S  H E R E ****************"
 
-mkdir ${BUILD}/mumps/
+mkdir -p ${BUILD}/mumps/
 tar xzf ${BUILD}/archives/mumps-${MUMPS_GPL}.tar.gz -C ${BUILD}/mumps/ --strip-components 1
 cd ${BUILD}/mumps/
 
 CFLAGS="-DUSE_SCHEDAFFINITY -Dtry_null_space ${CFLAGS}" \
-FCFLAGS="-DUSE_SCHEDAFFINITY -Dtry_null_space -fallow-argument-mismatch ${FCFLAGS}" \
-LIBPATH="${PREFIX}/lib ${DEST}/metis-${METIS}/lib ${DEST}/parmetis-${PARMETIS}/lib ${DEST}/scotch-${SCOTCH}/lib $LIBPATH" \
-INCLUDES="${PREFIX}/include ${DEST}/metis-${METIS}/include ${DEST}/parmetis-${PARMETIS}/include ${DEST}/scotch-${SCOTCH}/include $INCLUDES" \
-$PYTHON ./waf configure --enable-openmp \
+    FCFLAGS="-DUSE_SCHEDAFFINITY -Dtry_null_space -fallow-argument-mismatch ${FCFLAGS}" \
+    LIBPATH="${PREFIX}/lib ${DEST}/metis-${METIS}/lib ${DEST}/parmetis-${PARMETIS}/lib ${DEST}/scotch-${SCOTCH}/lib $LIBPATH" \
+    INCLUDES="${PREFIX}/include ${DEST}/metis-${METIS}/include ${DEST}/parmetis-${PARMETIS}/include ${DEST}/scotch-${SCOTCH}/include $INCLUDES" \
+    $PYTHON ./waf configure --enable-openmp \
                --enable-metis \
                --embed-metis \
                --disable-parmetis \
@@ -160,8 +215,11 @@ export INCLUDES_BOOST=$PREFIX/include
 export LIBPATH_BOOST=$PREFIX/lib
 export LIB_BOOST="libboost_python$CONDA_PY"
 
-export INCLUDES_MED="$PREFIX/include"
-export LIBPATH_MED="$PREFIX/lib"
+export INCLUDES_HDF5="${PREFIX}/include"
+export LIBPATH_HDF5="${PREFIX}/lib"
+
+export INCLUDES_MED="${PREFIX}/include"
+export LIBPATH_MED="${PREFIX}/lib"
 
 export LIBPATH_MEDCOUPLING="$PREFIX/lib"
 export INCLUDES_MEDCOUPLING="$PREFIX/include"
@@ -175,15 +233,10 @@ export INCLUDES_METIS="${DEST}/metis-${METIS}/include $PREFIX/include"
 export LIBPATH_MUMPS="${DEST}/mumps-${MUMPS_GPL}/lib $PREFIX/lib"
 export INCLUDES_MUMPS="${DEST}/mumps-${MUMPS_GPL}/include $PREFIX/include ${DEST}/mumps-${MUMPS_GPL}/include_seq"
 
-./waf_std \
-     --python=$PYTHON \
-     --help
-
 FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
-./waf_std \
+    ./waf_std \
      --python=$PYTHON \
      --prefix="${PREFIX}" \
-     --pythondir="${SP_DIR}" \
      --libdir="${PREFIX}/lib" \
      --install-tests \
      --enable-metis \
@@ -198,10 +251,10 @@ FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
 
 ./waf_std build -j $CPU_COUNT
 
-./waf_std --python=$PYTHON --pythondir="${SP_DIR}" install
+./waf_std --python=$PYTHON install
 
 ln -rs $PREFIX/share/aster $PREFIX/stable
-mv ${SRC_DIR}/code_aster ${SP_DIR}
+cp -R ${SRC_DIR}/code_aster ${SP_DIR}
 
 find $PREFIX -name "profile.sh" -exec sed -i 's/PYTHONHOME=/#PYTHONHOME=/g' {} \;
 find $PREFIX -name "profile.sh" -exec sed -i 's/export PYTHONHOME/#export PYTHONHOME/g' {} \;
