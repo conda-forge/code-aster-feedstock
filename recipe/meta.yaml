@@ -47,7 +47,6 @@ requirements:
     - miss3d
     - libmed 4.1.1
     - hdf5 1.10
-    - scotch 7.0
     - libblas
     - liblapack
     - libxml2
@@ -70,7 +69,6 @@ requirements:
 #    - liblapack
 #    - openblas
 #    - zlib
-    - scotch
     - pyyaml    
     - libopenblas
     - libxml2    
