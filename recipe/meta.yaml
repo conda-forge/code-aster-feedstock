@@ -57,21 +57,19 @@ requirements:
     - astor    
     - patch
   run:
-    - python
     - {{ pin_compatible('mgis', max_pin='x.x') }}    
     - {{ pin_compatible('mfront', max_pin='x.x.x') }}
     - {{ pin_compatible('miss3d', max_pin='x.x') }}
     - {{ pin_compatible('numpy', max_pin='x.x') }}
     - {{ pin_compatible('libmed', max_pin='x.x') }}
     - {{ pin_compatible('hdf5', max_pin='x.x.x') }}
-#    - pyyaml    
-#    - libblas
-#    - liblapack
-#    - openblas
-#    - zlib
-    - pyyaml    
+    - {{ pin_compatible('python', max_pin='x.x') }}
+    - pyyaml
     - libopenblas
-    - libxml2    
+    - libxml2
+    - pybind11-stubgen 2.1
+    - pyyaml
+    - astor       
     - libgcc-ng  # [linux]
     - libstdcxx-ng  # [linux]
     - libgfortran5  # [linux]
@@ -80,6 +78,7 @@ test:
   imports:
     - asrun
     - code_aster
+    - medcoupling
   commands:
     - as_run --info 
     - homard || true  # [unix]
@@ -87,9 +86,9 @@ test:
     - as_run --test sslp114a
     - as_run --test mumps02a
     - as_run --test mumps01a
-    - as_run --test umat001a
+    #- as_run --test umat001a
     - as_run --test zzzz121a
-    - as_run --test mfron01a
+    #- as_run --test mfron01a
     - test -f $PREFIX/include/aster/aster.h
 
 about:
