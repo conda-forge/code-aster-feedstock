@@ -63,7 +63,7 @@ requirements:
     - {{ pin_compatible('numpy', max_pin='x.x') }}
     - {{ pin_compatible('libmed', max_pin='x.x') }}
     - {{ pin_compatible('hdf5', max_pin='x.x.x') }}
-    - {{ pin_compatible('python', max_pin='x.x') }}
+    - python
     - pyyaml
     - libopenblas
     - libxml2
