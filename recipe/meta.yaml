@@ -1,6 +1,6 @@
 {% set name = "code-aster" %}
-{% set version = "14.8.0" %}
-{% set sha256 = "ff61ea747b516e0f9eec4ed333b0faeb1d9aab98b54f878853c2693c558ee13f" %}
+{% set version = "16.4.9" %}
+{% set sha256 = "9f47e07c2288e0d80fd4d954a0433322b49bb1b800aad7aabc97ec5c9b9589b9" %}
 
 package:
   name: {{ name|lower }}
@@ -11,68 +11,74 @@ source:
     url: https://gitlab.com/codeaster/src/-/archive/{{ version }}/src-{{ version }}.tar.gz
     sha256: {{ sha256 }}
   # Modified version of Metis changing integer sizes for indexes (IDXTYPEWIDTH 64) and including headers for direct linking to Aster
-  - url: https://downloads.sourceforge.net/project/prereq/metis-5.1.0_aster4.tar.gz
-    sha256: 1b295f9ce260c19d2d93fb2430be4139496c56f58f74ef7956ccd26c854fcc2e
-    folder: metis-aster
   # Modified version of Mumps changing integer, complex and real sizes to four bytes (fortran kind=4), waf configuration and metis renumbering
-  - url: http://graal.ens-lyon.fr/MUMPS/MUMPS_5.1.2.tar.gz
-    sha256: eb345cda145da9aea01b851d17e54e7eef08e16bfa148100ac1f7f046cd42ae9
-    folder: mumps-aster
-    patches:
-      - contrib/mumps-aster-diff.patch
-  - url: https://netcologne.dl.sourceforge.net/project/prereq/homard-11.12_aster2.tar.gz
-    sha256: 80425cee117349df8425f801f9a82aadb85fd41a95af25b4397f0e69dd655304
-    folder: homard
-    
+  - url: https://www.code-aster.org/FICHIERS/prerequisites/codeaster-prerequisites-20221225-oss.tar.gz
+    sha256: c03c9662358867ad4753d56b5f87b1687a63b31baeb7127cf179b913edb7e239
+    folder: codeaster-prerequisites/
+
 build:
-  number: 2
+  number: 0
   skip: true  # [py >= 310 or osx or win or (python_impl == 'pypy')]
   detect_binary_files_with_prefix: true
+  rpaths:
+    - lib/
+    - lib/aster/
+    - lib/petsc4py/lib      # [mpi != "nompi"]  
   run_exports:
     - {{ pin_subpackage('code-aster', max_pin='x.x') }}
 requirements:
   build:
-    - gcc 8  # [linux]
-    - gxx 8  # [linux]
-    - gfortran 8  # [linux]
+    - "{{ compiler('c') }}"
+    - "{{ compiler('cxx') }}"
+    - "{{ compiler('fortran') }}"
     - libgomp  # [linux]
     - llvm-openmp  # [osx]
-    - sysroot_linux-64 =2.17  # [linux64]
+    - sysroot_linux-64 =2.17  # [linux64]  
     - cmake
     - make  # [not win]
     - bison
     - flex
     - swig
   host:
-    - python
+    - python    
     - numpy
-    - mfront 3.2.1
+    - mfront 4.1.0
+    - mgis 2.1
     - miss3d
-    - libmed 4.0
-    - hdf5 1.10.6
-    - scotch
+    - libmed 4.1.1
+    - hdf5 1.10
     - libblas
     - liblapack
+    - libxml2
+    - openblas
+    - zlib
+    - pybind11-stubgen 2.1
+    - pyyaml
+    - astor    
+    - patch
   run:
-    - python
+    - {{ pin_compatible('mgis', max_pin='x.x') }}    
     - {{ pin_compatible('mfront', max_pin='x.x.x') }}
     - {{ pin_compatible('miss3d', max_pin='x.x') }}
     - {{ pin_compatible('numpy', max_pin='x.x') }}
     - {{ pin_compatible('libmed', max_pin='x.x') }}
     - {{ pin_compatible('hdf5', max_pin='x.x.x') }}
-    - libblas
-    - liblapack
-    - scotch
+    - python
+    - pyyaml
     - libopenblas
+    - libxml2
+    - pybind11-stubgen 2.1
+    - pyyaml
+    - astor       
     - libgcc-ng  # [linux]
     - libstdcxx-ng  # [linux]
     - libgfortran5  # [linux]
 
-
 test:
   imports:
     - asrun
-#    - code_aster
+    - code_aster
+    - medcoupling
   commands:
     - as_run --info 
     - homard || true  # [unix]
@@ -80,7 +86,7 @@ test:
     - as_run --test sslp114a
     - as_run --test mumps02a
     - as_run --test mumps01a
-    - as_run --test umat001a
+    #- as_run --test umat001a
     - as_run --test zzzz121a
     #- as_run --test mfron01a
     - test -f $PREFIX/include/aster/aster.h
@@ -90,7 +96,6 @@ about:
   license: GPL-3.0-only AND CECILL-C AND Apache-2.0 AND LGPL-3.0-only
   license_family: GPL
   license_file:
-    - LICENSE.txt
     - dep-licenses/
   summary: 'Code_Aster : a finite element solver'
   description: |

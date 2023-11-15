@@ -1,3 +1,6 @@
+if [ -z ${CONDA_BUILD+x} ]; then
+    source /home/conda/feedstock_root/build_artifacts/debug_1699208442023/work/build_env_setup.sh
+fi
 #!/bin/bash
 set -e
 
@@ -15,52 +18,6 @@ source VERSION
 export ROOT="$BUILD"
 export ARCH=seq
 export DEST="${BUILD}/dest"
-cd ${SRC_DIR}
-
-#echo "**************** H D F 5  B U I L D  S T A R T S  H E R E ****************"
-#
-#mkdir -p ${BUILD}/hdf5/
-#tar xzf ${BUILD}/archives/hdf5-${HDF5}.tar.gz -C ${BUILD}/hdf5/ --strip-components 1
-#cd ${BUILD}/hdf5
-#CFLAGS="-fPIC ${CFLAGS}" \
-#    FCFLAGS="-fPIC ${FCFLAGS}" \
-#    ./configure --enable-static=yes --enable-shared=no --enable-fortran=yes --prefix=${DEST}/hdf5-${HDF5}
-#make -j $CPU_COUNT
-#make install
-#cd ${SRC_DIR}
-#
-#echo "**************** H D F 5  B U I L D  E N D S  H E R E ****************"
-#
-#echo "**************** M E D  B U I L D  S T A R T S  H E R E ****************"
-#
-#mkdir -p ${BUILD}/med/
-#tar xzf ${BUILD}/archives/med-${MED}.tar.gz -C ${BUILD}/med/ --strip-components 1
-#cd ${BUILD}/med
-#if [ ${MED} = "4.1.1" ]; then
-#    patch -p1 < ${BUILD}/patches/med-4.1.1-check-hdf5-with-tabs.diff
-#    patch -p1 < ${BUILD}/patches/med-4.1.1-check-hdf5-parallel.diff
-#fi
-#sed -i 's/.*find hdf5 library/##/' configure # disabling non-working check
-#
-## Set only fortran length for integer, C/C++ flags will be automatically adapted
-#FFLAGS="-fdefault-integer-8 ${FFLAGS}" \
-#    CFLAGS="-fPIC ${CFLAGS}" \
-#    FCFLAGS="-fdefault-integer-8 -fPIC ${FCFLAGS}" \
-#    F77=${FC} \
-#    CXXFLAGS='-std=gnu++98' \
-#    ./configure \
-#        --enable-mesgerr \
-#        --with-swig=no \
-#        --enable-static=yes \
-#        --enable-shared=no \
-#        --disable-python \
-#        --with-hdf5=${DEST}/hdf5-${HDF5} \
-#        --prefix=${DEST}/med-${MED}
-#make -j $CPU_COUNT
-#make install
-#cd ${SRC_DIR}
-#
-#echo "**************** M E D  B U I L D  E N D S  H E R E ****************"
 
 echo "**************** M E D C O U P L I N G  B U I L D  S T A R T S  H E R E ****************"
 
@@ -74,10 +31,7 @@ cd ${BUILD}/medcouping/build
 cmake ${BUILD}/medcouping/ \
     -DCMAKE_INSTALL_PREFIX=${PREFIX} \
     -DCONFIGURATION_ROOT_DIR=${BUILD}/medcouping/configuration \
-    -DLIBXML2_ROOT_DIR=${PREFIX} \
     -DPYTHON_ROOT_DIR=${PREFIX} \
-    -DBOOST_ROOT_DIR=${PREFIX} \
-    -DSWIG_ROOT_DIR=${PREFIX} \
     -Wno-dev \
     -DSALOME_CMAKE_DEBUG=ON \
     -DSALOME_USE_MPI=OFF \
@@ -91,12 +45,9 @@ cmake ${BUILD}/medcouping/ \
     -DMEDCOUPLING_PARTITIONER_METIS=OFF \
     -DMEDCOUPLING_PARTITIONER_SCOTCH=OFF \
     -DMEDCOUPLING_PARTITIONER_PTSCOTCH=OFF \
-    -DMEDCOUPLING_ENABLE_PYTHON=ON \
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-    -DHDF5_ROOT_DIR=${PREFIX} \
-    -DMEDFILE_ROOT_DIR=${PREFIX} \
     -DMPI_C_COMPILER:PATH=$(which mpicc) \
     -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON} \
+    -DBOOST_ROOT=${PREFIX} \
     -DCMAKE_BUILD_TYPE=Release
 make -j $CPU_COUNT
 make install
@@ -107,7 +58,7 @@ echo "**************** M E D C O U P L I N G  B U I L D  E N D S  H E R E ******
 
 echo "**************** H O M A R D  B U I L D  S T A R T S  H E R E ****************"
 
-mkdir -p ${BUILD}/homard/
+mkdir ${BUILD}/homard/
 tar xzf ${BUILD}/archives/homard-${HOMARD}.tar.gz -C ${BUILD}/homard/ --strip-components 1
 cd ${BUILD}/homard/
 $PYTHON setup_homard.py --prefix=${PREFIX}/bin -en -v
@@ -117,7 +68,7 @@ echo "**************** H O M A R D  B U I L D  E N D S  H E R E ****************
 
 echo "**************** A S R U N  B U I L D  S T A R T S  H E R E ****************"
 
-mkdir -p ${BUILD}/asrun/
+mkdir ${BUILD}/asrun/
 tar xzf ${BUILD}/archives/codeaster-frontend-${ASRUN}.tar.gz -C ${BUILD}/asrun/ --strip-components 1
 cd ${BUILD}/asrun/
 # add configuration for editor, terminal, platform...
@@ -136,38 +87,15 @@ echo "**************** A S R U N  B U I L D  E N D S  H E R E ****************"
 
 echo "**************** M E T I S  B U I L D  S T A R T S  H E R E ****************"
 
-mkdir -p ${BUILD}/metis/
-tar xzf ${BUILD}/archives/metis-${METIS}.tar.gz -C ${BUILD}/metis/ --strip-components 1
-cd ${BUILD}/metis
-make config CFLAGS="-fPIC ${CFLAGS}" prefix=${DEST}/metis-${METIS}
-make -j $CPU_COUNT
-make install
+cd ${BUILD}
+LDFLAGS="-L${STDLIB_DIR}" make metis
 cd ${SRC_DIR}
 
 echo "**************** M E T I S  B U I L D  E N D S  H E R E ****************"
 
-#echo "**************** S C O T C H  B U I L D  S T A R T S  H E R E ****************"
-#
-#mkdir -p ${BUILD}/scotch/
-#tar xzf ${BUILD}/archives/scotch-${SCOTCH}.tar.gz -C ${BUILD}/scotch/ --strip-components 1
-#cd ${BUILD}/scotch/src
-#mkinc=Make.inc/Makefile.inc.x86-64_pc_linux2
-#sed -e "s|CFLAGS\s*=|CFLAGS = ${CFLAGS} -Wl,--no-as-needed -DINTSIZE64|g" \
-#     -e "s|CCD\s*=.*$|CCD = ${GCC}|g" \
-#     -e "s|CCS\s*=.*$|CCS = ${GCC}|g" \
-#     -e "s|LDFLAGS\s*=|LDFLAGS = -L${PREFIX}/lib |g" \
-#     ${mkinc} > Makefile.inc
-#make scotch -j $CPU_COUNT
-#make esmumps -j $CPU_COUNT
-#mkdir -p ${DEST}/scotch-${SCOTCH}
-#make install prefix=${DEST}/scotch-${SCOTCH}
-#cd ${SRC_DIR}
-#
-#echo "**************** S C O T C H  B U I L D  E N D S  H E R E ****************"
-
 #echo "**************** P A R M E T I S  B U I L D  S T A R T S  H E R E ****************"
 
-#mkdir -p ${BUILD}/parmetis/
+#mkdir ${BUILD}/parmetis/
 #tar xzf ${BUILD}/archives/parmetis-${PARMETIS}.tar.gz -C ${BUILD}/parmetis/ --strip-components 1
 #cd ${BUILD}/parmetis/
 #make config CFLAGS="-fPIC ${CFLAGS}" prefix=${DEST}/parmetis-${PARMETIS}
@@ -179,19 +107,19 @@ echo "**************** M E T I S  B U I L D  E N D S  H E R E ****************"
 
 echo "**************** M U M P S  B U I L D  S T A R T S  H E R E ****************"
 
-mkdir -p ${BUILD}/mumps/
+mkdir ${BUILD}/mumps/
 tar xzf ${BUILD}/archives/mumps-${MUMPS_GPL}.tar.gz -C ${BUILD}/mumps/ --strip-components 1
 cd ${BUILD}/mumps/
 
 CFLAGS="-DUSE_SCHEDAFFINITY -Dtry_null_space ${CFLAGS}" \
-    FCFLAGS="-DUSE_SCHEDAFFINITY -Dtry_null_space -fallow-argument-mismatch ${FCFLAGS}" \
-    LIBPATH="${PREFIX}/lib ${DEST}/metis-${METIS}/lib ${DEST}/parmetis-${PARMETIS}/lib ${DEST}/scotch-${SCOTCH}/lib $LIBPATH" \
-    INCLUDES="${PREFIX}/include ${DEST}/metis-${METIS}/include ${DEST}/parmetis-${PARMETIS}/include ${DEST}/scotch-${SCOTCH}/include $INCLUDES" \
-    $PYTHON ./waf configure --enable-openmp \
+FCFLAGS="-DUSE_SCHEDAFFINITY -Dtry_null_space -fallow-argument-mismatch ${FCFLAGS}" \
+LIBPATH="${PREFIX}/lib ${DEST}/metis-${METIS}/lib ${DEST}/parmetis-${PARMETIS}/lib $LIBPATH" \
+INCLUDES="${PREFIX}/include ${DEST}/metis-${METIS}/include ${DEST}/parmetis-${PARMETIS}/include $INCLUDES" \
+$PYTHON ./waf configure --enable-openmp \
                --enable-metis \
                --embed-metis \
                --disable-parmetis \
-               --disable-scotch \
+               --enable-scotch \
                --install-tests \
                --prefix=${DEST}/mumps-${MUMPS_GPL}
 
@@ -205,6 +133,8 @@ echo "**************** M U M P S  B U I L D  E N D S  H E R E ****************"
 echo "**************** A S T E R  B U I L D  S T A R T S  H E R E ****************"
 
 $PYTHON "${RECIPE_DIR}/config/update_version.py"
+#cp -Rf $RECIPE_DIR/contrib/asrun $SP_DIR/
+#cp -Rf $RECIPE_DIR/contrib/scripts/* $PREFIX/bin
 
 export CONFIG_PARAMETERS_addmem=3000
 
@@ -215,11 +145,8 @@ export INCLUDES_BOOST=$PREFIX/include
 export LIBPATH_BOOST=$PREFIX/lib
 export LIB_BOOST="libboost_python$CONDA_PY"
 
-export INCLUDES_HDF5="${PREFIX}/include"
-export LIBPATH_HDF5="${PREFIX}/lib"
-
-export INCLUDES_MED="${PREFIX}/include"
-export LIBPATH_MED="${PREFIX}/lib"
+export INCLUDES_MED="$PREFIX/include"
+export LIBPATH_MED="$PREFIX/lib"
 
 export LIBPATH_MEDCOUPLING="$PREFIX/lib"
 export INCLUDES_MEDCOUPLING="$PREFIX/include"
@@ -231,11 +158,17 @@ export LIBPATH_METIS="${DEST}/metis-${METIS}/lib $PREFIX/lib"
 export INCLUDES_METIS="${DEST}/metis-${METIS}/include $PREFIX/include"
 
 export LIBPATH_MUMPS="${DEST}/mumps-${MUMPS_GPL}/lib $PREFIX/lib"
-export INCLUDES_MUMPS="${DEST}/mumps-${MUMPS_GPL}/include $PREFIX/include ${DEST}/mumps-${MUMPS_GPL}/include_seq"
+export INCLUDES_MUMPS="${DEST}/mumps-${MUMPS_GPL}/include $PREFIX/include"
+
+./waf_std \
+     --python=$PYTHON \
+     --help
 
 FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
-    ./waf_std \
+./waf_std \
      --python=$PYTHON \
+     --use-config=wafcfg_conda \
+     --use-config-dir="$RECIPE_DIR"/config \
      --prefix="${PREFIX}" \
      --libdir="${PREFIX}/lib" \
      --install-tests \
@@ -244,7 +177,7 @@ FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
      --enable-mumps \
      --embed-mumps \
      --enable-mfront \
-     --disable-mpi \
+     --disable-mpi \     
      --disable-petsc \
      --without-hg \
      configure
@@ -253,11 +186,36 @@ FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
 
 ./waf_std --python=$PYTHON install
 
-ln -rs $PREFIX/share/aster $PREFIX/stable
-cp -R ${SRC_DIR}/code_aster ${SP_DIR}
+#find $PREFIX -name "profile.sh" -exec sed -i 's/PYTHONHOME=/#PYTHONHOME=/g' {} \;
+#find $PREFIX -name "profile.sh" -exec sed -i 's/export PYTHONHOME/#export PYTHONHOME/g' {} \;
 
-find $PREFIX -name "profile.sh" -exec sed -i 's/PYTHONHOME=/#PYTHONHOME=/g' {} \;
-find $PREFIX -name "profile.sh" -exec sed -i 's/export PYTHONHOME/#export PYTHONHOME/g' {} \;
+#mkdir -p $PREFIX/etc/codeaster/
+#cp -Rf $RECIPE_DIR/contrib/etc/* $PREFIX/etc/codeaster/
+
+# Change the PYTHONPATH just for pybind11_stubgen to find the necessary module
+# Generate stubs for pybind11
+PYTHONPATH="$PREFIX/lib/aster:$SRC_DIR/stubgen" \
+LD_LIBRARY_PATH="${PREFIX}/lib/aster" \
+$PYTHON  ${RECIPE_DIR}/stubs/custom_stubs_gen.py
+echo "Stubs generation completed"
+
+# copy modified shell scripts and create backups of the ones we don't want.
+cp $PREFIX/bin/run_aster $PREFIX/bin/_run_aster_old
+cp $PREFIX/bin/run_ctest $PREFIX/bin/_run_ctest_old
+
+cp $RECIPE_DIR/config/run_aster $PREFIX/bin/run_aster
+cp $RECIPE_DIR/config/run_ctest $PREFIX/bin/run_ctest
+
+# Alternative, I could move the entire code_aster subdirectory to site-packages granted I am able to relocate all
+# relevant .so files
+# Add activation/deactivation scripts to set/unset required env variables for code-aster
+mkdir -p $PREFIX/etc/conda/activate.d
+cp $RECIPE_DIR/config/code_aster_activate.sh $PREFIX/etc/conda/activate.d/code_aster_activate.sh
+chmod +x $PREFIX/etc/conda/activate.d/code_aster_activate.sh
+
+mkdir -p $PREFIX/etc/conda/deactivate.d
+cp $RECIPE_DIR/config/code_aster_deactivate.sh $PREFIX/etc/conda/deactivate.d/code_aster_deactivate.sh
+chmod +x $PREFIX/etc/conda/deactivate.d/code_aster_deactivate.sh
 
 echo "**************** A S T E R  B U I L D  E N D S  H E R E ****************"
 
