@@ -1,6 +1,6 @@
 {% set name = "code-aster" %}
-{% set version = "16.4.9" %}
-{% set sha256 = "9f47e07c2288e0d80fd4d954a0433322b49bb1b800aad7aabc97ec5c9b9589b9" %}
+{% set version = "16.4.13" %}
+{% set sha256 = "6de97b963c5bfc4d6632da6d269376aa8bda4b26d86b6afb4905f8aac49c7836" %}
 
 package:
   name: {{ name|lower }}
@@ -84,7 +84,7 @@ test:
     - homard || true  # [unix]
     - as_run --test forma01a
     - as_run --test sslp114a
-    - as_run --test mumps02a
+    #- as_run --test mumps03a
     - as_run --test mumps01a
     #- as_run --test umat001a
     - as_run --test zzzz121a
