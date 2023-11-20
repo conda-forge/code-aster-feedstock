@@ -1,6 +1,6 @@
 {% set name = "code-aster" %}
-{% set version = "16.4.13" %}
-{% set sha256 = "6de97b963c5bfc4d6632da6d269376aa8bda4b26d86b6afb4905f8aac49c7836" %}
+{% set version = "16.4.14" %}
+{% set sha256 = "dd82c18c3c990b40d653eff87f43ce700654064f70416b51db8ad01d5d773277" %}
 
 package:
   name: {{ name|lower }}
@@ -40,7 +40,7 @@ requirements:
     - flex
     - swig
   host:
-    - python    
+    - python
     - numpy
     - mfront 4.1.0
     - mgis 2.1
@@ -52,10 +52,10 @@ requirements:
     - zlib
     - pybind11-stubgen 2.1
     - pyyaml
-    - astor    
+    - astor
     - patch
   run:
-    - {{ pin_compatible('mgis', max_pin='x.x') }}    
+    - {{ pin_compatible('mgis', max_pin='x.x') }}
     - {{ pin_compatible('mfront', max_pin='x.x.x') }}
     - {{ pin_compatible('miss3d', max_pin='x.x') }}
     - {{ pin_compatible('numpy', max_pin='x.x') }}
@@ -65,7 +65,7 @@ requirements:
     - libxml2
     - pybind11-stubgen 2.1
     - pyyaml
-    - astor       
+    - astor
     - libgcc-ng  # [linux]
     - libstdcxx-ng  # [linux]
     - libgfortran5  # [linux]
@@ -76,7 +76,7 @@ test:
     - code_aster
     - medcoupling
   commands:
-    - as_run --info 
+    - as_run --info
     - homard || true  # [unix]
     - as_run --test forma01a
     - as_run --test sslp114a
