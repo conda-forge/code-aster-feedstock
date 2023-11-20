@@ -44,6 +44,7 @@ requirements:
     - numpy
     - mfront 4.1.0
     - mgis 2.1
+    - boost
     - miss3d
     - libblas
     - liblapack
@@ -59,13 +60,12 @@ requirements:
     - {{ pin_compatible('mfront', max_pin='x.x.x') }}
     - {{ pin_compatible('miss3d', max_pin='x.x') }}
     - {{ pin_compatible('numpy', max_pin='x.x') }}
-    - python
-    - pyyaml
+    - astor
+    - boost
     - libopenblas
     - libxml2
-    - pybind11-stubgen 2.1
+    - python
     - pyyaml
-    - astor
     - libgcc-ng  # [linux]
     - libstdcxx-ng  # [linux]
     - libgfortran5  # [linux]
