@@ -17,7 +17,7 @@ source:
     folder: codeaster-prerequisites/
 
 build:
-  number: 0
+  number: 1
   skip: true  # [py >= 310 or osx or win or (python_impl == 'pypy')]
   detect_binary_files_with_prefix: true
   rpaths:
@@ -44,9 +44,8 @@ requirements:
     - numpy
     - mfront 4.1.0
     - mgis 2.1
+    - boost
     - miss3d
-    - libmed 4.1.1
-    - hdf5 1.10
     - libblas
     - liblapack
     - libxml2
@@ -61,15 +60,12 @@ requirements:
     - {{ pin_compatible('mfront', max_pin='x.x.x') }}
     - {{ pin_compatible('miss3d', max_pin='x.x') }}
     - {{ pin_compatible('numpy', max_pin='x.x') }}
-    - {{ pin_compatible('libmed', max_pin='x.x') }}
-    - {{ pin_compatible('hdf5', max_pin='x.x.x') }}
-    - python
-    - pyyaml
+    - astor
+    - boost
     - libopenblas
     - libxml2
-    - pybind11-stubgen 2.1
+    - python
     - pyyaml
-    - astor
     - libgcc-ng  # [linux]
     - libstdcxx-ng  # [linux]
     - libgfortran5  # [linux]
