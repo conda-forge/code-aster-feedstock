@@ -17,8 +17,8 @@ source:
     folder: codeaster-prerequisites/
 
 build:
-  number: 1
-  skip: true  # [py >= 310 or osx or win or (python_impl == 'pypy')]
+  number: 2
+  skip: true  # [py >= 312 or osx or win or (python_impl == 'pypy')]
   detect_binary_files_with_prefix: true
   rpaths:
     - lib/
