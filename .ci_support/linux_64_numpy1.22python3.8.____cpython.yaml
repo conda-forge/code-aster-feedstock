@@ -1,3 +1,5 @@
+boost:
+- 1.78.0
 c_compiler:
 - gcc
 c_compiler_version:
@@ -29,6 +31,8 @@ numpy:
 openblas:
 - 0.3.*
 pin_run_as_build:
+  boost:
+    max_pin: x.x.x
   numpy:
     min_pin: x.x
     max_pin: x.x
