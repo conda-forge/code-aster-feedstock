@@ -244,7 +244,6 @@ LDFLAGS="-Wl,--no-as-needed -L${DEST}/med-${MED}/lib -lmed -L${DEST}/hdf5-${HDF5
      --python=$PYTHON \
      --prefix="${PREFIX}" \
      --libdir="${PREFIX}/lib" \
-     --install-tests \
      --enable-metis \
      --embed-metis \
      --enable-mumps \
