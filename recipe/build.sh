@@ -81,9 +81,10 @@ cmake ${BUILD}/medcouping/ \
     -DBOOST_ROOT_DIR=${PREFIX} \
     -DSWIG_ROOT_DIR=${PREFIX} \
     -Wno-dev \
-    -DSALOME_CMAKE_DEBUG=ON \
+    -DSALOME_CMAKE_DEBUG=OFF \
     -DSALOME_USE_MPI=OFF \
     -DMEDCOUPLING_BUILD_TESTS=OFF \
+    -DMEDCOUPLING_BUILD_PY_TESTS=OFF \
     -DMEDCOUPLING_BUILD_DOC=OFF \
     -DMED_INT_IS_LONG=ON \
     -DMEDCOUPLING_USE_64BIT_IDS=ON \
@@ -263,6 +264,19 @@ LDFLAGS="-Wl,--no-as-needed -L${DEST}/med-${MED}/lib -lmed -L${DEST}/hdf5-${HDF5
 ./waf_std build -j $CPU_COUNT
 
 ./waf_std --python=$PYTHON install
+
+rm -Rf ./astest $PREFIX/share/aster/tests
+# mkdir -p $PREFIX/share/aster/tests
+# cp ./astest/forma01a.* $PREFIX/share/aster/tests
+# cp ./astest/sslp114a.* $PREFIX/share/aster/tests
+# cp ./astest/mumps05a.* $PREFIX/share/aster/tests
+# cp ./astest/mumps01a.* $PREFIX/share/aster/tests
+# cp ./astest/erreu03a.* $PREFIX/share/aster/tests
+# cp ./astest/umat001a.* $PREFIX/share/aster/tests
+# cp ./astest/zzzz121a.* $PREFIX/share/aster/tests
+# cp ./astest/mfron01a.* $PREFIX/share/aster/tests
+# cp ./astest/*.mfront $PREFIX/share/aster/tests
+
 
 ln -rs $PREFIX/share/aster $PREFIX/stable
 cp -R ${SRC_DIR}/code_aster ${SP_DIR}

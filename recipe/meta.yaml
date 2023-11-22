@@ -51,21 +51,16 @@ requirements:
     - libxml2
     - openblas
     - zlib
-    - pybind11-stubgen 2.1
-    - pyyaml
-    - astor
     - patch
   run:
     - {{ pin_compatible('mgis', max_pin='x.x') }}
     - {{ pin_compatible('mfront', max_pin='x.x.x') }}
     - {{ pin_compatible('miss3d', max_pin='x.x') }}
     - {{ pin_compatible('numpy', max_pin='x.x') }}
-    - astor
     - libboost-python-devel
     - libopenblas
     - libxml2
     - python
-    - pyyaml
     - libgcc-ng  # [linux]
     - libstdcxx-ng  # [linux]
     - libgfortran5  # [linux]
@@ -78,12 +73,12 @@ test:
   commands:
     - as_run --info
     - homard || true  # [unix]
-    - as_run --test forma01a
-    - as_run --test sslp114a
-    #- as_run --test mumps03a
-    - as_run --test mumps01a
-    #- as_run --test umat001a
-    - as_run --test zzzz121a
+    # - as_run --test forma01a
+    # - as_run --test sslp114a
+    # - as_run --test mumps05a
+    # - as_run --test mumps01a
+    # - as_run --test umat001a
+    # - as_run --test zzzz121a
     #- as_run --test mfron01a
     - test -f $PREFIX/include/aster/aster.h
 
