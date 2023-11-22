@@ -265,6 +265,7 @@ LDFLAGS="-Wl,--no-as-needed -L${DEST}/med-${MED}/lib -lmed -L${DEST}/hdf5-${HDF5
 
 ./waf_std --python=$PYTHON install
 
+rm -Rf ./astest $PREFIX/share/aster/tests
 # mkdir -p $PREFIX/share/aster/tests
 # cp ./astest/forma01a.* $PREFIX/share/aster/tests
 # cp ./astest/sslp114a.* $PREFIX/share/aster/tests
