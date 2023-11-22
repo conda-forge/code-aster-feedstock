@@ -245,6 +245,8 @@ LDFLAGS="-Wl,--no-as-needed -L${DEST}/med-${MED}/lib -lmed -L${DEST}/hdf5-${HDF5
      --python=$PYTHON \
      --prefix="${PREFIX}" \
      --libdir="${PREFIX}/lib" \
+     --install-tests \
+     --install-tests \
      --enable-metis \
      --embed-metis \
      --enable-mumps \
@@ -265,18 +267,17 @@ LDFLAGS="-Wl,--no-as-needed -L${DEST}/med-${MED}/lib -lmed -L${DEST}/hdf5-${HDF5
 
 ./waf_std --python=$PYTHON install
 
-rm -Rf ./astest $PREFIX/share/aster/tests
-# mkdir -p $PREFIX/share/aster/tests
-# cp ./astest/forma01a.* $PREFIX/share/aster/tests
-# cp ./astest/sslp114a.* $PREFIX/share/aster/tests
-# cp ./astest/mumps05a.* $PREFIX/share/aster/tests
-# cp ./astest/mumps01a.* $PREFIX/share/aster/tests
-# cp ./astest/erreu03a.* $PREFIX/share/aster/tests
-# cp ./astest/umat001a.* $PREFIX/share/aster/tests
-# cp ./astest/zzzz121a.* $PREFIX/share/aster/tests
-# cp ./astest/mfron01a.* $PREFIX/share/aster/tests
-# cp ./astest/*.mfront $PREFIX/share/aster/tests
-
+mv ./astest ./alltest
+mkdir ./astest
+cp ./alltest/forma01a.* $PREFIX/share/aster/tests
+cp ./alltest/sslp114a.* $PREFIX/share/aster/tests
+cp ./alltest/mumps05a.* $PREFIX/share/aster/tests
+cp ./alltest/mumps01a.* $PREFIX/share/aster/tests
+cp ./alltest/erreu03a.* $PREFIX/share/aster/tests
+cp ./alltest/umat001a.* $PREFIX/share/aster/tests
+cp ./alltest/zzzz121a.* $PREFIX/share/aster/tests
+cp ./alltest/mfron01a.* $PREFIX/share/aster/tests
+cp ./alltest/*.mfront $PREFIX/share/aster/tests
 
 ln -rs $PREFIX/share/aster $PREFIX/stable
 cp -R ${SRC_DIR}/code_aster ${SP_DIR}
