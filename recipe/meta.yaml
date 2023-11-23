@@ -17,7 +17,7 @@ source:
     folder: codeaster-prerequisites/
 
 build:
-  number: 3
+  number: 4
   skip: true  # [py >= 312 or osx or win or (python_impl == 'pypy')]
   detect_binary_files_with_prefix: true
   rpaths:
@@ -73,12 +73,12 @@ test:
   commands:
     - as_run --info
     - homard || true  # [unix]
-    # - as_run --test forma01a
-    # - as_run --test sslp114a
-    # - as_run --test mumps05a
-    # - as_run --test mumps01a
-    # - as_run --test umat001a
-    # - as_run --test zzzz121a
+    - as_run --test forma01a
+    - as_run --test sslp114a
+    - as_run --test mumps05a
+    - as_run --test mumps01a
+    - as_run --test umat001a
+    - as_run --test zzzz121a
     #- as_run --test mfron01a
     - test -f $PREFIX/include/aster/aster.h
 
