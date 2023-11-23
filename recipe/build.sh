@@ -21,8 +21,8 @@ echo "**************** H D F 5  B U I L D  S T A R T S  H E R E ****************
 mkdir -p ${BUILD}/hdf5/
 tar xzf ${BUILD}/archives/hdf5-${HDF5}.tar.gz -C ${BUILD}/hdf5/ --strip-components 1
 cd ${BUILD}/hdf5
-CFLAGS="-fPIC -DPIC ${CFLAGS}" \
-    FCFLAGS="-fPIC -DPIC ${FCFLAGS}" \
+CFLAGS="-fPIC ${CFLAGS}" \
+    FCFLAGS="-fPIC ${FCFLAGS}" \
     ./configure --enable-static=yes --enable-shared=no --enable-fortran=yes --prefix=${DEST}/hdf5-${HDF5}
 make -j $CPU_COUNT
 make install
@@ -42,13 +42,10 @@ fi
 sed -i 's/.*find hdf5 library/##/' configure # disabling non-working check
 
 # Set only fortran length for integer, C/C++ flags will be automatically adapted
-FFLAGS="-fdefault-integer-8 -fPIC -DPIC ${FFLAGS}" \
-    CFLAGS="-fPIC -DPIC ${CFLAGS}" \
-    CPPFLAGS="-fPIC -DPIC ${CPPFLAGS}" \
-    CXXFLAGS="-fPIC -DPIC ${CXXFLAGS}" \
-    HDF5_CPPFLAGS="-fPIC -DPIC ${HDF5_CPPFLAGS}" \
-    FFLAGS="-fPIC -DPIC ${FFLAGS}" \
-    FCFLAGS="-fdefault-integer-8 -fPIC -DPIC ${FCFLAGS}" \
+FFLAGS="-fdefault-integer-8 -fPIC ${FFLAGS}" \
+    CFLAGS="-fPIC ${CFLAGS}" \
+    CPPFLAGS="-fPIC ${CPPFLAGS}" \
+    FCFLAGS="-fdefault-integer-8 -fPIC ${FCFLAGS}" \
     F77=${FC} \
     CXXFLAGS='-std=gnu++98' \
     ./configure \
@@ -59,7 +56,7 @@ FFLAGS="-fdefault-integer-8 -fPIC -DPIC ${FFLAGS}" \
         --disable-python \
         --with-hdf5=${DEST}/hdf5-${HDF5} \
         --prefix=${DEST}/med-${MED}
-make CPPFLAGS="-fPIC -DPIC ${CXXFLAGS}" CXXFLAGS="-fPIC -DPIC ${CXXFLAGS}" HDF5_CPPFLAGS="-fPIC ${HDF5_CPPFLAGS}" -j $CPU_COUNT
+make CPPFLAGS="-fPIC ${CXXFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" HDF5_CPPFLAGS="-fPIC ${HDF5_CPPFLAGS}" -j $CPU_COUNT
 make install
 cd ${SRC_DIR}
 
