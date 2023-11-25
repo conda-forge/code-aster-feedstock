@@ -16,6 +16,76 @@ export ROOT="$BUILD"
 export ARCH=seq
 export DEST="${BUILD}/dest"
 cd ${SRC_DIR}
+
+echo "**************** M E T I S  B U I L D  S T A R T S  H E R E ****************"
+
+mkdir -p ${BUILD}/metis/
+tar xzf ${BUILD}/archives/metis-${METIS}.tar.gz -C ${BUILD}/metis/ --strip-components 1
+cd ${BUILD}/metis
+make config CFLAGS="-fPIC ${CFLAGS}" prefix=${DEST}/metis-${METIS}
+make -j $CPU_COUNT
+make install
+cd ${SRC_DIR}
+
+echo "**************** M E T I S  B U I L D  E N D S  H E R E ****************"
+
+echo "**************** S C O T C H  B U I L D  S T A R T S  H E R E ****************"
+
+mkdir -p ${BUILD}/scotch/
+tar xzf ${BUILD}/archives/scotch-${SCOTCH}.tar.gz -C ${BUILD}/scotch/ --strip-components 1
+cd ${BUILD}/scotch/src
+mkinc=Make.inc/Makefile.inc.x86-64_pc_linux2
+sed -e "s|CFLAGS\s*=|CFLAGS = ${CFLAGS} -Wl,--no-as-needed -DINTSIZE64|g" \
+     -e "s|CCD\s*=.*$|CCD = ${GCC}|g" \
+     -e "s|CCS\s*=.*$|CCS = ${GCC}|g" \
+     -e "s|LDFLAGS\s*=|LDFLAGS = -L${PREFIX}/lib |g" \
+     ${mkinc} > Makefile.inc
+make scotch -j $CPU_COUNT
+make esmumps -j $CPU_COUNT
+mkdir -p ${DEST}/scotch-${SCOTCH}
+make install prefix=${DEST}/scotch-${SCOTCH}
+cd ${SRC_DIR}
+
+echo "**************** S C O T C H  B U I L D  E N D S  H E R E ****************"
+
+#echo "**************** P A R M E T I S  B U I L D  S T A R T S  H E R E ****************"
+
+#mkdir -p ${BUILD}/parmetis/
+#tar xzf ${BUILD}/archives/parmetis-${PARMETIS}.tar.gz -C ${BUILD}/parmetis/ --strip-components 1
+#cd ${BUILD}/parmetis/
+#make config CFLAGS="-fPIC ${CFLAGS}" prefix=${DEST}/parmetis-${PARMETIS}
+#make -j $CPU_COUNT
+#make install
+#cd ${SRC_DIR}
+
+#echo "**************** P A R M E T I S  B U I L D  E N D S  H E R E ****************"
+
+echo "**************** M U M P S  B U I L D  S T A R T S  H E R E ****************"
+
+mkdir -p ${BUILD}/mumps/
+tar xzf ${BUILD}/archives/mumps-${MUMPS_GPL}.tar.gz -C ${BUILD}/mumps/ --strip-components 1
+cd ${BUILD}/mumps/
+
+CFLAGS="-DUSE_SCHEDAFFINITY -Dtry_null_space ${CFLAGS}" \
+    FCFLAGS="-DUSE_SCHEDAFFINITY -Dtry_null_space -fallow-argument-mismatch ${FCFLAGS}" \
+    LIBPATH="${PREFIX}/lib ${DEST}/metis-${METIS}/lib ${DEST}/parmetis-${PARMETIS}/lib ${DEST}/scotch-${SCOTCH}/lib $LIBPATH" \
+    INCLUDES="${PREFIX}/include ${DEST}/metis-${METIS}/include ${DEST}/parmetis-${PARMETIS}/include ${DEST}/scotch-${SCOTCH}/include $INCLUDES" \
+    $PYTHON ./waf configure --enable-openmp \
+               --enable-metis \
+               --embed-metis \
+               --disable-parmetis \
+               --enable-scotch \
+               --embed-scotch \
+               --install-tests \
+               --prefix=${DEST}/mumps-${MUMPS_GPL}
+
+$PYTHON ./waf build --jobs=1
+$PYTHON ./waf install --jobs=1
+
+cd ${SRC_DIR}
+
+echo "**************** M U M P S  B U I L D  E N D S  H E R E ****************"
+
 echo "**************** H D F 5  B U I L D  S T A R T S  H E R E ****************"
 
 mkdir -p ${BUILD}/hdf5/
@@ -137,74 +207,6 @@ cd ${SRC_DIR}
 
 echo "**************** A S R U N  B U I L D  E N D S  H E R E ****************"
 
-echo "**************** M E T I S  B U I L D  S T A R T S  H E R E ****************"
-
-mkdir -p ${BUILD}/metis/
-tar xzf ${BUILD}/archives/metis-${METIS}.tar.gz -C ${BUILD}/metis/ --strip-components 1
-cd ${BUILD}/metis
-make config CFLAGS="-fPIC ${CFLAGS}" prefix=${DEST}/metis-${METIS}
-make -j $CPU_COUNT
-make install
-cd ${SRC_DIR}
-
-echo "**************** M E T I S  B U I L D  E N D S  H E R E ****************"
-
-#echo "**************** S C O T C H  B U I L D  S T A R T S  H E R E ****************"
-#
-#mkdir -p ${BUILD}/scotch/
-#tar xzf ${BUILD}/archives/scotch-${SCOTCH}.tar.gz -C ${BUILD}/scotch/ --strip-components 1
-#cd ${BUILD}/scotch/src
-#mkinc=Make.inc/Makefile.inc.x86-64_pc_linux2
-#sed -e "s|CFLAGS\s*=|CFLAGS = ${CFLAGS} -Wl,--no-as-needed -DINTSIZE64|g" \
-#     -e "s|CCD\s*=.*$|CCD = ${GCC}|g" \
-#     -e "s|CCS\s*=.*$|CCS = ${GCC}|g" \
-#     -e "s|LDFLAGS\s*=|LDFLAGS = -L${PREFIX}/lib |g" \
-#     ${mkinc} > Makefile.inc
-#make scotch -j $CPU_COUNT
-#make esmumps -j $CPU_COUNT
-#mkdir -p ${DEST}/scotch-${SCOTCH}
-#make install prefix=${DEST}/scotch-${SCOTCH}
-#cd ${SRC_DIR}
-#
-#echo "**************** S C O T C H  B U I L D  E N D S  H E R E ****************"
-
-#echo "**************** P A R M E T I S  B U I L D  S T A R T S  H E R E ****************"
-
-#mkdir -p ${BUILD}/parmetis/
-#tar xzf ${BUILD}/archives/parmetis-${PARMETIS}.tar.gz -C ${BUILD}/parmetis/ --strip-components 1
-#cd ${BUILD}/parmetis/
-#make config CFLAGS="-fPIC ${CFLAGS}" prefix=${DEST}/parmetis-${PARMETIS}
-#make -j $CPU_COUNT
-#make install
-#cd ${SRC_DIR}
-
-#echo "**************** P A R M E T I S  B U I L D  E N D S  H E R E ****************"
-
-echo "**************** M U M P S  B U I L D  S T A R T S  H E R E ****************"
-
-mkdir -p ${BUILD}/mumps/
-tar xzf ${BUILD}/archives/mumps-${MUMPS_GPL}.tar.gz -C ${BUILD}/mumps/ --strip-components 1
-cd ${BUILD}/mumps/
-
-CFLAGS="-DUSE_SCHEDAFFINITY -Dtry_null_space ${CFLAGS}" \
-    FCFLAGS="-DUSE_SCHEDAFFINITY -Dtry_null_space -fallow-argument-mismatch ${FCFLAGS}" \
-    LIBPATH="${PREFIX}/lib ${DEST}/metis-${METIS}/lib ${DEST}/parmetis-${PARMETIS}/lib ${DEST}/scotch-${SCOTCH}/lib $LIBPATH" \
-    INCLUDES="${PREFIX}/include ${DEST}/metis-${METIS}/include ${DEST}/parmetis-${PARMETIS}/include ${DEST}/scotch-${SCOTCH}/include $INCLUDES" \
-    $PYTHON ./waf configure --enable-openmp \
-               --enable-metis \
-               --embed-metis \
-               --disable-parmetis \
-               --disable-scotch \
-               --install-tests \
-               --prefix=${DEST}/mumps-${MUMPS_GPL}
-
-$PYTHON ./waf build --jobs=1
-$PYTHON ./waf install --jobs=1
-
-cd ${SRC_DIR}
-
-echo "**************** M U M P S  B U I L D  E N D S  H E R E ****************"
-
 echo "**************** A S T E R  B U I L D  S T A R T S  H E R E ****************"
 
 $PYTHON "${RECIPE_DIR}/config/update_version.py"
@@ -228,6 +230,9 @@ export LIBPATH_MEDCOUPLING="$PREFIX/lib"
 export INCLUDES_MEDCOUPLING="$PREFIX/include"
 export PYPATH_MEDCOUPLING=$SP_DIR
 
+export INCLUDES_SCOTCH="${DEST}/scotch-${SCOTCH}/include"
+export LIBPATH_SCOTCH="${DEST}/scotch-${SCOTCH}/lib"
+
 export TFELHOME=$PREFIX
 
 export LIBPATH_METIS="${DEST}/metis-${METIS}/lib $PREFIX/lib"
@@ -236,18 +241,19 @@ export INCLUDES_METIS="${DEST}/metis-${METIS}/include $PREFIX/include"
 export LIBPATH_MUMPS="${DEST}/mumps-${MUMPS_GPL}/lib $PREFIX/lib"
 export INCLUDES_MUMPS="${DEST}/mumps-${MUMPS_GPL}/include $PREFIX/include ${DEST}/mumps-${MUMPS_GPL}/include_seq"
 
-LDFLAGS="-Wl,--no-as-needed -L${DEST}/med-${MED}/lib -lmed -L${DEST}/hdf5-${HDF5}/lib -lhdf5 -lz -ldl -lm ${LDFLAGS}" \
+LDFLAGS="-Wl,--no-as-needed -L${DEST}/med-${MED}/lib -lmed -L${DEST}/hdf5-${HDF5}/lib -lhdf5 -L${DEST}/scotch-${SCOTCH}/lib -lesmumps -lscotch -lscotcherr -lscotcherrexit -lz -ldl -lm ${LDFLAGS}" \
     FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
     ./waf_std \
      --python=$PYTHON \
      --prefix="${PREFIX}" \
      --libdir="${PREFIX}/lib" \
      --install-tests \
-     --install-tests \
      --enable-metis \
      --embed-metis \
      --enable-mumps \
      --embed-mumps \
+     --enable-scotch \
+     --embed-scotch \
      --enable-mfront \
      --enable-med \
      --embed-med \
@@ -275,6 +281,7 @@ cp ./alltest/umat001a.* $PREFIX/share/aster/tests
 cp ./alltest/zzzz121a.* $PREFIX/share/aster/tests
 cp ./alltest/mfron01a.* $PREFIX/share/aster/tests
 cp ./alltest/*.mfront $PREFIX/share/aster/tests
+rm -Rf ./alltest
 
 ln -rs $PREFIX/share/aster $PREFIX/stable
 cp -R ${SRC_DIR}/code_aster ${SP_DIR}
