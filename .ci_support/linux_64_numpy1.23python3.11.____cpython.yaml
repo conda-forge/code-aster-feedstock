@@ -25,7 +25,7 @@ libboost_python_devel:
 liblapack:
 - 3.9 *netlib
 libxml2:
-- '2.11'
+- '2.12'
 numpy:
 - '1.23'
 openblas:
