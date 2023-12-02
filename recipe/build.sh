@@ -29,25 +29,6 @@ cd ${SRC_DIR}
 
 echo "**************** M E T I S  B U I L D  E N D S  H E R E ****************"
 
-echo "**************** S C O T C H  B U I L D  S T A R T S  H E R E ****************"
-
-mkdir -p ${BUILD}/scotch/
-tar xzf ${BUILD}/archives/scotch-${SCOTCH}.tar.gz -C ${BUILD}/scotch/ --strip-components 1
-cd ${BUILD}/scotch/src
-mkinc=Make.inc/Makefile.inc.x86-64_pc_linux2
-sed -e "s|CFLAGS\s*=|CFLAGS = ${CFLAGS} -Wl,--no-as-needed -DINTSIZE64|g" \
-     -e "s|CCD\s*=.*$|CCD = ${GCC}|g" \
-     -e "s|CCS\s*=.*$|CCS = ${GCC}|g" \
-     -e "s|LDFLAGS\s*=|LDFLAGS = -L${PREFIX}/lib |g" \
-     ${mkinc} > Makefile.inc
-make scotch -j $CPU_COUNT
-make esmumps -j $CPU_COUNT
-mkdir -p ${DEST}/scotch-${SCOTCH}
-make install prefix=${DEST}/scotch-${SCOTCH}
-cd ${SRC_DIR}
-
-echo "**************** S C O T C H  B U I L D  E N D S  H E R E ****************"
-
 #echo "**************** P A R M E T I S  B U I L D  S T A R T S  H E R E ****************"
 
 #mkdir -p ${BUILD}/parmetis/
@@ -75,7 +56,6 @@ CFLAGS="-DUSE_SCHEDAFFINITY -Dtry_null_space ${CFLAGS}" \
                --embed-metis \
                --disable-parmetis \
                --enable-scotch \
-               --embed-scotch \
                --install-tests \
                --prefix=${DEST}/mumps-${MUMPS_GPL}
 
@@ -230,8 +210,8 @@ export LIBPATH_MEDCOUPLING="$PREFIX/lib"
 export INCLUDES_MEDCOUPLING="$PREFIX/include"
 export PYPATH_MEDCOUPLING=$SP_DIR
 
-export INCLUDES_SCOTCH="${DEST}/scotch-${SCOTCH}/include"
-export LIBPATH_SCOTCH="${DEST}/scotch-${SCOTCH}/lib"
+export INCLUDES_SCOTCH="$PREFIX/lib"
+export LIBPATH_SCOTCH="$PREFIX/include"
 
 export TFELHOME=$PREFIX
 
@@ -253,7 +233,6 @@ LDFLAGS="-Wl,--no-as-needed -L${DEST}/med-${MED}/lib -lmed -L${DEST}/hdf5-${HDF5
      --enable-mumps \
      --embed-mumps \
      --enable-scotch \
-     --embed-scotch \
      --enable-mfront \
      --enable-med \
      --embed-med \
