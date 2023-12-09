@@ -41,8 +41,6 @@ python:
 - 3.10.* *_cpython
 python_impl:
 - cpython
-scotch:
-- 6.0.9
 target_platform:
 - linux-64
 zip_keys:
