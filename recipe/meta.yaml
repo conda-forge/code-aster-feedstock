@@ -12,8 +12,8 @@ source:
     sha256: {{ sha256 }}
   # Modified version of Metis changing integer sizes for indexes (IDXTYPEWIDTH 64) and including headers for direct linking to Aster
   # Modified version of Mumps changing integer, complex and real sizes to four bytes (fortran kind=4), waf configuration and metis renumbering
-  - url: https://www.code-aster.org/FICHIERS/prerequisites/codeaster-prerequisites-20221225-oss.tar.gz
-    sha256: c03c9662358867ad4753d56b5f87b1687a63b31baeb7127cf179b913edb7e239
+  - url: https://code-aster.org/FICHIERS/prerequisites/codeaster-prerequisites-20230919-oss.tar.gz
+    sha256: f459aecbcf88bbfec27157366572aa1ce3cbdfc1dd6ce8eddee2128c07f14926
     folder: codeaster-prerequisites/
 
 build:
@@ -43,7 +43,7 @@ requirements:
     - python
     - numpy
     - scotch >=7
-    - mfront 4.2.0
+    - mfront
     - mgis 2.2
     - libmed
     - medcoupling

@@ -1,12 +1,12 @@
 #!/bin/bash
-set -e
+set -ex
 
 export CLICOLOR_FORCE=1
 
 PATH=$PREFIX/bin:$PATH # to make /usr/bin/env find the right python interpreter
 export PYTHONPATH=${PREFIX}/lib/python${PY_VER}/site-packages:$PYTHONPATH
 export LD_LIBRARY_PATH=${PREFIX}/lib:$LD_LIBRARY_PATH
-
+export DEFINES=H5_BUILT_AS_DYNAMIC_LIB
 
 export BUILD=${SRC_DIR}/codeaster-prerequisites
 cd $BUILD
@@ -109,12 +109,6 @@ export INCLUDES_BOOST=$PREFIX/include
 export LIBPATH_BOOST=$PREFIX/lib
 export LIB_BOOST="libboost_python$CONDA_PY"
 
-export INCLUDES_HDF5="${DEST}/hdf5-${HDF5}/include"
-export LIBPATH_HDF5="${DEST}/hdf5-${HDF5}/lib"
-
-export INCLUDES_MED="${DEST}/med-${MED}/include"
-export LIBPATH_MED="${DEST}/med-${MED}/lib"
-
 export LIBPATH_MEDCOUPLING="$PREFIX/lib"
 export INCLUDES_MEDCOUPLING="$PREFIX/include"
 export PYPATH_MEDCOUPLING=$SP_DIR
@@ -130,9 +124,9 @@ export INCLUDES_METIS="${DEST}/metis-${METIS}/include $PREFIX/include"
 export LIBPATH_MUMPS="${DEST}/mumps-${MUMPS_GPL}/lib $PREFIX/lib"
 export INCLUDES_MUMPS="${DEST}/mumps-${MUMPS_GPL}/include $PREFIX/include ${DEST}/mumps-${MUMPS_GPL}/include_seq"
 
-LDFLAGS="-Wl,--no-as-needed -L${DEST}/med-${MED}/lib -lmed -L${DEST}/hdf5-${HDF5}/lib -lhdf5 -L${DEST}/scotch-${SCOTCH}/lib -lesmumps -lscotch -lscotcherr -lscotcherrexit -lz -ldl -lm ${LDFLAGS}" \
-    FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
-    ./waf_std \
+LDFLAGS="-Wl,--no-as-needed -lmedC -lhdf5 -lesmumps -lscotch -lscotcherr -lscotcherrexit -lz -ldl -lm ${LDFLAGS}" \
+FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
+  ./waf_std \
      --python=$PYTHON \
      --prefix="${PREFIX}" \
      --libdir="${PREFIX}/lib" \
@@ -144,9 +138,7 @@ LDFLAGS="-Wl,--no-as-needed -L${DEST}/med-${MED}/lib -lmed -L${DEST}/hdf5-${HDF5
      --enable-scotch \
      --enable-mfront \
      --enable-med \
-     --embed-med \
      --enable-hdf5 \
-     --embed-hdf5 \
      --embed-aster \
      --disable-mpi \
      --disable-petsc \
