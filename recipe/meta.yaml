@@ -43,8 +43,10 @@ requirements:
     - python
     - numpy
     - scotch >=7
-    - mfront 4.1.0
-    - mgis 2.1
+    - mfront 4.2.0
+    - mgis 2.2
+    - libmed
+    - medcoupling
     - libboost-python-devel
     - miss3d
     - libblas
