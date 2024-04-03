@@ -6,7 +6,7 @@ export CLICOLOR_FORCE=1
 PATH=$PREFIX/bin:$PATH # to make /usr/bin/env find the right python interpreter
 export PYTHONPATH=${PREFIX}/lib/python${PY_VER}/site-packages:$PYTHONPATH
 export LD_LIBRARY_PATH=${PREFIX}/lib:$LD_LIBRARY_PATH
-export DEFINES=H5_BUILT_AS_DYNAMIC_LIB
+export DEFINES="H5_BUILT_AS_DYNAMIC_LIB H5_USE_110_API"
 
 export BUILD=${SRC_DIR}/codeaster-prerequisites
 cd $BUILD
