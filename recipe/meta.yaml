@@ -47,6 +47,7 @@ requirements:
     - mgis 2.2
     - libmed
     - medcoupling
+    - mumps-seq
     - libboost-python-devel
     - miss3d
     - libblas

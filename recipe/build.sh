@@ -29,44 +29,6 @@ cd ${SRC_DIR}
 
 echo "**************** M E T I S  B U I L D  E N D S  H E R E ****************"
 
-#echo "**************** P A R M E T I S  B U I L D  S T A R T S  H E R E ****************"
-
-#mkdir -p ${BUILD}/parmetis/
-#tar xzf ${BUILD}/archives/parmetis-${PARMETIS}.tar.gz -C ${BUILD}/parmetis/ --strip-components 1
-#cd ${BUILD}/parmetis/
-#make config CFLAGS="-fPIC ${CFLAGS}" prefix=${DEST}/parmetis-${PARMETIS}
-#make -j $CPU_COUNT
-#make install
-#cd ${SRC_DIR}
-
-#echo "**************** P A R M E T I S  B U I L D  E N D S  H E R E ****************"
-
-echo "**************** M U M P S  B U I L D  S T A R T S  H E R E ****************"
-
-mkdir -p ${BUILD}/mumps/
-tar xzf ${BUILD}/archives/mumps-${MUMPS_GPL}.tar.gz -C ${BUILD}/mumps/ --strip-components 1
-cd ${BUILD}/mumps/
-
-CFLAGS="-DUSE_SCHEDAFFINITY -Dtry_null_space ${CFLAGS}" \
-    FCFLAGS="-DUSE_SCHEDAFFINITY -Dtry_null_space -fallow-argument-mismatch ${FCFLAGS}" \
-    LIBPATH="${PREFIX}/lib ${DEST}/metis-${METIS}/lib ${DEST}/parmetis-${PARMETIS}/lib ${DEST}/scotch-${SCOTCH}/lib $LIBPATH" \
-    INCLUDES="${PREFIX}/include ${DEST}/metis-${METIS}/include ${DEST}/parmetis-${PARMETIS}/include ${DEST}/scotch-${SCOTCH}/include $INCLUDES" \
-    $PYTHON ./waf configure --enable-openmp \
-               --enable-metis \
-               --embed-metis \
-               --disable-parmetis \
-               --enable-scotch \
-               --install-tests \
-               --prefix=${DEST}/mumps-${MUMPS_GPL}
-
-$PYTHON ./waf build --jobs=1
-$PYTHON ./waf install --jobs=1
-
-cd ${SRC_DIR}
-
-echo "**************** M U M P S  B U I L D  E N D S  H E R E ****************"
-
-
 echo "**************** H O M A R D  B U I L D  S T A R T S  H E R E ****************"
 
 mkdir -p ${BUILD}/homard/
@@ -121,10 +83,10 @@ export TFELHOME=$PREFIX
 export LIBPATH_METIS="${DEST}/metis-${METIS}/lib $PREFIX/lib"
 export INCLUDES_METIS="${DEST}/metis-${METIS}/include $PREFIX/include"
 
-export LIBPATH_MUMPS="${DEST}/mumps-${MUMPS_GPL}/lib $PREFIX/lib"
-export INCLUDES_MUMPS="${DEST}/mumps-${MUMPS_GPL}/include $PREFIX/include ${DEST}/mumps-${MUMPS_GPL}/include_seq"
+export LIBPATH_MUMPS="$PREFIX/lib"
+export INCLUDES_MUMPS="${PREFIX}/include ${PREFIX}/include/mumps_seq"
 
-LDFLAGS="-Wl,--no-as-needed -lmedC -lhdf5 -lesmumps -lscotch -lscotcherr -lscotcherrexit -lz -ldl -lm ${LDFLAGS}" \
+LDFLAGS="-Wl,--no-as-needed -lscotch -lscotcherr -lscotcherrexit -lz -ldl -lm ${LDFLAGS}" \
 FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
   ./waf_std \
      --python=$PYTHON \
@@ -134,12 +96,12 @@ FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
      --enable-metis \
      --embed-metis \
      --enable-mumps \
-     --embed-mumps \
      --enable-scotch \
      --enable-mfront \
      --enable-med \
      --enable-hdf5 \
-     --embed-aster \
+     --med-libs="medC medfwrap" \
+     --mumps-libs="dmumps_seq zmumps_seq smumps_seq cmumps_seq mumps_common_seq pord_seq" \
      --disable-mpi \
      --disable-petsc \
      --without-hg \
