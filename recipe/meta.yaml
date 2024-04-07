@@ -44,7 +44,7 @@ requirements:
     - numpy
     - scotch >=7
     - mfront 4.1.0
-    - mgis 2.1
+    - mgis 2.2
     - libboost-python-devel
     - miss3d
     - libblas
