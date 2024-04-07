@@ -43,7 +43,7 @@ requirements:
     - python
     - numpy
     - scotch >=7
-    - mfront 4.1.0
+    - mfront 4.2
     - mgis 2.2
     - libboost-python-devel
     - miss3d
