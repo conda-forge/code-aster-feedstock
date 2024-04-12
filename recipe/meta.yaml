@@ -1,6 +1,6 @@
 {% set name = "code-aster" %}
-{% set version = "17.0.12" %}
-{% set sha256 = "3d24c08c4776bec50cf1dd26083ac413a1df49274fc2f06505ffc7f50d02ab5e" %}
+{% set version = "17.0.13" %}
+{% set sha256 = "38d17c2405fb5607a6ed35373f13a6634d006711cbccb2a32eb80789d5ecfb98" %}
 
 package:
   name: {{ name|lower }}
@@ -17,7 +17,7 @@ source:
     folder: codeaster-prerequisites/
 
 build:
-  number: 1
+  number: 0
   skip: true  # [py >= 312 or osx or win or (python_impl == 'pypy')]
   detect_binary_files_with_prefix: true
   rpaths:
