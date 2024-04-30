@@ -1,6 +1,6 @@
 {% set name = "code-aster" %}
-{% set version = "17.0.10" %}
-{% set sha256 = "35fac81d5285f1ee0e41f70be7e2d0152750768a930e71adf631459b64fa096e" %}
+{% set version = "17.0.12" %}
+{% set sha256 = "3d24c08c4776bec50cf1dd26083ac413a1df49274fc2f06505ffc7f50d02ab5e" %}
 
 package:
   name: {{ name|lower }}
@@ -12,8 +12,8 @@ source:
     sha256: {{ sha256 }}
   # Modified version of Metis changing integer sizes for indexes (IDXTYPEWIDTH 64) and including headers for direct linking to Aster
   # Modified version of Mumps changing integer, complex and real sizes to four bytes (fortran kind=4), waf configuration and metis renumbering
-  - url: https://code-aster.org/FICHIERS/prerequisites/codeaster-prerequisites-20230919-oss.tar.gz
-    sha256: f459aecbcf88bbfec27157366572aa1ce3cbdfc1dd6ce8eddee2128c07f14926
+  - url: https://www.code-aster.org/FICHIERS/prerequisites/codeaster-prerequisites-20221225-oss.tar.gz
+    sha256: c03c9662358867ad4753d56b5f87b1687a63b31baeb7127cf179b913edb7e239
     folder: codeaster-prerequisites/
 
 build:
@@ -29,11 +29,11 @@ build:
 requirements:
   build:
     - "{{ compiler('c') }}"
+    - {{ stdlib("c") }}
     - "{{ compiler('cxx') }}"
     - "{{ compiler('fortran') }}"
     - libgomp  # [linux]
     - llvm-openmp  # [osx]
-    - sysroot_linux-64 =2.17  # [linux64]  
     - cmake
     - make  # [not win]
     - bison
