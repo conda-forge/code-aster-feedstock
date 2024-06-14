@@ -1,6 +1,6 @@
 {% set name = "code-aster" %}
-{% set version = "17.0.20" %}
-{% set sha256 = "e1009c1e0ab61e1c7848f8ca9c033c27d08bbd4d2b8352f497f031b08b6103c5" %}
+{% set version = "17.0.21" %}
+{% set sha256 = "01ecfa2a27d669941ae320aad9c27bc9b41b5fa449d437a904cfdd3e5d3fd326" %}
 
 package:
   name: {{ name|lower }}
