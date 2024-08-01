@@ -38,6 +38,7 @@ requirements:
     - llvm-openmp  # [osx]
     - cmake
     - make  # [not win]
+    - setuptools
     - bison
     - flex
     - swig
