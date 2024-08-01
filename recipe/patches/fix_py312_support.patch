@@ -88,3 +88,20 @@ diff --git a/bibc/supervis/python.c b/bibc/supervis/python.c
  }
  
  int _MAIN_( int argc, char **argv ) {
+Index: code_aster/Utilities/Tester.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/code_aster/Utilities/Tester.py b/code_aster/Utilities/Tester.py
+--- a/code_aster/Utilities/Tester.py	(revision 791ba3dcb2d777448d62da50eec46a4814b5f25a)
++++ b/code_aster/Utilities/Tester.py	(date 1722523679272)
+@@ -215,6 +215,8 @@
+         "assertTrue",
+         "assertTupleEqual",
+     ]:
++        if not hasattr(unittest.TestCase, meth):
++            continue
+         setattr(cls, meth, addSuccess(getattr(unittest.TestCase, meth)))
+ 
+ 
