@@ -38,7 +38,6 @@ requirements:
     - llvm-openmp  # [osx]
     - cmake
     - make  # [not win]
-    - setuptools
     - bison
     - flex
     - swig
@@ -49,6 +48,7 @@ requirements:
     - mfront 4.2
     - mgis 2.2
     - libboost-python-devel
+    - setuptools
     - miss3d
     - libblas
     - liblapack
