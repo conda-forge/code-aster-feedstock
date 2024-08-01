@@ -1,0 +1,90 @@
+Subject: [PATCH] fix py312 support
+---
+Index: waftools/python_cfg.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/waftools/python_cfg.py b/waftools/python_cfg.py
+--- a/waftools/python_cfg.py	(revision 791ba3dcb2d777448d62da50eec46a4814b5f25a)
++++ b/waftools/python_cfg.py	(date 1722521223395)
+@@ -18,10 +18,12 @@
+ # --------------------------------------------------------------------
+ 
+ import os
++import pathlib
++import platform
+ from pathlib import PureWindowsPath
+ from subprocess import PIPE, Popen
+ 
+-from waflib import Configure, Errors
++from waflib import Configure, Errors, Logs
+ 
+ 
+ def options(self):
+@@ -69,9 +71,22 @@
+     self.start_msg("Checking for numpy include")
+     # retrieve includes dir from numpy module
+     numpy_includes = self.get_python_variables(
+-        ['"\\n".join(misc_util.get_numpy_include_dirs())'],
+-        ["from numpy.distutils import misc_util"],
++        ['"\\n".join([np.get_include()])'],
++        ["import numpy as np"],
+     )
++    Logs.info(f"Before: {numpy_includes=}")
++    extra_flags = dict()
++    if platform.system() == "Windows":
++        library_prefix_ = pathlib.Path(self.env.PREFIX)
++        prefix_ = library_prefix_.parent
++        python_include_dir = prefix_ / "include"
++        python_libs_dir = prefix_ / "libs"
++        numpy_includes.append(python_include_dir.as_posix())
++        numpy_includes.append(python_libs_dir.as_posix())
++        extra_flags.update(dict(linkflags=[f"/LIBPATH:{python_libs_dir}", f"/LIBPATH:{python_include_dir}"]))
++
++    Logs.info(f"After: {numpy_includes=}")
++
+     if self.is_defined("ASTER_PLATFORM_MINGW"):
+         incs = [PureWindowsPath(i) for i in numpy_includes]
+         numpy_includes = []
+@@ -92,6 +107,7 @@
+         use=["PYEXT"],
+         uselib_store="NUMPY",
+         errmsg="Could not find the numpy development headers",
++        **extra_flags
+     )
+     self.end_msg(numpy_includes)
+ 
+Index: bibc/supervis/python.c
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/bibc/supervis/python.c b/bibc/supervis/python.c
+--- a/bibc/supervis/python.c	(revision 791ba3dcb2d777448d62da50eec46a4814b5f25a)
++++ b/bibc/supervis/python.c	(date 1722521048955)
+@@ -46,14 +46,17 @@
+ #endif
+ 
+ void initAsterModules() {
+-    PyImport_AppendInittab( "aster_core", PyInit_aster_core );
+-    PyImport_AppendInittab( "aster", PyInit_aster );
++    // Python 3.12 raises an error if PyImport_AppendInittab is called after Py_Initialize
++    if (!Py_IsInitialized()) {
++        PyImport_AppendInittab( "aster_core", PyInit_aster_core );
++        PyImport_AppendInittab( "aster", PyInit_aster );
+ 
+-    /* Module définissant des opérations sur les objets fonction_sdaster */
+-    PyImport_AppendInittab( "aster_fonctions", PyInit_aster_fonctions );
+-#ifdef ASTER_HAVE_MED
+-    PyImport_AppendInittab( "med_aster", PyInit_med_aster );
+-#endif
++        /* Module définissant des opérations sur les objets fonction_sdaster */
++        PyImport_AppendInittab( "aster_fonctions", PyInit_aster_fonctions );
++    #ifdef ASTER_HAVE_MED
++        PyImport_AppendInittab( "med_aster", PyInit_med_aster );
++    #endif
++    }
+ }
+ 
+ int _MAIN_( int argc, char **argv ) {

@@ -10,6 +10,8 @@ source:
   - fn: {{ name }}_{{ version }}.tar.gz
     url: https://gitlab.com/codeaster/src/-/archive/{{ version }}/src-{{ version }}.tar.gz
     sha256: {{ sha256 }}
+    patches:
+      - patches/fix_py312_support.patch
   # Modified version of Metis changing integer sizes for indexes (IDXTYPEWIDTH 64) and including headers for direct linking to Aster
   # Modified version of Mumps changing integer, complex and real sizes to four bytes (fortran kind=4), waf configuration and metis renumbering
   - url: https://www.code-aster.org/FICHIERS/prerequisites/codeaster-prerequisites-20221225-oss.tar.gz
@@ -18,7 +20,7 @@ source:
 
 build:
   number: 0
-  skip: true  # [py >= 312 or osx or win or (python_impl == 'pypy')]
+  skip: true  # [osx or win or (python_impl == 'pypy')]
   detect_binary_files_with_prefix: true
   rpaths:
     - lib/
