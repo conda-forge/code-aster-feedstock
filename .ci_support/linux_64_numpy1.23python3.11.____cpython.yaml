@@ -28,8 +28,12 @@ libboost_python_devel:
 - '1.84'
 liblapack:
 - 3.9 *netlib
+libmed:
+- '4.1'
 libxml2:
 - '2'
+mumps_seq:
+- 5.6.2
 numpy:
 - '1.23'
 openblas:
