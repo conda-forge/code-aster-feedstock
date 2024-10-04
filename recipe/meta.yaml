@@ -1,6 +1,6 @@
 {% set name = "code-aster" %}
-{% set version = "17.1.8" %}
-{% set sha256 = "3d88cfd8360876eb345bbfd65371d778bb60519e363ac2b7e71f8b62c473b83b" %}
+{% set version = "17.1.9" %}
+{% set sha256 = "2792dd26219f6adfaaad763d5b1745153aa152a9f08f21b335c54304e3c0e9ba" %}
 
 package:
   name: {{ name|lower }}
@@ -15,7 +15,7 @@ source:
   # Modified version of Metis changing integer sizes for indexes (IDXTYPEWIDTH 64) and including headers for direct linking to Aster
   # Modified version of Mumps changing integer, complex and real sizes to four bytes (fortran kind=4), waf configuration and metis renumbering
   - url: https://www.code-aster.org/FICHIERS/prerequisites/codeaster-prerequisites-20221225-oss.tar.gz
-    sha256: c03c9662358867ad4753d56b5f87b1687a63b31baeb7127cf179b913edb7e239
+    sha256: 40243be37c647c6df05437d5baadd4522b9cab5de97a76e1d1fb79d1645dd5fc
     folder: codeaster-prerequisites/
 
 build:
