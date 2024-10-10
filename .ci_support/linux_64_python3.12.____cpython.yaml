@@ -31,13 +31,10 @@ liblapack:
 libxml2:
 - '2'
 numpy:
-- '1.26'
+- '2.0'
 openblas:
 - 0.3.*
 pin_run_as_build:
-  numpy:
-    min_pin: x.x
-    max_pin: x.x
   python:
     min_pin: x.x
     max_pin: x.x
