@@ -1,6 +1,6 @@
 {% set name = "code-aster" %}
-{% set version = "17.1.12" %}
-{% set sha256 = "ce0e9308a69fd5f1e5b56bd321a9755cdc23544e66b6597ad9b5b3d47deaf689" %}
+{% set version = "17.1.15" %}
+{% set sha256 = "257b6cc49b48ff403dc071fb17dd09d58bb2e979fd707588313829a77a7a4e2f" %}
 
 package:
   name: {{ name|lower }}
@@ -30,10 +30,10 @@ build:
     - {{ pin_subpackage('code-aster', max_pin='x.x') }}
 requirements:
   build:
-    - "{{ compiler('c') }}"
+    - {{ compiler('c') }}
     - {{ stdlib("c") }}
-    - "{{ compiler('cxx') }}"
-    - "{{ compiler('fortran') }}"
+    - {{ compiler('cxx') }}
+    - {{ compiler('fortran') }}
     - libgomp  # [linux]
     - llvm-openmp  # [osx]
     - cmake
