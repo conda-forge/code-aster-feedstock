@@ -45,8 +45,11 @@ requirements:
     - python
     - numpy
     - scotch >=7
-    - mfront 4.2
+    - mfront
     - mgis 2.2
+    - libmed
+    - medcoupling
+    - mumps-seq
     - libboost-python-devel
     - setuptools
     - miss3d
