@@ -45,8 +45,8 @@ requirements:
     - python
     - numpy <2.0
     - scotch >=7
-    - mfront
-    - mgis
+    - mfront 4.2
+    - mgis 2.2
     - libboost-python-devel
     - setuptools
     - miss3d
