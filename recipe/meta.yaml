@@ -43,10 +43,10 @@ requirements:
     - swig 4.2.1
   host:
     - python
-    - numpy
+    - numpy <2.0
     - scotch >=7
-    - mfront 4.2
-    - mgis 2.2
+    - mfront
+    - mgis
     - libboost-python-devel
     - setuptools
     - miss3d
@@ -66,9 +66,6 @@ requirements:
     - libopenblas
     - libxml2
     - python
-    - libgcc-ng  # [linux]
-    - libstdcxx-ng  # [linux]
-    - libgfortran5  # [linux]
     - libxcrypt
 
 test:
