@@ -74,6 +74,8 @@ test:
     - asrun
     - code_aster
     - medcoupling
+  requirements:
+    - {{ compiler('fortran') }}
   commands:
     - as_run --info
     - homard || true  # [unix]
