@@ -1,0 +1,36 @@
+Subject: [PATCH] make_shared use env FC fallback
+---
+Index: run_aster/toolbox.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/run_aster/toolbox.py b/run_aster/toolbox.py
+--- a/run_aster/toolbox.py	(revision 32742fbebe712982c4e97484fdf390fc93cd60d0)
++++ b/run_aster/toolbox.py	(date 1735913221508)
+@@ -22,10 +22,10 @@
+ ------------------------------------------------
+ """
+ 
+-
++import pathlib
+ from .config import CFG
+ from .utils import run_command
+-
++import os
+ 
+ def make_shared(lib, src, *args):
+     """Build a shared library from a fortran source file.
+@@ -38,7 +38,11 @@
+     Returns:
+         int: exit code.
+     """
+-    cmd = [CFG.get("FC")]
++    fc = CFG.get("FC")
++    fcp = pathlib.Path(fc)
++    if not fcp.exists():
++        fcp = pathlib.Path(os.getenv("FC"))
++    cmd = [fcp.as_posix()]
+     cmd.extend(CFG.get("FCFLAGS"))
+     cmd.extend(["-shared", "-o", lib, src])
+     cmd.extend(args)
