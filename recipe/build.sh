@@ -1,12 +1,12 @@
 #!/bin/bash
-set -e
+set -ex
 
 export CLICOLOR_FORCE=1
 
 PATH=$PREFIX/bin:$PATH # to make /usr/bin/env find the right python interpreter
 export PYTHONPATH=${PREFIX}/lib/python${PY_VER}/site-packages:$PYTHONPATH
 export LD_LIBRARY_PATH=${PREFIX}/lib:$LD_LIBRARY_PATH
-
+export DEFINES="H5_BUILT_AS_DYNAMIC_LIB H5_USE_110_API"
 
 export BUILD=${SRC_DIR}/codeaster-prerequisites
 cd $BUILD
@@ -28,135 +28,6 @@ make install
 cd ${SRC_DIR}
 
 echo "**************** M E T I S  B U I L D  E N D S  H E R E ****************"
-
-#echo "**************** P A R M E T I S  B U I L D  S T A R T S  H E R E ****************"
-
-#mkdir -p ${BUILD}/parmetis/
-#tar xzf ${BUILD}/archives/parmetis-${PARMETIS}.tar.gz -C ${BUILD}/parmetis/ --strip-components 1
-#cd ${BUILD}/parmetis/
-#make config CFLAGS="-fPIC ${CFLAGS}" prefix=${DEST}/parmetis-${PARMETIS}
-#make -j $CPU_COUNT
-#make install
-#cd ${SRC_DIR}
-
-#echo "**************** P A R M E T I S  B U I L D  E N D S  H E R E ****************"
-
-echo "**************** M U M P S  B U I L D  S T A R T S  H E R E ****************"
-
-mkdir -p ${BUILD}/mumps/
-tar xzf ${BUILD}/archives/mumps-${MUMPS_GPL}.tar.gz -C ${BUILD}/mumps/ --strip-components 1
-cd ${BUILD}/mumps/
-
-CFLAGS="-DUSE_SCHEDAFFINITY -Dtry_null_space ${CFLAGS}" \
-    FCFLAGS="-DUSE_SCHEDAFFINITY -Dtry_null_space -fallow-argument-mismatch ${FCFLAGS}" \
-    LIBPATH="${PREFIX}/lib ${DEST}/metis-${METIS}/lib ${DEST}/parmetis-${PARMETIS}/lib ${DEST}/scotch-${SCOTCH}/lib $LIBPATH" \
-    INCLUDES="${PREFIX}/include ${DEST}/metis-${METIS}/include ${DEST}/parmetis-${PARMETIS}/include ${DEST}/scotch-${SCOTCH}/include $INCLUDES" \
-    $PYTHON ./waf configure --enable-openmp \
-               --enable-metis \
-               --embed-metis \
-               --disable-parmetis \
-               --enable-scotch \
-               --install-tests \
-               --prefix=${DEST}/mumps-${MUMPS_GPL}
-
-$PYTHON ./waf build --jobs=1
-$PYTHON ./waf install --jobs=1
-
-cd ${SRC_DIR}
-
-echo "**************** M U M P S  B U I L D  E N D S  H E R E ****************"
-
-echo "**************** H D F 5  B U I L D  S T A R T S  H E R E ****************"
-
-mkdir -p ${BUILD}/hdf5/
-tar xzf ${BUILD}/archives/hdf5-${HDF5}.tar.gz -C ${BUILD}/hdf5/ --strip-components 1
-cd ${BUILD}/hdf5
-CFLAGS="-fPIC ${CFLAGS}" \
-    FCFLAGS="-fPIC ${FCFLAGS}" \
-    ./configure --enable-static=yes --enable-shared=no --enable-fortran=yes --prefix=${DEST}/hdf5-${HDF5}
-make -j $CPU_COUNT
-make install
-cd ${SRC_DIR}
-
-echo "**************** H D F 5  B U I L D  E N D S  H E R E ****************"
-
-echo "**************** M E D  B U I L D  S T A R T S  H E R E ****************"
-
-mkdir -p ${BUILD}/med/
-tar xzf ${BUILD}/archives/med-${MED}.tar.gz -C ${BUILD}/med/ --strip-components 1
-cd ${BUILD}/med
-if [ ${MED} = "4.1.1" ]; then
-    patch -p1 < ${BUILD}/patches/med-4.1.1-check-hdf5-with-tabs.diff
-    patch -p1 < ${BUILD}/patches/med-4.1.1-check-hdf5-parallel.diff
-fi
-sed -i 's/.*find hdf5 library/##/' configure # disabling non-working check
-
-# Set only fortran length for integer, C/C++ flags will be automatically adapted
-FFLAGS="-fdefault-integer-8 -fPIC ${FFLAGS}" \
-    CFLAGS="-fPIC ${CFLAGS}" \
-    CPPFLAGS="-fPIC ${CPPFLAGS}" \
-    FCFLAGS="-fdefault-integer-8 -fPIC ${FCFLAGS}" \
-    F77=${FC} \
-    CXXFLAGS='-std=gnu++98' \
-    ./configure \
-        --enable-mesgerr \
-        --with-swig=no \
-        --enable-static=yes \
-        --enable-shared=no \
-        --disable-python \
-        --with-hdf5=${DEST}/hdf5-${HDF5} \
-        --prefix=${DEST}/med-${MED}
-make CPPFLAGS="-fPIC ${CXXFLAGS}" CXXFLAGS="-fPIC ${CXXFLAGS}" HDF5_CPPFLAGS="-fPIC ${HDF5_CPPFLAGS}" -j $CPU_COUNT
-make install
-cd ${SRC_DIR}
-
-echo "**************** M E D  B U I L D  E N D S  H E R E ****************"
-echo "**************** M E D C O U P L I N G  B U I L D  S T A R T S  H E R E ****************"
-
-mkdir -p ${BUILD}/medcouping/
-tar xzf ${BUILD}/archives/medcoupling-${MEDCOUPLING}.tar.gz -C ${BUILD}/medcouping/ --strip-components 1
-cd ${BUILD}/medcouping/
-mkdir -p ${BUILD}/medcouping/configuration
-tar xzf ${BUILD}/archives/configuration-${MEDCOUPLING}.tar.gz -C ${BUILD}/medcouping/configuration --strip-components 1
-mkdir -p ${BUILD}/medcouping/build
-cd ${BUILD}/medcouping/build
-cmake ${BUILD}/medcouping/ \
-    -DCMAKE_INSTALL_PREFIX=${PREFIX} \
-    -DCONFIGURATION_ROOT_DIR=${BUILD}/medcouping/configuration \
-    -DLIBXML2_ROOT_DIR=${PREFIX} \
-    -DPYTHON_ROOT_DIR=${PREFIX} \
-    -DBOOST_ROOT_DIR=${PREFIX} \
-    -DSWIG_ROOT_DIR=${PREFIX} \
-    -Wno-dev \
-    -DSALOME_CMAKE_DEBUG=OFF \
-    -DSALOME_USE_MPI=OFF \
-    -DMEDCOUPLING_BUILD_TESTS=OFF \
-    -DMEDCOUPLING_BUILD_PY_TESTS=OFF \
-    -DMEDCOUPLING_BUILD_DOC=OFF \
-    -DMED_INT_IS_LONG=ON \
-    -DMEDCOUPLING_USE_64BIT_IDS=ON \
-    -DMEDCOUPLING_USE_MPI=OFF \
-    -DMEDCOUPLING_MEDLOADER_USE_XDR=OFF \
-    -DXDR_INCLUDE_DIRS="" \
-    -DMEDCOUPLING_PARTITIONER_PARMETIS=OFF \
-    -DMEDCOUPLING_PARTITIONER_METIS=OFF \
-    -DMEDCOUPLING_PARTITIONER_SCOTCH=OFF \
-    -DMEDCOUPLING_PARTITIONER_PTSCOTCH=OFF \
-    -DMEDCOUPLING_ENABLE_PYTHON=ON \
-    -DMEDCOUPLING_BUILD_STATIC=ON \
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-    -DHDF5_ROOT_DIR=${DEST}/hdf5-${HDF5} \
-    -DMEDFILE_ROOT_DIR=${DEST}/med-${MED} \
-    -DMPI_C_COMPILER:PATH=$(which mpicc) \
-    -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON} \
-    -DCMAKE_BUILD_TYPE=Release \
-    ..
-make -j $CPU_COUNT
-make install
-
-cd ${SRC_DIR}
-
-echo "**************** M E D C O U P L I N G  B U I L D  E N D S  H E R E ****************"
 
 echo "**************** H O M A R D  B U I L D  S T A R T S  H E R E ****************"
 
@@ -200,12 +71,6 @@ export INCLUDES_BOOST=$PREFIX/include
 export LIBPATH_BOOST=$PREFIX/lib
 export LIB_BOOST="libboost_python$CONDA_PY"
 
-export INCLUDES_HDF5="${DEST}/hdf5-${HDF5}/include"
-export LIBPATH_HDF5="${DEST}/hdf5-${HDF5}/lib"
-
-export INCLUDES_MED="${DEST}/med-${MED}/include"
-export LIBPATH_MED="${DEST}/med-${MED}/lib"
-
 export LIBPATH_MEDCOUPLING="$PREFIX/lib"
 export INCLUDES_MEDCOUPLING="$PREFIX/include"
 export PYPATH_MEDCOUPLING=$SP_DIR
@@ -218,12 +83,12 @@ export TFELHOME=$PREFIX
 export LIBPATH_METIS="${DEST}/metis-${METIS}/lib $PREFIX/lib"
 export INCLUDES_METIS="${DEST}/metis-${METIS}/include $PREFIX/include"
 
-export LIBPATH_MUMPS="${DEST}/mumps-${MUMPS_GPL}/lib $PREFIX/lib"
-export INCLUDES_MUMPS="${DEST}/mumps-${MUMPS_GPL}/include $PREFIX/include ${DEST}/mumps-${MUMPS_GPL}/include_seq"
+export LIBPATH_MUMPS="$PREFIX/lib"
+export INCLUDES_MUMPS="${PREFIX}/include ${PREFIX}/include/mumps_seq"
 
-LDFLAGS="-Wl,--no-as-needed -L${DEST}/med-${MED}/lib -lmed -L${DEST}/hdf5-${HDF5}/lib -lhdf5 -L${DEST}/scotch-${SCOTCH}/lib -lesmumps -lscotch -lscotcherr -lscotcherrexit -lz -ldl -lm ${LDFLAGS}" \
-    FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
-    ./waf_std \
+LDFLAGS="-Wl,--no-as-needed -lscotch -lscotcherr -lscotcherrexit -lz -ldl -lm ${LDFLAGS}" \
+FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
+  ./waf_std \
      --python=$PYTHON \
      --prefix="${PREFIX}" \
      --libdir="${PREFIX}/lib" \
@@ -231,14 +96,12 @@ LDFLAGS="-Wl,--no-as-needed -L${DEST}/med-${MED}/lib -lmed -L${DEST}/hdf5-${HDF5
      --enable-metis \
      --embed-metis \
      --enable-mumps \
-     --embed-mumps \
      --enable-scotch \
      --enable-mfront \
      --enable-med \
-     --embed-med \
      --enable-hdf5 \
-     --embed-hdf5 \
-     --embed-aster \
+     --med-libs="medC medfwrap" \
+     --mumps-libs="dmumps_seq zmumps_seq smumps_seq cmumps_seq mumps_common_seq pord_seq" \
      --disable-mpi \
      --disable-petsc \
      --without-hg \
