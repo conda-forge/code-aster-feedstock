@@ -20,7 +20,7 @@ source:
     folder: codeaster-prerequisites/
 
 build:
-  number: 0
+  number: 1
   skip: true  # [osx or win or (python_impl == 'pypy')]
   detect_binary_files_with_prefix: true
   rpaths:
@@ -61,7 +61,6 @@ requirements:
     - {{ pin_compatible('mgis', max_pin='x.x') }}
     - {{ pin_compatible('mfront', max_pin='x.x.x') }}
     - {{ pin_compatible('miss3d', max_pin='x.x') }}
-    - {{ pin_compatible('numpy', max_pin='x.x') }}
     - libscotch
     - libboost-python-devel
     - libopenblas
