@@ -11,7 +11,6 @@ source:
     url: https://gitlab.com/codeaster/src/-/archive/{{ version }}/src-{{ version }}.tar.gz
     sha256: {{ sha256 }}
     patches:
-      - patches/fix_numpy_distutils.patch
       - patches/make_shared_use_env_FC_fallback.patch
   # Modified version of Metis changing integer sizes for indexes (IDXTYPEWIDTH 64) and including headers for direct linking to Aster
   # Modified version of Mumps changing integer, complex and real sizes to four bytes (fortran kind=4), waf configuration and metis renumbering
