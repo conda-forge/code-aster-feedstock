@@ -36,7 +36,7 @@ requirements:
     - {{ compiler('fortran') }}
     - libgomp  # [linux]
     - llvm-openmp  # [osx]
-    - cmake
+    - cmake <4
     - make  # [not win]
     - bison
     - flex
