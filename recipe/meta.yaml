@@ -1,6 +1,6 @@
 {% set name = "code-aster" %}
-{% set version = "17.2.13" %}
-{% set sha256 = "b0294d1b34061ecb6af072cf352cfbc6a6b48fb2f47c5fefd823766d368eb662" %}
+{% set version = "17.2.14" %}
+{% set sha256 = "982e638a6edcba8b5cc99eeb2589ee217a8a9dbe659aede45a06575a0767aabd" %}
 
 package:
   name: {{ name|lower }}
@@ -36,7 +36,7 @@ requirements:
     - {{ compiler('fortran') }}
     - libgomp  # [linux]
     - llvm-openmp  # [osx]
-    - cmake
+    - cmake <4
     - make  # [not win]
     - bison
     - flex
