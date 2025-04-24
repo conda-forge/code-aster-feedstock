@@ -28,6 +28,12 @@ build:
     - lib/petsc4py/lib      # [mpi != "nompi"]  
   run_exports:
     - {{ pin_subpackage('code-aster', max_pin='x.x') }}
+  missing_dso_whitelist:
+    - "*/libbibfor.so"  # [linux]
+    - "*/libbibfor_ext.so"  # [linux]
+    - "*/libbibc.so"  # [linux]
+    - "*/libbibcxx.so"  # [linux]
+    - "*/libAsterGC.so"  # [linux]
 requirements:
   build:
     - {{ compiler('c') }}
