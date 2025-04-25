@@ -29,6 +29,11 @@ build:
   run_exports:
     - {{ pin_subpackage('code-aster', max_pin='x.x') }}
   missing_dso_whitelist:
+    - "*/libbibfor.so"  # [linux]
+    - "*/libbibfor_ext.so"  # [linux]
+    - "*/libbibc.so"  # [linux]
+    - "*/libbibcxx.so"  # [linux]
+    - "*/libAsterGC.so"  # [linux]  
     - lib64/aster/libaster.so  # [linux]
 requirements:
   build:
