@@ -67,6 +67,7 @@ requirements:
     - patch
     - diffutils
     - medcoupling
+    - hdf5
   run:
     - {{ pin_compatible('mgis', max_pin='x.x') }}
     - {{ pin_compatible('mfront', max_pin='x.x.x') }}
