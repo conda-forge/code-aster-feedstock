@@ -9,7 +9,7 @@ Package license: GPL-3.0-only AND CECILL-C AND Apache-2.0 AND LGPL-3.0-only
 
 Summary: Code_Aster : a finite element solver
 
-Development: https://sourceforge.net/projects/codeaster/
+Development: https://gitlab.com/codeaster/
 
 Documentation: https://www.code-aster.org/V2/doc/default/en/index.php?man=commande
 

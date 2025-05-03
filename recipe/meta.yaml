@@ -19,7 +19,7 @@ source:
     folder: codeaster-prerequisites/
 
 build:
-  number: 0
+  number: 2
   skip: true  # [osx or win or (python_impl == 'pypy')]
   detect_binary_files_with_prefix: true
   rpaths:
@@ -38,9 +38,11 @@ build:
 requirements:
   build:
     - {{ compiler('c') }}
-    - {{ stdlib("c") }}
+    - "{{ stdlib('c') }}"
     - {{ compiler('cxx') }}
     - {{ compiler('fortran') }}
+    - "{{ compiler('cxx') }}"
+    - "{{ compiler('fortran') }}"
     - libgomp  # [linux]
     - llvm-openmp  # [osx]
     - cmake <4
@@ -48,11 +50,12 @@ requirements:
     - bison
     - flex
     - swig 4.2.1
+    - hdf5 >=1.14
   host:
     - python
     - numpy <2.0
     - scotch >=7
-    - mfront 4.2
+    - mfront
     - mgis 2.2
     - libboost-python-devel
     - setuptools
@@ -64,10 +67,14 @@ requirements:
     - zlib
     - patch
     - diffutils
+    - medcoupling
+    - hdf5 >=1.14
   run:
     - {{ pin_compatible('mgis', max_pin='x.x') }}
     - {{ pin_compatible('mfront', max_pin='x.x.x') }}
     - {{ pin_compatible('miss3d', max_pin='x.x') }}
+    - {{ pin_compatible('medcoupling', max_pin='x.x') }}
+    - {{ pin_compatible('libmed', max_pin='x.x') }}
     - {{ pin_compatible('numpy', max_pin='x.x') }}
     - libscotch
     - libboost-python-devel
@@ -105,7 +112,7 @@ about:
   description: |
     Code_Aster offers a full range of multiphysical analysis and modelling methods that go well beyond the standard functions of a thermomechanical calculation code: from seismic analysis to porous media via acoustics, fatigue, stochastic dynamics, etc..
   doc_url: https://www.code-aster.org/V2/doc/default/en/index.php?man=commande
-  dev_url: https://sourceforge.net/projects/codeaster/
+  dev_url: https://gitlab.com/codeaster/
 
 extra:
   recipe-maintainers:
