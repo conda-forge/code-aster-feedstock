@@ -1,12 +1,12 @@
 #!/bin/bash
-set -e
+set -ex
 
 export CLICOLOR_FORCE=1
 
 PATH=$PREFIX/bin:$PATH # to make /usr/bin/env find the right python interpreter
 export PYTHONPATH=${PREFIX}/lib/python${PY_VER}/site-packages:$PYTHONPATH
 export LD_LIBRARY_PATH=${PREFIX}/lib:$LD_LIBRARY_PATH
-
+export DEFINES="H5_BUILT_AS_DYNAMIC_LIB H5_USE_110_API"
 
 export BUILD=${SRC_DIR}/codeaster-prerequisites
 cd $BUILD
@@ -227,7 +227,7 @@ export INCLUDES_METIS="${DEST}/metis-${METIS}/include $PREFIX/include"
 export LIBPATH_MUMPS="${DEST}/mumps-${MUMPS_GPL}/lib $PREFIX/lib"
 export INCLUDES_MUMPS="${DEST}/mumps-${MUMPS_GPL}/include $PREFIX/include ${DEST}/mumps-${MUMPS_GPL}/include_seq"
 
-LDFLAGS="-Wl,--no-as-needed -L${LIBPATH_MED} -lmedC -lmedfwrap -L${LIBPATH_HDF5} -lhdf5 -L${DEST}/scotch-${SCOTCH}/lib -lesmumps -lscotch -lscotcherr -lscotcherrexit -lz -ldl -lm ${LDFLAGS}" \
+LDFLAGS="-Wl,--no-as-needed -L${LIBPATH_HDF5} -lhdf5 -L${DEST}/scotch-${SCOTCH}/lib -lesmumps -lscotch -lscotcherr -lscotcherrexit -lz -ldl -lm ${LDFLAGS}" \
     FCFLAGS="-fallow-argument-mismatch ${FCFLAGS}" \
     ./waf_std \
      --python=$PYTHON \
@@ -241,6 +241,7 @@ LDFLAGS="-Wl,--no-as-needed -L${LIBPATH_MED} -lmedC -lmedfwrap -L${LIBPATH_HDF5}
      --enable-scotch \
      --enable-mfront \
      --enable-med \
+     --med-libs="medC medfwrap" \
      --enable-hdf5 \
      --embed-aster \
      --disable-mpi \

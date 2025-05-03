@@ -50,11 +50,12 @@ requirements:
     - bison
     - flex
     - swig 4.2.1
+    - hdf5 >=1.14
   host:
     - python
     - numpy <2.0
     - scotch >=7
-    - mfront 4.2
+    - mfront
     - mgis 2.2
     - libboost-python-devel
     - setuptools
@@ -67,7 +68,7 @@ requirements:
     - patch
     - diffutils
     - medcoupling
-    - hdf5
+    - hdf5 >=1.14
   run:
     - {{ pin_compatible('mgis', max_pin='x.x') }}
     - {{ pin_compatible('mfront', max_pin='x.x.x') }}
