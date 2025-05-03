@@ -1,6 +1,6 @@
 {% set name = "code-aster" %}
-{% set version = "17.2.2" %}
-{% set sha256 = "f4872dc58c0082fe00913df0d98d8e6e97e29fc28d95f6ecfe0c2db91bd16700" %}
+{% set version = "17.2.18" %}
+{% set sha256 = "5d349ffd786d58297a00cf6cbb04d30c47b43059b22bc18039525361b671c8aa" %}
 
 package:
   name: {{ name|lower }}
@@ -11,7 +11,6 @@ source:
     url: https://gitlab.com/codeaster/src/-/archive/{{ version }}/src-{{ version }}.tar.gz
     sha256: {{ sha256 }}
     patches:
-      - patches/fix_numpy_distutils.patch
       - patches/make_shared_use_env_FC_fallback.patch
   # Modified version of Metis changing integer sizes for indexes (IDXTYPEWIDTH 64) and including headers for direct linking to Aster
   # Modified version of Mumps changing integer, complex and real sizes to four bytes (fortran kind=4), waf configuration and metis renumbering
@@ -20,7 +19,7 @@ source:
     folder: codeaster-prerequisites/
 
 build:
-  number: 1
+  number: 2
   skip: true  # [osx or win or (python_impl == 'pypy')]
   detect_binary_files_with_prefix: true
   rpaths:
@@ -29,24 +28,32 @@ build:
     - lib/petsc4py/lib      # [mpi != "nompi"]  
   run_exports:
     - {{ pin_subpackage('code-aster', max_pin='x.x') }}
+  missing_dso_whitelist:
+    - "*/libbibfor.so"  # [linux]
+    - "*/libbibfor_ext.so"  # [linux]
+    - "*/libbibc.so"  # [linux]
+    - "*/libbibcxx.so"  # [linux]
+    - "*/libAsterGC.so"  # [linux]  
+    - lib64/aster/libaster.so  # [linux]
 requirements:
   build:
     - {{ compiler('c') }}
-    - {{ stdlib("c") }}
+    - "{{ stdlib('c') }}"
     - {{ compiler('cxx') }}
     - {{ compiler('fortran') }}
     - libgomp  # [linux]
     - llvm-openmp  # [osx]
-    - cmake
+    - cmake <4
     - make  # [not win]
     - bison
     - flex
     - swig 4.2.1
+    - hdf5 >=1.14
   host:
     - python
     - numpy <2.0
     - scotch >=7
-    - mfront 4.2
+    - mfront
     - mgis 2.2
     - libboost-python-devel
     - setuptools
@@ -57,10 +64,15 @@ requirements:
     - openblas
     - zlib
     - patch
+    - diffutils
+    - medcoupling
+    - hdf5 >=1.14
   run:
     - {{ pin_compatible('mgis', max_pin='x.x') }}
     - {{ pin_compatible('mfront', max_pin='x.x.x') }}
     - {{ pin_compatible('miss3d', max_pin='x.x') }}
+    - {{ pin_compatible('medcoupling', max_pin='x.x') }}
+    - {{ pin_compatible('libmed', max_pin='x.x') }}
     - {{ pin_compatible('numpy', max_pin='x.x') }}
     - libscotch
     - libboost-python-devel
@@ -98,7 +110,7 @@ about:
   description: |
     Code_Aster offers a full range of multiphysical analysis and modelling methods that go well beyond the standard functions of a thermomechanical calculation code: from seismic analysis to porous media via acoustics, fatigue, stochastic dynamics, etc..
   doc_url: https://www.code-aster.org/V2/doc/default/en/index.php?man=commande
-  dev_url: https://sourceforge.net/projects/codeaster/
+  dev_url: https://gitlab.com/codeaster/
 
 extra:
   recipe-maintainers:
