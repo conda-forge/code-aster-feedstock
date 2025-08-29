@@ -19,8 +19,8 @@ source:
     folder: codeaster-prerequisites/
 
 build:
-  number: 0
-  skip: true  # [osx or win or (python_impl == 'pypy')]
+  number: 1
+  skip: true  # [osx or win or (python_impl == 'pypy') or py>=313]
   detect_binary_files_with_prefix: true
   rpaths:
     - lib/
@@ -56,7 +56,7 @@ requirements:
     - numpy <2.0
     - scotch >=7
     - mfront
-    - mgis 2.2
+    - mgis
     - libboost-python-devel
     - setuptools
     - miss3d
