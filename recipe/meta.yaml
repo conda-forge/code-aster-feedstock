@@ -20,7 +20,7 @@ source:
 
 build:
   number: 1
-  skip: true  # [osx or win or (python_impl == 'pypy')]
+  skip: true  # [osx or win or (python_impl == 'pypy') or py>=313]
   detect_binary_files_with_prefix: true
   rpaths:
     - lib/
