@@ -69,6 +69,7 @@ requirements:
     - diffutils
     - medcoupling
     - hdf5 >=1.14
+    - scipy
   run:
     - {{ pin_compatible('mgis', max_pin='x.x') }}
     - {{ pin_compatible('mfront', max_pin='x.x.x') }}
