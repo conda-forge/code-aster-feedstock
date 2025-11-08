@@ -12,7 +12,6 @@ package:
 source:
   - url: https://gitlab.com/codeaster/src/-/archive/${{ version }}/src-${{ version }}.tar.gz
     sha256: ${{ sha256 }}
-    file_name: ${{ name }}_${{ version }}.tar.gz
     patches:
       - patches/make_shared_use_env_FC_fallback.patch
   # Modified version of Metis changing integer sizes for indexes (IDXTYPEWIDTH 64) and including headers for direct linking to Aster
