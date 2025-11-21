@@ -6,7 +6,7 @@ context:
   sha256: 45f038df8129a1211cc3e43a5231f47485a845c2a9b863c2fc02d61924134453
   build_base: 0
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
-  build: ${{ build_base|int + mpi_num|int  }}
+  build: ${{ build_base|int + mpi_num|int }}
   mpi_prefix: ${{ mpi or 'nompi' }}
 
 package:
@@ -65,12 +65,8 @@ requirements:
   host:
     - python
     - numpy <2.0
-    - scotch >=7
-    - mfront
-    - mgis
     - libboost-python-devel
     - setuptools
-    - miss3d
     - libblas
     - liblapack
     - libxml2
@@ -78,6 +74,11 @@ requirements:
     - zlib
     - patch
     - diffutils
+    - scotch >=7
+    - mfront
+    - mgis
+    - miss3d
+    - metis
     - medcoupling
     - hdf5 >=1.14
     - scipy
