@@ -80,6 +80,21 @@ requirements:
     - miss3d
     - metis
     - medcoupling
+    - if: (mpi == 'nompi') and not win
+      then:
+        - mumps-seq
+    - if: (mpi != 'nompi') and not win
+      then:
+        - ${{ mpi }}
+        - scalapack >=2.2.0,<3
+        - mumps-mpi
+        - parmetis
+        - petsc
+        - slepc
+        - mpi4py
+        - petsc4py
+        - slepc4py
+    - mumps-include
     - hdf5 >=1.14
     - scipy
   run:
