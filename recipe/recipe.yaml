@@ -56,6 +56,7 @@ requirements:
     - flex
     - swig 4.2.1.*
     - hdf5 >=1.14
+    - waf ==2.1.5
   host:
     - python
     - numpy <2.0
