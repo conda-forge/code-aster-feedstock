@@ -4,6 +4,10 @@ context:
   name: code-aster
   version: 17.3.11
   sha256: 45f038df8129a1211cc3e43a5231f47485a845c2a9b863c2fc02d61924134453
+  build_base: 0
+  mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
+  build: ${{ build_base|int + mpi_num|int  }}
+  mpi_prefix: ${{ mpi or 'nompi' }}
 
 package:
   name: ${{ name|lower }}
@@ -21,6 +25,7 @@ source:
 build:
   number: 1
   skip: osx or win or (python_impl == 'pypy') or match(python, ">=3.13")
+  string: py${{ python | replace('.', '') }}_${{ mpi_prefix }}_h${{ hash }}_${{ build }}
   prefix_detection:
     ignore_binary_files: true
   dynamic_linking:
