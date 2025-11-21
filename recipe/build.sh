@@ -137,7 +137,3 @@ export LD_LIBRARY_PATH="${ASTER_LIBDIR}"
 
 # Everything should already be in the right place!
 # No file moving needed when using --spdir and --disable-aster-subdir
-
-
-
-
