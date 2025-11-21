@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#bash "${RECIPE_DIR}/build_asrun.sh"
+#bash "${RECIPE_DIR}/build_homard.sh"
+
 echo "mpi = ${mpi}"
 echo "build_type = ${build_type}"
 
