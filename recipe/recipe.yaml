@@ -127,8 +127,6 @@ tests:
         - ${{ compiler('fortran') }}
     script:
       - run_aster --info
-      - if: unix
-        then: homard || true
       - run_aster --test forma01a
       - run_aster --test sslp114a
       - run_aster --test mumps05a
