@@ -2,8 +2,8 @@ schema_version: 1
 
 context:
   name: code-aster
-  version: 17.3.7
-  sha256: 5b07d9c6e41c4c1816a55240e1c0a6a47ac0332bb361a15ebcd1859aac03fb08
+  version: 17.3.11
+  sha256: 45f038df8129a1211cc3e43a5231f47485a845c2a9b863c2fc02d61924134453
 
 package:
   name: ${{ name|lower }}
@@ -14,11 +14,9 @@ source:
     sha256: ${{ sha256 }}
     patches:
       - patches/make_shared_use_env_FC_fallback.patch
+      - patches/install_dir_override.patch
   # Modified version of Metis changing integer sizes for indexes (IDXTYPEWIDTH 64) and including headers for direct linking to Aster
   # Modified version of Mumps changing integer, complex and real sizes to four bytes (fortran kind=4), waf configuration and metis renumbering
-  - url: https://www.code-aster.org/FICHIERS/prerequisites/codeaster-prerequisites-20221225-oss.tar.gz
-    sha256: 40243be37c647c6df05437d5baadd4522b9cab5de97a76e1d1fb79d1645dd5fc
-    target_directory: codeaster-prerequisites/
 
 build:
   number: 1
@@ -33,24 +31,18 @@ build:
         then: lib/petsc4py/lib
     missing_dso_allowlist:
       - if: linux
-        then: "*/libbibfor.so"
-      - if: linux
-        then: "*/libbibfor_ext.so"
-      - if: linux
-        then: "*/libbibc.so"
-      - if: linux
-        then: "*/libbibcxx.so"
-      - if: linux
-        then: "*/libAsterGC.so"
-      - if: linux
-        then: lib64/aster/libaster.so
+        then:
+          - "*/libbibfor.so"
+          - "*/libbibfor_ext.so"
+          - "*/libbibc.so"
+          - "*/libbibcxx.so"
+          - "*/libAsterGC.so"
+          - lib64/aster/libaster.sozzz
 
 requirements:
   build:
     - ${{ compiler('c') }}
     - ${{ stdlib('c') }}
-    - ${{ compiler('cxx') }}
-    - ${{ compiler('fortran') }}
     - ${{ compiler('cxx') }}
     - ${{ compiler('fortran') }}
     - if: linux
