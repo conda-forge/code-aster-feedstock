@@ -3,7 +3,7 @@ About code-aster-feedstock
 
 Feedstock license: [BSD-3-Clause](https://github.com/conda-forge/code-aster-feedstock/blob/main/LICENSE.txt)
 
-Home: https://www.code-aster.org
+Home: https://www.code-aster.org/
 
 Package license: GPL-3.0-only AND CECILL-C AND Apache-2.0 AND LGPL-3.0-only
 
@@ -14,7 +14,6 @@ Development: https://gitlab.com/codeaster/
 Documentation: https://www.code-aster.org/V2/doc/default/en/index.php?man=commande
 
 Code_Aster offers a full range of multiphysical analysis and modelling methods that go well beyond the standard functions of a thermomechanical calculation code: from seismic analysis to porous media via acoustics, fatigue, stochastic dynamics, etc..
-
 
 Current build status
 ====================
@@ -138,12 +137,12 @@ it is possible to build and upload installable packages to the
 [conda-forge](https://anaconda.org/conda-forge) [anaconda.org](https://anaconda.org/)
 channel for Linux, Windows and OSX respectively.
 
-To manage the continuous integration and simplify feedstock maintenance
+To manage the continuous integration and simplify feedstock maintenance,
 [conda-smithy](https://github.com/conda-forge/conda-smithy) has been developed.
 Using the ``conda-forge.yml`` within this repository, it is possible to re-render all of
 this feedstock's supporting files (e.g. the CI configuration files) with ``conda smithy rerender``.
 
-For more information please check the [conda-forge documentation](https://conda-forge.org/docs/).
+For more information, please check the [conda-forge documentation](https://conda-forge.org/docs/).
 
 Terminology
 ===========
@@ -170,7 +169,7 @@ merged, the recipe will be re-built and uploaded automatically to the
 everybody to install and use from the `conda-forge` channel.
 Note that all branches in the conda-forge/code-aster-feedstock are
 immediately built and any created packages are uploaded, so PRs should be based
-on branches in forks and branches in the main repository should only be used to
+on branches in forks, and branches in the main repository should only be used to
 build distinct package versions.
 
 In order to produce a uniquely identifiable distribution:

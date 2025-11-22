@@ -1,0 +1,149 @@
+schema_version: 1
+
+context:
+  name: code-aster
+  version: 17.3.16
+  sha256: 406075e3b56775662eaa26d455bb7a955163152eceaf94d4d59a232c7abcff06
+  build_base: 0
+  mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
+  build: ${{ build_base|int + mpi_num|int }}
+  mpi_prefix: ${{ mpi or 'nompi' }}
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  - url: https://gitlab.com/codeaster/src/-/archive/${{ version }}/src-${{ version }}.tar.gz
+    sha256: ${{ sha256 }}
+    patches:
+      - patches/make_shared_use_env_FC_fallback.patch
+      - patches/install_dir_override.patch
+  # Modified version of Metis changing integer sizes for indexes (IDXTYPEWIDTH 64) and including headers for direct linking to Aster
+  # Modified version of Mumps changing integer, complex and real sizes to four bytes (fortran kind=4), waf configuration and metis renumbering
+  - url: https://www.code-aster.org/FICHIERS/prerequisites/codeaster-prerequisites-20221225-oss.tar.gz
+    sha256: 40243be37c647c6df05437d5baadd4522b9cab5de97a76e1d1fb79d1645dd5fc
+    target_directory: codeaster-prerequisites/
+
+build:
+  number: 1
+  skip: osx or win or (python_impl == 'pypy') or match(python, ">=3.13")
+  string: py${{ python | replace('.', '') }}_${{ mpi_prefix }}_h${{ hash }}_${{ build }}
+  prefix_detection:
+    ignore_binary_files: true
+  dynamic_linking:
+    rpaths:
+      - lib/
+      - lib/aster/
+      - if: mpi != "nompi"
+        then: lib/petsc4py/lib
+    missing_dso_allowlist:
+      - if: linux
+        then:
+          - "*/libbibfor.so"
+          - "*/libbibfor_ext.so"
+          - "*/libbibc.so"
+          - "*/libbibcxx.so"
+          - "*/libAsterGC.so"
+          - lib64/aster/libaster.sozzz
+
+requirements:
+  build:
+    - ${{ compiler('c') }}
+    - ${{ stdlib('c') }}
+    - ${{ compiler('cxx') }}
+    - ${{ compiler('fortran') }}
+    - if: linux
+      then: libgomp
+    - if: osx
+      then: llvm-openmp
+    - cmake <4
+    - if: not win
+      then: make
+    - bison
+    - flex
+    - swig 4.2.1.*
+    - hdf5 >=1.14
+    - waf ==2.1.5
+  host:
+    - python
+    - numpy <2.0
+    - libboost-python-devel
+    - setuptools
+    - libblas
+    - liblapack
+    - libxml2
+    - openblas
+    - zlib
+    - patch
+    - diffutils
+    - scotch >=7
+    - mfront
+    - mgis
+    - miss3d
+    - metis
+    - medcoupling
+    - if: (mpi == 'nompi') and not win
+      then:
+        - mumps-seq
+    - if: (mpi != 'nompi') and not win
+      then:
+        - ${{ mpi }}
+        - scalapack >=2.2.0,<3
+        - mumps-mpi
+        - parmetis
+        - petsc
+        - slepc
+        - mpi4py
+        - petsc4py
+        - slepc4py
+    - mumps-include
+    - hdf5 >=1.14
+    - scipy
+  run:
+    - ${{ pin_compatible('mgis', upper_bound='x.x') }}
+    - ${{ pin_compatible('mfront', upper_bound='x.x.x') }}
+    - ${{ pin_compatible('miss3d', upper_bound='x.x') }}
+    - ${{ pin_compatible('medcoupling', upper_bound='x.x') }}
+    - ${{ pin_compatible('libmed', upper_bound='x.x') }}
+    - ${{ pin_compatible('numpy', upper_bound='x.x') }}
+    - libscotch
+    - libboost-python-devel
+    - libopenblas
+    - libxml2
+    - python
+    - libxcrypt
+    - scipy
+  run_exports:
+    - ${{ pin_subpackage('code-aster', upper_bound='x.x') }}
+
+tests:
+  - python:
+      imports:
+        - code_aster
+        - medcoupling
+  - requirements:
+      run:
+        - ${{ compiler('fortran') }}
+        - cmake
+    script:
+      # This would run ALL sequential (currently passing 99%). Few failures due to missing xmgrace
+      #- run_ctest --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} -L submit ${{ '-L sequential' if mpi == 'nompi' else '' }} -LE need_data --timefactor=10.0 --only-failed-results --clean
+      - run_ctest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
+      - test -f $PREFIX/include/aster/aster.h
+
+about:
+  license: GPL-3.0-only AND CECILL-C AND Apache-2.0 AND LGPL-3.0-only
+  license_file:
+    - dep-licenses/
+  summary: "Code_Aster : a finite element solver"
+  description: |
+    Code_Aster offers a full range of multiphysical analysis and modelling methods that go well beyond the standard functions of a thermomechanical calculation code: from seismic analysis to porous media via acoustics, fatigue, stochastic dynamics, etc..
+  homepage: https://www.code-aster.org
+  repository: https://gitlab.com/codeaster/
+  documentation: https://www.code-aster.org/V2/doc/default/en/index.php?man=commande
+
+extra:
+  recipe-maintainers:
+    - Krande
+    - ldallolio
