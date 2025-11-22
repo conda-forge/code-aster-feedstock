@@ -129,7 +129,7 @@ tests:
     script:
       # This would run ALL sequential (currently passing 99%). Few failures due to missing xmgrace
       #- run_ctest --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{mpi}} -L submit ${{ '-L sequential' if mpi == 'nompi' else '' }} -LE need_data --timefactor=10.0 --only-failed-results --clean
-      - run_ctest -R forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{mpi}} --clean
+      - run_ctest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{mpi}} --clean
       - test -f $PREFIX/include/aster/aster.h
 
 about:
