@@ -1,10 +1,8 @@
 #!/bin/bash
 
-#bash "${RECIPE_DIR}/build_asrun.sh"
-#bash "${RECIPE_DIR}/build_homard.sh"
+bash "${RECIPE_DIR}/build_homard.sh"
 
 echo "mpi = ${mpi}"
-echo "build_type = ${build_type}"
 
 export CONFIG_PARAMETERS_addmem=2000
 export TFELHOME=${PREFIX}
@@ -17,7 +15,6 @@ export INCLUDES_PETSC="${PREFIX}/include"
 
 export INCLUDES_BOOST=${PREFIX}/include
 export LIBPATH_BOOST=${PREFIX}/lib
-export LIB_BOOST="libboost_python$CONDA_PY"
 
 export INCLUDES_MUMPS="${PREFIX}/include"
 if [[ "$mpi" == "nompi" ]]; then

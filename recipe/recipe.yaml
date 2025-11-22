@@ -2,8 +2,8 @@ schema_version: 1
 
 context:
   name: code-aster
-  version: 17.3.15
-  sha256: 99e6b6b9d6f463ad0205f458e0be6e0ce2e73cb5508a1faf273232dc49213f40
+  version: 17.3.16
+  sha256: 406075e3b56775662eaa26d455bb7a955163152eceaf94d4d59a232c7abcff06
   build_base: 0
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
   build: ${{ build_base|int + mpi_num|int }}
@@ -125,14 +125,16 @@ tests:
   - requirements:
       run:
         - ${{ compiler('fortran') }}
+        - cmake
     script:
-      - run_aster --info
-      - run_aster --test forma01a
-      - run_aster --test sslp114a
-      - run_aster --test mumps05a
-      - run_aster --test mumps01a
-      - run_aster --test umat001a
-      - run_aster --test zzzz121a
+      # This would run ALL sequential (currently passing 99%). Few failures due to missing xmgrace
+      #- run_ctest --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{mpi}} -L submit ${{ '-L sequential' if mpi == 'nompi' else '' }} -LE need_data --timefactor=10.0 --only-failed-results --clean
+      - run_aster -R forma01a
+      - run_ctest -R sslp114a
+      - run_ctest -R mumps05a
+      - run_ctest -R mumps01a
+      - run_ctest -R umat001a
+      - run_ctest -R zzzz121a
       - test -f $PREFIX/include/aster/aster.h
 
 about:
