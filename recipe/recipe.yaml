@@ -84,7 +84,7 @@ requirements:
     - mumps-include
     - if: (mpi == 'nompi') and not win
       then:
-        - mumps-seq ==5.7.3
+        - mumps-seq
     - if: (mpi != 'nompi') and not win
       then:
         - ${{ mpi }}
