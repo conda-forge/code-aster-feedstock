@@ -20,12 +20,8 @@ fortran_compiler:
 - gfortran
 fortran_compiler_version:
 - '14'
-libblas:
-- 3.9.* *netlib
 libboost_devel:
 - '1.88'
-liblapack:
-- 3.9.* *netlib
 libxml2:
 - '2.13'
 metis:
@@ -36,10 +32,6 @@ mpich:
 - '4'
 mumps_mpi:
 - 5.8.1
-mumps_seq:
-- 5.8.1
-openblas:
-- 0.3.*
 openmpi:
 - '5'
 petsc:

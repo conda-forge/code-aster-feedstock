@@ -68,10 +68,10 @@ requirements:
     - python
     - numpy <2.0
     - libboost-devel
-    - libblas
-    - liblapack
+    - libblas >=3.9.0
+    - liblapack >=3.9.0
     - libxml2
-    - openblas
+    - openblas >=0.3.20
     - zlib
     - scotch
     - mfront
@@ -84,7 +84,7 @@ requirements:
     - mumps-include
     - if: (mpi == 'nompi') and not win
       then:
-        - mumps-seq
+        - mumps-seq ==5.7.3
     - if: (mpi != 'nompi') and not win
       then:
         - ${{ mpi }}
