@@ -28,7 +28,7 @@ source:
 build:
   number: 1
   skip: osx or win or (python_impl == 'pypy') or match(python, ">=3.13")
-  string: py${{ python | replace('.', '') }}_${{ mpi_prefix }}_h${{ hash }}_${{ build }}
+  string: py${{ python | version_to_buildstring }}_${{ mpi_prefix }}_h${{ hash }}_${{ build }}
   prefix_detection:
     ignore_binary_files: true
   dynamic_linking:
@@ -45,7 +45,7 @@ build:
           - "*/libbibc.so"
           - "*/libbibcxx.so"
           - "*/libAsterGC.so"
-          - lib64/aster/libaster.sozzz
+          - lib64/aster/libaster.so
 
 requirements:
   build:
@@ -65,6 +65,8 @@ requirements:
     - swig 4.2.1.*
     - hdf5 >=1.14
     - waf ==2.1.5
+    - if: "mpi != 'nompi'"
+      then: ${{ mpi }}
   host:
     - python
     - numpy <2.0
