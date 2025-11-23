@@ -78,8 +78,9 @@ requirements:
     - mgis
     - miss3d
     - metis
+    - hdf5 >=1.14 *${{ mpi }}*
+    - libmed * *${{ mpi }}*
     - medcoupling
-    - hdf5 >=1.14
     - scipy
     - mumps-include
     - if: (mpi == 'nompi') and not win
