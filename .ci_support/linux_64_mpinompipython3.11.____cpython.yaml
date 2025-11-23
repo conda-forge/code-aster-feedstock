@@ -22,7 +22,7 @@ fortran_compiler_version:
 - '14'
 libblas:
 - 3.9.* *netlib
-libboost_python_devel:
+libboost_devel:
 - '1.88'
 liblapack:
 - 3.9.* *netlib
@@ -41,7 +41,7 @@ mumps_seq:
 openblas:
 - 0.3.*
 openmpi:
-- '4'
+- '5'
 petsc:
 - '3.24'
 petsc4py:
@@ -54,6 +54,8 @@ python:
 - 3.11.* *_cpython
 python_impl:
 - cpython
+scotch:
+- 7.0.10
 slepc:
 - '3.24'
 slepc4py:

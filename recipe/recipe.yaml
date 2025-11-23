@@ -55,11 +55,8 @@ requirements:
     - ${{ compiler('fortran') }}
     - if: linux
       then: libgomp
-    - if: osx
-      then: llvm-openmp
     - cmake <4
-    - if: not win
-      then: make
+    - setuptools
     - bison
     - flex
     - swig 4.2.1.*
@@ -70,21 +67,21 @@ requirements:
   host:
     - python
     - numpy <2.0
-    - libboost-python-devel
-    - setuptools
+    - libboost-devel
     - libblas
     - liblapack
     - libxml2
     - openblas
     - zlib
-    - patch
-    - diffutils
-    - scotch >=7
+    - scotch
     - mfront
     - mgis
     - miss3d
     - metis
     - medcoupling
+    - hdf5 >=1.14
+    - scipy
+    - mumps-include
     - if: (mpi == 'nompi') and not win
       then:
         - mumps-seq
@@ -99,9 +96,6 @@ requirements:
         - mpi4py
         - petsc4py
         - slepc4py
-    - mumps-include
-    - hdf5 >=1.14
-    - scipy
   run:
     - ${{ pin_compatible('mgis', upper_bound='x.x') }}
     - ${{ pin_compatible('mfront', upper_bound='x.x.x') }}
@@ -109,8 +103,6 @@ requirements:
     - ${{ pin_compatible('medcoupling', upper_bound='x.x') }}
     - ${{ pin_compatible('libmed', upper_bound='x.x') }}
     - ${{ pin_compatible('numpy', upper_bound='x.x') }}
-    - libscotch
-    - libboost-python-devel
     - libopenblas
     - libxml2
     - python
