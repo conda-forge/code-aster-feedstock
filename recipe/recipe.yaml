@@ -6,7 +6,7 @@ context:
   sha256: 406075e3b56775662eaa26d455bb7a955163152eceaf94d4d59a232c7abcff06
   build_base: 0
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
-  build: ${{ build_base|int + mpi_num|int }}
+  build: 2
   mpi_prefix: ${{ mpi or 'nompi' }}
 
 package:
@@ -72,7 +72,7 @@ requirements:
     - setuptools
     - libblas
     - liblapack
-    - libxml2
+    - libxml2-devel
     - openblas
     - zlib
     - patch
@@ -110,7 +110,7 @@ requirements:
     - libscotch
     - libboost-python-devel
     - libopenblas
-    - libxml2
+    - libxml2-devel
     - python
     - libxcrypt
     - scipy
