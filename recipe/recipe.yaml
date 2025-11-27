@@ -80,7 +80,7 @@ requirements:
     - metis
     - hdf5 >=1.14 *${{ mpi }}*
     - libmed * *${{ mpi }}*
-    - medcoupling
+    - medcoupling 9.14.* *${{ mpi }}*
     - scipy
     - mumps-include
     - if: (mpi == 'nompi') and not win
