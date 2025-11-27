@@ -1,2 +1,6 @@
 mpi:
   - nompi
+  - openmpi
+
+openmpi:
+  - '5'

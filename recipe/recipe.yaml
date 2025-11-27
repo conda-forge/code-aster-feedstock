@@ -4,7 +4,7 @@ context:
   name: code-aster
   version: 17.3.16
   sha256: 406075e3b56775662eaa26d455bb7a955163152eceaf94d4d59a232c7abcff06
-  build_base: 0
+  build_base: 1
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
   build: ${{ build_base|int + mpi_num|int }}
   mpi_prefix: ${{ mpi or 'nompi' }}
@@ -27,8 +27,8 @@ source:
 
 build:
   number: 1
-  skip: osx or win or (python_impl == 'pypy') or match(python, ">=3.13")
-  string: py${{ python | replace('.', '') }}_${{ mpi_prefix }}_h${{ hash }}_${{ build }}
+  skip: osx or win or (python_impl == 'pypy')
+  string: py${{ python | version_to_buildstring }}_${{ mpi_prefix }}_h${{ hash }}_${{ build }}
   prefix_detection:
     ignore_binary_files: true
   dynamic_linking:
@@ -45,7 +45,7 @@ build:
           - "*/libbibc.so"
           - "*/libbibcxx.so"
           - "*/libAsterGC.so"
-          - lib64/aster/libaster.sozzz
+          - lib64/aster/libaster.so
 
 requirements:
   build:
@@ -55,34 +55,33 @@ requirements:
     - ${{ compiler('fortran') }}
     - if: linux
       then: libgomp
-    - if: osx
-      then: llvm-openmp
     - cmake <4
-    - if: not win
-      then: make
+    - setuptools
     - bison
     - flex
     - swig 4.2.1.*
-    - hdf5 >=1.14
     - waf ==2.1.5
+    - if: "mpi != 'nompi'"
+      then: ${{ mpi }}
   host:
     - python
-    - numpy <2.0
-    - libboost-python-devel
-    - setuptools
-    - libblas
-    - liblapack
+    - numpy
+    - libboost-devel
+    - libblas >=3.9.0
+    - liblapack >=3.9.0
     - libxml2
-    - openblas
+    - openblas >=0.3.20
     - zlib
-    - patch
-    - diffutils
-    - scotch >=7
+    - scotch
     - mfront
     - mgis
     - miss3d
     - metis
-    - medcoupling
+    - hdf5 >=1.14 *${{ mpi }}*
+    - libmed * *${{ mpi }}*
+    - medcoupling * *${{ mpi }}*
+    - scipy
+    - mumps-include
     - if: (mpi == 'nompi') and not win
       then:
         - mumps-seq
@@ -97,9 +96,6 @@ requirements:
         - mpi4py
         - petsc4py
         - slepc4py
-    - mumps-include
-    - hdf5 >=1.14
-    - scipy
   run:
     - ${{ pin_compatible('mgis', upper_bound='x.x') }}
     - ${{ pin_compatible('mfront', upper_bound='x.x.x') }}
@@ -107,13 +103,14 @@ requirements:
     - ${{ pin_compatible('medcoupling', upper_bound='x.x') }}
     - ${{ pin_compatible('libmed', upper_bound='x.x') }}
     - ${{ pin_compatible('numpy', upper_bound='x.x') }}
-    - libscotch
-    - libboost-python-devel
     - libopenblas
     - libxml2
     - python
     - libxcrypt
     - scipy
+    - if: (mpi != 'nompi') and not win
+      then:
+        - petsc4py
   run_exports:
     - ${{ pin_subpackage('code-aster', upper_bound='x.x') }}
 
