@@ -22,8 +22,8 @@ fortran_compiler_version:
 - '14'
 libboost_devel:
 - '1.88'
-libxml2:
-- '2.13'
+libxml2_devel:
+- '2.14'
 metis:
 - 5.1.0
 mpi:

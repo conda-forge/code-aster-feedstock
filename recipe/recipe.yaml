@@ -6,7 +6,7 @@ context:
   sha256: 406075e3b56775662eaa26d455bb7a955163152eceaf94d4d59a232c7abcff06
   build_base: 1
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
-  build: ${{ build_base|int + mpi_num|int }}
+  build: 2
   mpi_prefix: ${{ mpi or 'nompi' }}
 
 package:
@@ -69,7 +69,7 @@ requirements:
     - libboost-devel
     - libblas >=3.9.0
     - liblapack >=3.9.0
-    - libxml2
+    - libxml2-devel
     - openblas >=0.3.20
     - zlib
     - scotch
@@ -104,7 +104,7 @@ requirements:
     - ${{ pin_compatible('libmed', upper_bound='x.x') }}
     - ${{ pin_compatible('numpy', upper_bound='x.x') }}
     - libopenblas
-    - libxml2
+    - libxml2-devel
     - python
     - libxcrypt
     - scipy
