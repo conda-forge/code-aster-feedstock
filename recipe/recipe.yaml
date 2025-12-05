@@ -4,9 +4,9 @@ context:
   name: code-aster
   version: "18.0.12"
   sha256: 29c7732f0c682d63a28d0fb6fee991c66565f185ae7c8e80f22911cf32529552
-  build_base: 1
-  mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
   build: 0
+  mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
+  build_num: ${{ build|int + mpi_num }}
   mpi_prefix: ${{ mpi or 'nompi' }}
 
 package:
@@ -25,9 +25,9 @@ source:
     target_directory: codeaster-prerequisites/
 
 build:
-  number: 1
+  number: ${{ build_num }}
   skip: osx or win or (python_impl == 'pypy')
-  string: py${{ python | version_to_buildstring }}_${{ mpi_prefix }}_h${{ hash }}_${{ build }}
+  string: py${{ python | version_to_buildstring }}_${{ mpi_prefix }}_h${{ hash }}_${{ build_num }}
   prefix_detection:
     ignore_binary_files: true
   dynamic_linking:
