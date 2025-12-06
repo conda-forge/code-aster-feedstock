@@ -74,7 +74,6 @@ if [[ "$mpi" == "nompi" ]]; then
     --libdir="${PREFIX}/lib" \
     --spdir="${SP_DIR}" \
     --disable-aster-subdir \
-    --install-tests \
     --disable-mpi \
     --disable-petsc \
     --without-hg \
@@ -108,9 +107,7 @@ else
     --libdir="${PREFIX}/lib" \
     --spdir="${SP_DIR}" \
     --disable-aster-subdir \
-    --install-tests \
     --without-hg
-
 
   if [[ "${build_type}" == "debug" ]]; then
       waf install_debug

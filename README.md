@@ -3,6 +3,10 @@ About code-aster-feedstock
 
 Feedstock license: [BSD-3-Clause](https://github.com/conda-forge/code-aster-feedstock/blob/main/LICENSE.txt)
 
+
+About code-aster
+----------------
+
 Home: https://www.code-aster.org/
 
 Package license: GPL-3.0-only AND CECILL-C AND Apache-2.0 AND LGPL-3.0-only
@@ -14,6 +18,22 @@ Development: https://gitlab.com/codeaster/
 Documentation: https://www.code-aster.org/V2/doc/default/en/index.php?man=commande
 
 Code_Aster offers a full range of multiphysical analysis and modelling methods that go well beyond the standard functions of a thermomechanical calculation code: from seismic analysis to porous media via acoustics, fatigue, stochastic dynamics, etc..
+
+About code-aster
+----------------
+
+Home: https://www.code-aster.org
+
+Package license: GPL-3.0-only AND CECILL-C AND Apache-2.0 AND LGPL-3.0-only
+
+Summary: Code_Aster : a finite element solver
+
+Development: https://gitlab.com/codeaster/
+
+Documentation: https://www.code-aster.org/V2/doc/default/en/index.php?man=commande
+
+Code_Aster offers a full range of multiphysical analysis and modelling methods that go well beyond the standard functions of a thermomechanical calculation code: from seismic analysis to porous media via acoustics, fatigue, stochastic dynamics, etc..
+
 
 Current build status
 ====================
@@ -102,6 +122,20 @@ Current build status
                   <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/code-aster-feedstock?branchName=main&jobName=linux&configuration=linux%20linux_64_mpiopenmpipython3.14.____cp314" alt="variant">
                 </a>
               </td>
+            </tr><tr>
+              <td>osx_64</td>
+              <td>
+                <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=19417&branchName=main">
+                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/code-aster-feedstock?branchName=main&jobName=osx&configuration=osx%20osx_64_" alt="variant">
+                </a>
+              </td>
+            </tr><tr>
+              <td>win_64</td>
+              <td>
+                <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=19417&branchName=main">
+                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/code-aster-feedstock?branchName=main&jobName=win&configuration=win%20win_64_" alt="variant">
+                </a>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -116,6 +150,7 @@ Current release info
 | Name | Downloads | Version | Platforms |
 | --- | --- | --- | --- |
 | [![Conda Recipe](https://img.shields.io/badge/recipe-code--aster-green.svg)](https://anaconda.org/conda-forge/code-aster) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/code-aster.svg)](https://anaconda.org/conda-forge/code-aster) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/code-aster.svg)](https://anaconda.org/conda-forge/code-aster) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/code-aster.svg)](https://anaconda.org/conda-forge/code-aster) |
+| [![Conda Recipe](https://img.shields.io/badge/recipe-code--aster--tests-green.svg)](https://anaconda.org/conda-forge/code-aster-tests) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/code-aster-tests.svg)](https://anaconda.org/conda-forge/code-aster-tests) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/code-aster-tests.svg)](https://anaconda.org/conda-forge/code-aster-tests) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/code-aster-tests.svg)](https://anaconda.org/conda-forge/code-aster-tests) |
 
 Installing code-aster
 =====================
@@ -127,16 +162,16 @@ conda config --add channels conda-forge
 conda config --set channel_priority strict
 ```
 
-Once the `conda-forge` channel has been enabled, `code-aster` can be installed with `conda`:
+Once the `conda-forge` channel has been enabled, `code-aster, code-aster-tests` can be installed with `conda`:
 
 ```
-conda install code-aster
+conda install code-aster code-aster-tests
 ```
 
 or with `mamba`:
 
 ```
-mamba install code-aster
+mamba install code-aster code-aster-tests
 ```
 
 It is possible to list all of the versions of `code-aster` available on your platform with `conda`:
