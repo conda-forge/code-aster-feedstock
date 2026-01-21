@@ -18,6 +18,8 @@ source:
     sha256: ${{ sha256 }}
     patches:
       - patches/make_shared_use_env_FC_fallback.patch
+      - patches/add_missing_MPI_conditional_in_AsterToMedWriter.patch
+      - patches/fix_conditional_checks_for_mfiodw.patch
   # Modified version of Metis changing integer sizes for indexes (IDXTYPEWIDTH 64) and including headers for direct linking to Aster
   # Modified version of Mumps changing integer, complex and real sizes to four bytes (fortran kind=4), waf configuration and metis renumbering
   - url: https://www.code-aster.org/FICHIERS/prerequisites/codeaster-prerequisites-20221225-oss.tar.gz

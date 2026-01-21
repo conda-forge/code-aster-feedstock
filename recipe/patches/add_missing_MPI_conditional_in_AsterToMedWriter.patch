@@ -1,0 +1,205 @@
+Subject: [PATCH] guard: add conditional compilation for MPI-specific code in AsterToMedWriter
+---
+Index: bibcxx/IOManager/AsterToMedWriter.h
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/bibcxx/IOManager/AsterToMedWriter.h b/bibcxx/IOManager/AsterToMedWriter.h
+--- a/bibcxx/IOManager/AsterToMedWriter.h	(revision b7a0c73bc926b6950a647b0fdc92ae9aa29a1474)
++++ b/bibcxx/IOManager/AsterToMedWriter.h	(date 1768937373729)
+@@ -43,13 +43,13 @@
+     enum entityType { Cells, Nodes };
+     void _createGroups( const BaseMesh &, MedMeshPtr, std::vector< med_int > &, const VectorLong &,
+                         entityType, bool );
+-
++#ifdef ASTER_HAVE_MPI
+     void _buildFilterInformations(
+         const VectorLong &nodeVector, const VectorLong &cellVector, JeveuxVectorLong cellTypeVec,
+         std::array< med_int, 3 > &cumNodeNb,
+         std::map< med_geometry_type, std::array< med_int, 3 > > &mapMedTypeCellsByProc,
+         VectorOfVectorsLong & );
+-
++#endif
+     void _createMedGlobalNumbering( VectorLong &globNum, const VectorLong &innerNodes, int startNum,
+                                     int localNodeNumber );
+ 
+@@ -77,7 +77,7 @@
+     /** @brief print Mesh object */
+     bool printMesh( const Mesh &, const std::filesystem::path &filename, bool local = true,
+                     const std::string &meshName = "" );
+-
++#ifdef ASTER_HAVE_MPI
+     /** @brief print ParallelMesh object */
+     bool printMesh( const ParallelMesh &, const std::filesystem::path &filename, bool local = true,
+                     const std::string &meshName = "" );
+@@ -85,13 +85,13 @@
+     /** @brief print ConnectionMesh object */
+     bool printMesh( const ConnectionMesh &, const std::filesystem::path &filename,
+                     bool local = true, const std::string &meshName = "" );
+-
++#endif
+     /** @brief print MeshPtr object */
+     bool printMesh( const MeshPtr &mesh, const std::filesystem::path &filename, bool local = true,
+                     const std::string &meshName = "" ) {
+         return printMesh( *mesh, filename, local, meshName );
+     };
+-
++#ifdef ASTER_HAVE_MPI
+     /** @brief print ParallelMeshPtr object */
+     bool printMesh( const ParallelMeshPtr &mesh, const std::filesystem::path &filename,
+                     bool local = true, const std::string &meshName = "" ) {
+@@ -103,7 +103,7 @@
+                     bool local = true, const std::string &meshName = "" ) {
+         return printMesh( *mesh, filename, local, meshName );
+     };
+-
++#endif
+     /** @brief print ResultPtr object */
+     bool printResult( const ResultPtr &, const std::filesystem::path &filename, bool local = true );
+ #endif
+Index: bibcxx/IOManager/AsterToMedWriter.cxx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/bibcxx/IOManager/AsterToMedWriter.cxx b/bibcxx/IOManager/AsterToMedWriter.cxx
+--- a/bibcxx/IOManager/AsterToMedWriter.cxx	(revision b7a0c73bc926b6950a647b0fdc92ae9aa29a1474)
++++ b/bibcxx/IOManager/AsterToMedWriter.cxx	(date 1768937373728)
+@@ -188,7 +188,7 @@
+         irange( (ASTERINTEGER)0, (ASTERINTEGER)( toPrint.getNumberOfCells() - 1 ) );
+     return _printMeshFromList( toPrint, filename, nodeList, cellList, local, meshName );
+ };
+-
++#ifdef ASTER_HAVE_MPI
+ bool AsterToMedWriter::printMesh( const ConnectionMesh &toPrint,
+                                   const std::filesystem::path &filename, bool local,
+                                   const std::string &meshName ) {
+@@ -213,8 +213,6 @@
+         cellList = toPrint.getInnerCells();
+     }
+     auto cret = _printMeshFromList( toPrint, filename, nodeList, cellList, local, meshName );
+-
+-#ifdef ASTER_HAVE_MPI
+     if ( local ) {
+         auto fr = MedFileReader();
+         fr.open( filename, MedReadWrite );
+@@ -260,10 +258,9 @@
+             ++count;
+         }
+     }
+-#endif
+     return cret;
+ };
+-
++#endif
+ bool AsterToMedWriter::_printMeshFromList( const BaseMesh &toPrint,
+                                            const std::filesystem::path &filename,
+                                            const VectorLong &nodeList, const VectorLong &cellList,
+@@ -291,8 +288,10 @@
+     std::map< med_geometry_type, std::array< med_int, 3 > > mapMedTypeCellsByProc;
+     // sort cells by type and create med filter informations
+     if ( !local ) {
++#ifdef ASTER_HAVE_MPI
+         _buildFilterInformations( nodeList, cellList, cellTypeVec, cumNodeNb, mapMedTypeCellsByProc,
+                                   cellByType );
++#endif
+     } else {
+         _sortCellsByType( cellList, cellTypeVec, cellByType );
+     }
+@@ -400,7 +399,7 @@
+     }
+     return true;
+ };
+-
++#ifdef ASTER_HAVE_MPI
+ std::set< std::set< std::string > > gatherFamilies( std::set< std::set< std::string > > in ) {
+     VectorString grpVec, allGrpVec;
+     VectorLong grpNum, allGrpNum;
+@@ -424,7 +423,7 @@
+     }
+     return out;
+ };
+-
++#endif
+ void AsterToMedWriter::_createGroups( const BaseMesh &toPrint, MedMeshPtr mesh,
+                                       std::vector< med_int > &allEntityFamily,
+                                       const VectorLong &indexes, entityType entType, bool local ) {
+@@ -450,8 +449,11 @@
+         families.insert( family );
+     }
+     // gather all families over procs
++#ifdef ASTER_HAVE_MPI
+     auto allFamilies = local ? families : gatherFamilies( families );
+-
++#else
++    auto allFamilies = families;
++#endif
+     // add families in med mesh
+     // and build famToInt: from family (set of groups) to family id
+     int familyCount = 1;
+@@ -498,7 +500,7 @@
+         cellIdByType[cellTypeMod - 1].push_back( cellId );
+     }
+ };
+-
++#ifdef ASTER_HAVE_MPI
+ void AsterToMedWriter::_buildFilterInformations(
+     const VectorLong &nodeVector, const VectorLong &cellVector, JeveuxVectorLong cellTypeVec,
+     std::array< med_int, 3 > &cumNodeNb,
+@@ -549,6 +551,7 @@
+         }
+     }
+ };
++#endif
+ 
+ void AsterToMedWriter::_createMedGlobalNumbering( VectorLong &globNum, const VectorLong &innerNodes,
+                                                   int startNum, int localNodeNumber ) {
+@@ -566,8 +569,10 @@
+     // first, print mesh if needed
+     const auto meshInResu = resu->getMesh();
+     if ( meshInResu->isParallel() ) {
++#ifdef ASTER_HAVE_MPI
+         const auto pMesh0 = std::dynamic_pointer_cast< ParallelMesh >( meshInResu );
+         printMesh( pMesh0, filename, local );
++#endif
+     } else {
+         const auto mesh0 = std::dynamic_pointer_cast< Mesh >( meshInResu );
+         printMesh( mesh0, filename, local );
+@@ -592,8 +597,10 @@
+         nodeList = meshInResu->getInnerNodes();
+         cellList = meshInResu->getInnerCells();
+         // sort cells by type and create med filter informations
++#ifdef ASTER_HAVE_MPI
+         _buildFilterInformations( nodeList, cellList, cellTypeVec, cumNodeNb, mapMedTypeCellsByProc,
+                                   cellByType );
++#endif
+     }
+ 
+     const auto indexes = resu->getIndexes();
+Index: bibcxx/PythonBindings/AsterToMedWriterInterface.cxx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/bibcxx/PythonBindings/AsterToMedWriterInterface.cxx b/bibcxx/PythonBindings/AsterToMedWriterInterface.cxx
+--- a/bibcxx/PythonBindings/AsterToMedWriterInterface.cxx	(revision b7a0c73bc926b6950a647b0fdc92ae9aa29a1474)
++++ b/bibcxx/PythonBindings/AsterToMedWriterInterface.cxx	(date 1768937373729)
+@@ -50,7 +50,7 @@
+             )",
+             py::arg( "mesh" ), py::arg( "path" ), py::arg( "parallelPrint" ) = false,
+             py::arg( "mesh_name" ) = "" );
+-
++#ifdef ASTER_HAVE_MPI
+     c1.def( "printMesh",
+             py::overload_cast< const ParallelMeshPtr &, const std::filesystem::path &, bool,
+                                const std::string & >( &AsterToMedWriter::printMesh ),
+@@ -80,7 +80,7 @@
+             )",
+             py::arg( "mesh" ), py::arg( "path" ), py::arg( "parallelPrint" ) = false,
+             py::arg( "mesh_name" ) = "" );
+-
++#endif
+     c1.def( "printResult", &AsterToMedWriter::printResult,
+             R"(
+ Print result to med file
