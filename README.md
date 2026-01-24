@@ -234,6 +234,3 @@ Feedstock Maintainers
 * [@Krande](https://github.com/Krande/)
 * [@ldallolio](https://github.com/ldallolio/)
 
-
-<!-- dummy commit to enable rerendering -->
-
