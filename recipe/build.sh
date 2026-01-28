@@ -72,7 +72,7 @@ if [[ "$mpi" == "nompi" ]]; then
     --enable-scotch \
     --enable-mfront \
     --libdir="${PREFIX}/lib" \
-    --spdir="${SP_DIR}" \
+    --site-packages="${SP_DIR}" \
     --disable-aster-subdir \
     --install-tests \
     --disable-mpi \
@@ -106,7 +106,7 @@ else
     --prefix="${PREFIX}" \
     --enable-mpi \
     --libdir="${PREFIX}/lib" \
-    --spdir="${SP_DIR}" \
+    --site-packages="${SP_DIR}" \
     --disable-aster-subdir \
     --install-tests \
     --without-hg
