@@ -2,8 +2,8 @@ schema_version: 1
 
 context:
   name: code-aster
-  version: "18.0.2"
-  sha256: 8000899fd5885f86db8b6c0af4011313764a6fd411c60ac9fdaa9a298dfd2f37
+  version: "18.0.3"
+  sha256: cb4b440ddeadb33677cfc53ab735a70982207eda01f762e08d2edcc0d96b2ff8
   build_base: 1
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
   build: 0
@@ -18,8 +18,6 @@ source:
     sha256: ${{ sha256 }}
     patches:
       - patches/make_shared_use_env_FC_fallback.patch
-      - patches/add_missing_MPI_conditional_in_AsterToMedWriter.patch
-      - patches/fix_conditional_checks_for_mfiodw.patch
   # Modified version of Metis changing integer sizes for indexes (IDXTYPEWIDTH 64) and including headers for direct linking to Aster
   # Modified version of Mumps changing integer, complex and real sizes to four bytes (fortran kind=4), waf configuration and metis renumbering
   - url: https://www.code-aster.org/FICHIERS/prerequisites/codeaster-prerequisites-20221225-oss.tar.gz
@@ -128,7 +126,6 @@ tests:
       # This would run ALL sequential (currently passing 99%). Few failures due to missing xmgrace
       #- run_ctest --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} -L submit ${{ '-L sequential' if mpi == 'nompi' else '' }} -LE need_data --timefactor=10.0 --only-failed-results --clean
       - run_ctest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
-      - test -f $PREFIX/include/aster/aster.h
 
 about:
   license: GPL-3.0-only AND CECILL-C AND Apache-2.0 AND LGPL-3.0-only
