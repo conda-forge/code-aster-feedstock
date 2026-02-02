@@ -1,10 +1,10 @@
 context:
   name: code-aster
-  version: "17.3.17"
-  sha256: 07f1cc64df1536b25152671a25715144d74a8e908b78e4e07ed52a962792dec9
-  build: 0
+  version: "18.0.4"
+  sha256: 9324ed09a3aecb25a417e9d7096c841e354a3276529f0831ed12b4553a58ce4d
+  build_base: 1
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
-  build_num: ${{ build|int + mpi_num }}
+  build: 0
   mpi_prefix: ${{ mpi or 'nompi' }}
 
 recipe:
@@ -16,7 +16,6 @@ source:
     sha256: ${{ sha256 }}
     patches:
       - patches/make_shared_use_env_FC_fallback.patch
-      - patches/install_dir_override.patch
   # Modified version of Metis changing integer sizes for indexes (IDXTYPEWIDTH 64) and including headers for direct linking to Aster
   # Modified version of Mumps changing integer, complex and real sizes to four bytes (fortran kind=4), waf configuration and metis renumbering
   - url: https://www.code-aster.org/FICHIERS/prerequisites/codeaster-prerequisites-20221225-oss.tar.gz
