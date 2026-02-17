@@ -6,7 +6,7 @@ context:
   sha256: 483a94a379128c872609ebab8ce498d6dd9704f2fa769de32bf461488e80931e
   build_base: 1
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
-  build: 0
+  build: 1
   mpi_prefix: ${{ mpi or 'nompi' }}
 
 package:
