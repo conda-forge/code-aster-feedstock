@@ -31,9 +31,9 @@ mpi:
 mpich:
 - '4'
 mumps_mpi:
-- 5.8.1
+- 5.8.2
 mumps_seq:
-- 5.8.1
+- 5.8.2
 numpy:
 - '2'
 openmpi:
@@ -51,7 +51,7 @@ python:
 python_impl:
 - cpython
 scotch:
-- 7.0.10
+- 7.0.11
 slepc:
 - '3.24'
 slepc4py:
