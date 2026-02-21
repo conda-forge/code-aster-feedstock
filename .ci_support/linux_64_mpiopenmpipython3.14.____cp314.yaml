@@ -51,7 +51,7 @@ python:
 python_impl:
 - cpython
 scotch:
-- 7.0.10
+- 7.0.11
 slepc:
 - '3.24'
 slepc4py:
