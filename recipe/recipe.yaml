@@ -2,8 +2,8 @@ schema_version: 1
 
 context:
   name: code-aster
-  version: "18.0.12"
-  sha256: 29c7732f0c682d63a28d0fb6fee991c66565f185ae7c8e80f22911cf32529552
+  version: "18.0.14"
+  sha256: 4234c5a5b756c25634eb1258b4560338d6936f5f1d375b6ccc1bddbe9654d000
   build_base: 1
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
   build: 0
