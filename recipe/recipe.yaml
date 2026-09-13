@@ -52,6 +52,7 @@ outputs:
       name: ${{ name }}
       version: ${{ version }}
     build:
+      script: build.sh
       string: py${{ python | version_to_buildstring }}_${{ mpi_prefix }}_h${{ hash }}_${{ build_num }}
       prefix_detection:
         ignore_binary_files: true
