@@ -4,7 +4,7 @@ context:
   name: code-aster
   version: "18.0.12"
   sha256: 29c7732f0c682d63a28d0fb6fee991c66565f185ae7c8e80f22911cf32529552
-  build: 0
+  build: 2
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
   build_num: ${{ build|int + mpi_num }}
   mpi_prefix: ${{ mpi or 'nompi' }}
@@ -26,20 +26,32 @@ source:
 
 build:
   number: ${{ build_num }}
+  skip: osx or win or (python_impl == 'pypy')
 
 outputs:
   - package:
       name: ${{ name }}-tests
       version: ${{ version }}
     build:
+      number: ${{ build }}
       script: copy_tests.sh
       noarch: generic
-      skip: osx or win or (mpi != 'nompi') or (python | version_to_buildstring != '310') or (target_platform != 'linux-64')
+      # noarch output: build it in a single CI job (linux-64, nompi, python 3.10) only
+      skip: (mpi != 'nompi') or (python | version_to_buildstring != '310') or not (linux and x86_64)
+      variant:
+        ignore_keys:
+          - mpi
+          - python
+    tests:
+      - package_contents:
+          files:
+            - share/aster/tests/forma01a.export
+            - share/aster/tests/zzzz121a.export
+
   - package:
       name: ${{ name }}
       version: ${{ version }}
     build:
-      skip: osx or win or (python_impl == 'pypy')
       string: py${{ python | version_to_buildstring }}_${{ mpi_prefix }}_h${{ hash }}_${{ build_num }}
       prefix_detection:
         ignore_binary_files: true
@@ -131,16 +143,44 @@ outputs:
           imports:
             - code_aster
             - medcoupling
-      - requirements:
-          run:
-            - ${{ compiler('fortran') }}
-            - cmake
-            - ${{ name }}-tests ==${{ version }}
-        script:
-          # This would run ALL sequential (currently passing 99%). Few failures due to missing xmgrace
-          #- run_ctest --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} -L submit ${{ '-L sequential' if mpi == 'nompi' else '' }} -LE need_data --timefactor=10.0 --only-failed-results --clean
-          - run_ctest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
-          - test -f $PREFIX/include/aster/aster.h
+      - package_contents:
+          include:
+            - aster/aster.h
+          files:
+            exists:
+              - share/aster/CTestTestfile.cmake
+              - share/aster/run_aster_for_ctest
+            # testcases are shipped by code-aster-tests
+            not_exists:
+              - share/aster/tests/**
+      # This would run ALL sequential (currently passing 99%). Few failures due to missing xmgrace
+      #- run_ctest --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} -L submit ${{ '-L sequential' if mpi == 'nompi' else '' }} -LE need_data --timefactor=10.0 --only-failed-results --clean
+      - if: (mpi == 'nompi') and (python | version_to_buildstring == '310')
+        then:
+          # code-aster-tests is built in this job: run against the installed testcases (share/aster/tests)
+          requirements:
+            run:
+              - ${{ compiler('fortran') }}
+              - cmake
+              - ${{ name }}-tests ==${{ version }}
+          script:
+            - run_ctest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
+        else:
+          # code-aster-tests is not available in the other jobs: only copy the few testcases needed
+          files:
+            source:
+              - astest/forma01a.*
+              - astest/sslp114a.*
+              - astest/mumps05a.*
+              - astest/mumps01a.*
+              - astest/umat001a.*
+              - astest/zzzz121a.*
+          requirements:
+            run:
+              - ${{ compiler('fortran') }}
+              - cmake
+          script:
+            - run_ctest --testdir=astest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
 
 about:
   license: GPL-3.0-only AND CECILL-C AND Apache-2.0 AND LGPL-3.0-only

@@ -74,6 +74,7 @@ if [[ "$mpi" == "nompi" ]]; then
     --libdir="${PREFIX}/lib" \
     --site-packages="${SP_DIR}" \
     --disable-aster-subdir \
+    --install-tests \
     --disable-mpi \
     --disable-petsc \
     --without-hg \
@@ -107,6 +108,7 @@ else
     --libdir="${PREFIX}/lib" \
     --site-packages="${SP_DIR}" \
     --disable-aster-subdir \
+    --install-tests \
     --without-hg
 
   if [[ "${build_type}" == "debug" ]]; then
@@ -117,6 +119,11 @@ else
 fi
 
 echo "Compilation complete"
+
+# The testcases are shipped in the separate noarch code-aster-tests output.
+# '--install-tests' is still passed so config.txt and CTestTestfile.cmake reference
+# the installed location (share/aster/tests) instead of a symlink into the build tree.
+rm -rf "${PREFIX}/share/aster/tests"
 
 # With --spdir option, Python packages and extensions are installed directly to ${SP_DIR}:
 # - code_aster/ and run_aster/ Python packages -> ${SP_DIR}
