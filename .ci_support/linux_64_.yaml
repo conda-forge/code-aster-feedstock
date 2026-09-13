@@ -28,6 +28,7 @@ metis:
 - 5.1.0
 mpi:
 - nompi
+- openmpi
 mpich:
 - '4'
 mumps_mpi:
@@ -47,9 +48,14 @@ pin_run_as_build:
     min_pin: x.x
     max_pin: x.x
 python:
+- 3.11.* *_cpython
+- 3.12.* *_cpython
 - 3.13.* *_cp313
+- 3.14.* *_cp314
 python_impl:
 - cpython
+python_min:
+- '3.11'
 scotch:
 - 7.0.11
 slepc:

@@ -35,6 +35,7 @@ Current release info
 | Name | Downloads | Version | Platforms |
 | --- | --- | --- | --- |
 | [![Conda Recipe](https://img.shields.io/badge/recipe-code--aster-green.svg)](https://anaconda.org/conda-forge/code-aster) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/code-aster.svg)](https://anaconda.org/conda-forge/code-aster) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/code-aster.svg)](https://anaconda.org/conda-forge/code-aster) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/code-aster.svg)](https://anaconda.org/conda-forge/code-aster) |
+| [![Conda Recipe](https://img.shields.io/badge/recipe-code--aster--tests-green.svg)](https://anaconda.org/conda-forge/code-aster-tests) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/code-aster-tests.svg)](https://anaconda.org/conda-forge/code-aster-tests) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/code-aster-tests.svg)](https://anaconda.org/conda-forge/code-aster-tests) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/code-aster-tests.svg)](https://anaconda.org/conda-forge/code-aster-tests) |
 
 Installing code-aster
 =====================
@@ -53,7 +54,7 @@ How to use
 <summary>With conda</summary>
 
 ```
-conda install code-aster
+conda install code-aster code-aster-tests
 ```
 
 </details>
@@ -62,7 +63,7 @@ conda install code-aster
 <summary>With mamba</summary>
 
 ```
-mamba install code-aster
+mamba install code-aster code-aster-tests
 ```
 
 </details>
@@ -72,9 +73,9 @@ mamba install code-aster
 
 ```
 # for adding to your local project
-pixi add code-aster
+pixi add code-aster code-aster-tests
 # for installing globally
-pixi global install code-aster
+pixi global install code-aster code-aster-tests
 ```
 
 </details>
