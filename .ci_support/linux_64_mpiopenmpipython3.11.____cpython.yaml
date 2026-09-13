@@ -27,7 +27,6 @@ libxml2_devel:
 metis:
 - 5.1.0
 mpi:
-- nompi
 - openmpi
 mpich:
 - '4'
@@ -49,9 +48,6 @@ pin_run_as_build:
     max_pin: x.x
 python:
 - 3.11.* *_cpython
-- 3.12.* *_cpython
-- 3.13.* *_cp313
-- 3.14.* *_cp314
 python_impl:
 - cpython
 python_min:
