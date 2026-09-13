@@ -8,6 +8,9 @@ context:
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
   build_num: ${{ build|int + mpi_num }}
   mpi_prefix: ${{ mpi or 'nompi' }}
+  # code-aster-tests (noarch) is built, and the full testcase set used, only in the nompi job of the lowest python
+  tests_python: ${{ python_min }}
+  is_tests_job: ${{ mpi == 'nompi' and (python | version_to_buildstring) == (tests_python | replace('.', '')) }}
 
 recipe:
   name: ${{ name|lower }}
@@ -36,12 +39,13 @@ outputs:
       number: ${{ build }}
       script: copy_tests.sh
       noarch: generic
-      # noarch output: build it in a single CI job (linux-64, nompi, python 3.10) only
-      skip: (mpi != 'nompi') or (python | version_to_buildstring != '310') or not (linux and x86_64)
+      # noarch output: build it in a single CI job only
+      skip: not (is_tests_job and linux and x86_64)
       variant:
         ignore_keys:
           - mpi
           - python
+          - python_min
     tests:
       - package_contents:
           files:
@@ -157,7 +161,7 @@ outputs:
               - share/aster/tests/**
       # This would run ALL sequential (currently passing 99%). Few failures due to missing xmgrace
       #- run_ctest --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} -L submit ${{ '-L sequential' if mpi == 'nompi' else '' }} -LE need_data --timefactor=10.0 --only-failed-results --clean
-      - if: (mpi == 'nompi') and (python | version_to_buildstring == '310')
+      - if: is_tests_job
         then:
           # code-aster-tests is built in this job: run against the installed testcases (share/aster/tests)
           requirements:
