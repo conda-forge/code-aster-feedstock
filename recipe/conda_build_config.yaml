@@ -4,3 +4,15 @@ mpi:
 
 openmpi:
   - '5'
+
+# code_aster (incl. main as of 18.1.x) supports PETSc up to 3.24: with 3.25 the explicit
+# interfaces in bibfor/third_party_interf/aster_petsc_module.F90 clash with the ones
+# petsc's Fortran modules now export ("Cannot change attributes of USE-associated symbol").
+petsc:
+  - '3.24'
+petsc4py:
+  - '3.24'
+slepc:
+  - '3.24'
+slepc4py:
+  - '3.24'
