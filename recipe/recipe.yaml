@@ -2,9 +2,9 @@ schema_version: 1
 
 context:
   name: code-aster
-  version: "18.0.12"
-  sha256: 29c7732f0c682d63a28d0fb6fee991c66565f185ae7c8e80f22911cf32529552
-  build: 2
+  version: "18.1.6"
+  sha256: 3f29c820559d9345c79fd85a6150445518b3d45ee40f0b9d1f1640d744cf03f2
+  build: 0
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
   build_num: ${{ build|int + mpi_num }}
   mpi_prefix: ${{ mpi or 'nompi' }}
@@ -21,6 +21,8 @@ source:
     sha256: ${{ sha256 }}
     patches:
       - patches/make_shared_use_env_FC_fallback.patch
+      # numpy >= 2.4: trapz was removed, int() of a 1-element array raises
+      - patches/numpy_2_4_compat.patch
   # code_aster prerequisites sources (only homard is built from it); 18.0.2+ requires version 20251026
   # https://gitlab.com/codeaster-opensource-documentation/opensource-installation-development/-/blob/main/devel/changelog.md
   - url: https://gitlab.com/api/v4/projects/codeaster-opensource-documentation%2Fopensource-installation-development/packages/generic/codeaster-prerequisites/20251026/codeaster-prerequisites-20251026-oss.tar.gz

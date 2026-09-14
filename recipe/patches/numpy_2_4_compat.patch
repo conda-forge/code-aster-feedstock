@@ -1,0 +1,267 @@
+diff -ru a/code_aster/MacroCommands/Fracture/post_endo_fiss_utils.py b/code_aster/MacroCommands/Fracture/post_endo_fiss_utils.py
+--- a/code_aster/MacroCommands/Fracture/post_endo_fiss_utils.py	2026-09-14 09:21:41.653125367 +0200
++++ b/code_aster/MacroCommands/Fracture/post_endo_fiss_utils.py	2026-09-14 09:32:15.196431263 +0200
+@@ -195,7 +195,7 @@
+     Absc = curvilinearAbsissa(Coorx, Coory, len(Coorx) // 2)
+     Gauss = NP.exp(-(Absc**2) / (2.0 * lreg**2))
+     area = NP.convolve(Gauss, NP.ones(len(Gauss)), "valid")
+-    area = float(area)
++    area = float(area[0])
+     FunReg = NP.convolve(Fun0, Gauss, "same")
+     FunReg = FunReg / area
+     return FunReg
+@@ -215,14 +215,14 @@
+     AbsC = NP.concatenate((NP.array([0.0]), AbsC))
+     FunReg = NP.array([])
+     Gauss = NP.exp(-(AbsC**2) / (2.0 * lreg**2))
+-    area = float(NP.convolve(Gauss, NP.ones(len(Gauss)), "valid"))
++    area = float(NP.convolve(Gauss, NP.ones(len(Gauss)), "valid")[0])
+     for i in range(len(Fun0)):
+         Fun_I = NP.concatenate((Fun0[i:], Fun0[0:i]), axis=0)
+         Fun_I = NP.concatenate(
+             (Fun_I[len(Fun_I) // 2 + 1 :], Fun_I[0 : len(Fun_I) // 2 + 1]), axis=0
+         )
+         zreg = NP.convolve(Fun_I, Gauss, "valid")
+-        FunReg = NP.append(FunReg, float(zreg))
++        FunReg = NP.append(FunReg, float(zreg[0]))
+     FunReg = FunReg / area
+     return FunReg
+ 
+@@ -527,7 +527,7 @@
+ def crackOpeningStrong(lreg, Coorx, Coory, Epsi):
+     Absc = curvilinearAbsissa(Coorx, Coory, len(Coorx) // 2)
+     Gauss = NP.exp(-(Absc**2) / (2.0 * lreg**2))
+-    area = NP.trapz(Gauss, x=Absc)
++    area = NP.trapezoid(Gauss, x=Absc)
+     EpsiReg = conv_smoothing1D(lreg, Coorx, Coory, Epsi)
+     idxMax, epsMax = nearestMax(EpsiReg, len(Coorx) // 2)
+     gauss0 = 1.0
+@@ -537,7 +537,7 @@
+     ycentre = Coory[idxMax]
+     Absc = curvilinearAbsissa(Coorx, Coory, idxMax)
+     EpsSDreg = CO / area * NP.exp(-(Absc**2) / (2.0 * lreg**2))
+-    errPerc = 100.0 * (NP.trapz(abs(EpsiReg - EpsSDreg), x=Absc)) / (NP.trapz(abs(EpsiReg), x=Absc))
++    errPerc = 100.0 * (NP.trapezoid(abs(EpsiReg - EpsSDreg), x=Absc)) / (NP.trapezoid(abs(EpsiReg), x=Absc))
+     return CO, errPerc
+ 
+ 
+diff -ru a/code_aster/MacroCommands/Utils/random_signal_utils.py b/code_aster/MacroCommands/Utils/random_signal_utils.py
+--- a/code_aster/MacroCommands/Utils/random_signal_utils.py	2026-09-14 09:10:37.537932974 +0200
++++ b/code_aster/MacroCommands/Utils/random_signal_utils.py	2026-09-14 09:10:37.563934151 +0200
+@@ -102,10 +102,10 @@
+         #   calcul de la variance (sigma^2) de normalisation mof
+         if "ALEA_DSP" in kwargs:
+             l_ALPHA = kwargs["ALEA_DSP"]
+-            mof = NP.trapz(dsp_fr_refe * l_FIT * l_ALPHA, self.sampler.liste_w2) * 2.0
++            mof = NP.trapezoid(dsp_fr_refe * l_FIT * l_ALPHA, self.sampler.liste_w2) * 2.0
+             l_FIT = l_FIT * l_ALPHA
+         else:
+-            mof = NP.trapz(dsp_fr_refe * l_FIT, self.sampler.liste_w2) * 2.0
++            mof = NP.trapezoid(dsp_fr_refe * l_FIT, self.sampler.liste_w2) * 2.0
+     if rv is None:
+         rv = NP.random.normal(0.0, 1.0, nbfreq) + 1j * NP.random.normal(0.0, 1.0, nbfreq)
+     #      vecc1=(NP.random.normal(0.0,1.,nbfreq2)+1j*NP.random.normal(0.0,1.,nbfreq2))
+@@ -130,12 +130,12 @@
+         if TYPE == "KT":
+             dsp = calc_dsp_KT(self, fgt, amo)
+             # constante de normalisation pour que ecart_type=1 a pour tout t
+-            S_cst = 1.0 / NP.trapz(dsp, self.sampler.liste_w2) * 0.5
++            S_cst = 1.0 / NP.trapezoid(dsp, self.sampler.liste_w2) * 0.5
+             MAT = calc_dsp_KT(self, fgt, amo, S_cst)
+         elif TYPE == "FR":
+             dsp = calc_dsp_FR(self.sampler.liste_w2, fgt, amo, R0, R2, self.FREQ_CORNER)
+             # constante de normalisation pour que ecart_type=1 a pour tout t
+-            S_cst = mof / (NP.trapz(dsp * l_FIT, self.sampler.liste_w2) * 2.0)
++            S_cst = mof / (NP.trapezoid(dsp * l_FIT, self.sampler.liste_w2) * 2.0)
+             MAT = (
+                 calc_dsp_FR(self.sampler.liste_w2, fgt, amo, R0, R2, self.FREQ_CORNER, So=S_cst)
+                 * l_FIT
+@@ -325,7 +325,7 @@
+ # -----------------------------------------------------------------
+ def f_ARIAS(ta, acce, norme):
+     acce2 = NP.array(acce) ** 2
+-    arias = NP.trapz(acce2, ta)  # energie
++    arias = NP.trapezoid(acce2, ta)  # energie
+     arias = arias * pi / (2.0 * norme)  # indic Arias
+     return arias
+ 
+@@ -334,7 +334,7 @@
+     arias = f_ARIAS(ta, acce, norme)  # indic Arias
+     ener = arias * (2.0 * norme) / pi
+     acce2 = NP.array(acce) ** 2
+-    cumener = NP.array([NP.trapz(acce2[0 : ii + 1], ta[0 : ii + 1]) for ii in range(len(ta))])
++    cumener = NP.array([NP.trapezoid(acce2[0 : ii + 1], ta[0 : ii + 1]) for ii in range(len(ta))])
+     fract = cumener / ener
+     n1 = NP.searchsorted(fract, 0.05)
+     n2 = NP.searchsorted(fract, 0.95)
+@@ -349,7 +349,7 @@
+     arias = f_ARIAS(ta, acce, 1.0)  # indic Arias
+     ener = arias * (2.0 * 1.0) / pi
+     acce2 = NP.array(acce) ** 2
+-    cumener = NP.array([NP.trapz(acce2[0 : ii + 1], ta[0 : ii + 1]) for ii in range(len(ta))])
++    cumener = NP.array([NP.trapezoid(acce2[0 : ii + 1], ta[0 : ii + 1]) for ii in range(len(ta))])
+     fract = cumener / ener
+     n1 = NP.searchsorted(fract, p1)
+     n2 = NP.searchsorted(fract, p2)
+@@ -358,9 +358,9 @@
+ 
+ def f_ENER_qt(ta, acce, n1, n2):
+     acce2 = acce**2
+-    ener = NP.trapz(acce2, ta)  # energie totale
+-    P1 = NP.trapz(acce2[0:n1], ta[0:n1]) / ener
+-    P2 = NP.trapz(acce2[0:n2], ta[0:n2]) / ener
++    ener = NP.trapezoid(acce2, ta)  # energie totale
++    P1 = NP.trapezoid(acce2[0:n1], ta[0:n1]) / ener
++    P2 = NP.trapezoid(acce2[0:n2], ta[0:n2]) / ener
+     return ener, P1, P2
+ 
+ 
+@@ -445,9 +445,9 @@
+ 
+ def Rice2(w2, DSP):
+     #   MOMENTS
+-    m0 = NP.trapz(DSP, w2) * 2.0
+-    m1 = NP.trapz(DSP * abs(w2), w2) * 2.0
+-    m2 = NP.trapz(DSP * w2**2, w2) * 2.0
++    m0 = NP.trapezoid(DSP, w2) * 2.0
++    m1 = NP.trapezoid(DSP * abs(w2), w2) * 2.0
++    m2 = NP.trapezoid(DSP * w2**2, w2) * 2.0
+     #   FREQ_CENTRALE, BANDWIDTH
+     vop = 1 / (2.0 * pi) * sqrt(m2 / m0)
+     delta = sqrt(1.0 - m1**2 / (m0 * m2))
+@@ -488,9 +488,9 @@
+     #          fractile p, duration TSM
+     # OUT  :  peak factor
+     # ---------------------------------------------
+-    m0 = NP.trapz(DSP, w2) * 2.0
+-    m1 = NP.trapz(DSP * abs(w2), w2) * 2.0
+-    m2 = NP.trapz(DSP * w2**2, w2) * 2.0
++    m0 = NP.trapezoid(DSP, w2) * 2.0
++    m1 = NP.trapezoid(DSP * abs(w2), w2) * 2.0
++    m2 = NP.trapezoid(DSP * w2**2, w2) * 2.0
+     vop = 1.0 / (2.0 * pi) * sqrt(m2 / m0)  # FREQ_CENTRALE
+     delta = sqrt(1.0 - m1**2.0 / (m0 * m2))  # BANDWIDTH
+     deuxn = 2.0 * vop * TSM / (-log(p))
+@@ -838,7 +838,7 @@
+             nup2 = nupi**2
+             v1 = 1.0 / (freqi * (pi / (2.0 * AMORT) - 2.0))
+             v2 = (valsro**2) / nup2
+-            v3 = 2.0 * NP.trapz(NP.array(DSP), NP.array(lw))
++            v3 = 2.0 * NP.trapezoid(NP.array(DSP), NP.array(lw))
+             v4 = v1 * (v2 - v3)
+             valg = max(v4, 0.0)
+             DSP.append(valg)
+@@ -986,7 +986,7 @@
+     #      w0= vop*2.*pi
+     xi0 = deltau ** (2.0 / 1.2) * pi / 4.0
+     dsp_FR_ini = calc_dsp_FR(lfreq, vop, xi0, (vop * 2.0 * pi) ** 2, 4.0 * vop * pi * xi0, FC)
+-    const_ini = 2.0 * NP.trapz(dsp_FR_ini, lfreq)
++    const_ini = 2.0 * NP.trapezoid(dsp_FR_ini, lfreq)
+     R0 = (vop * 2.0 * pi) ** 2 * sqrt(m0) / sqrt(const_ini)
+     R2 = 4.0 * vop * pi * xi0 * sqrt(m0) / sqrt(const_ini)
+     x0 = [R0, R2]
+diff -ru a/code_aster/MacroCommands/Utils/signal_correlation_utils.py b/code_aster/MacroCommands/Utils/signal_correlation_utils.py
+--- a/code_aster/MacroCommands/Utils/signal_correlation_utils.py	2026-09-14 09:10:37.546600032 +0200
++++ b/code_aster/MacroCommands/Utils/signal_correlation_utils.py	2026-09-14 09:10:37.563934151 +0200
+@@ -318,10 +318,10 @@
+         #   calcul de la variance (sigma^2) de normalisation mof
+         if "ALEA_DSP" in kwargs:
+             l_ALPHA = kwargs["ALEA_DSP"]
+-            mof = NP.trapz(dsp_fr_refe * l_FIT * l_ALPHA, self.sampler.liste_w2) * 2.0
++            mof = NP.trapezoid(dsp_fr_refe * l_FIT * l_ALPHA, self.sampler.liste_w2) * 2.0
+             l_FIT = l_FIT * l_ALPHA
+         else:
+-            mof = NP.trapz(dsp_fr_refe * l_FIT, self.sampler.liste_w2) * 2.0
++            mof = NP.trapezoid(dsp_fr_refe * l_FIT, self.sampler.liste_w2) * 2.0
+     if rv is None:
+         #        rv = NP.random.normal(0.0, 1., nbfreq) + \
+         #            1j * NP.random.normal(0.0, 1., nbfreq)
+@@ -354,12 +354,12 @@
+         if TYPE == "KT":
+             dsp = calc_dsp_KT(self, fgt, amo)
+             # constante de normalisation pour que ecart_type=1 a pour tout t
+-            S_cst = 1.0 / NP.trapz(dsp, self.sampler.liste_w2) * 0.5
++            S_cst = 1.0 / NP.trapezoid(dsp, self.sampler.liste_w2) * 0.5
+             vale_dsp = calc_dsp_KT(self, fgt, amo, S_cst)
+         elif TYPE == "FR":
+             dsp = calc_dsp_FR(self.sampler.liste_w2, fgt, amo, R0, R2, self.FREQ_CORNER)
+             # constante de normalisation pour que ecart_type=1 a pour tout t
+-            S_cst = mof / (NP.trapz(dsp * l_FIT, self.sampler.liste_w2) * 2.0)
++            S_cst = mof / (NP.trapezoid(dsp * l_FIT, self.sampler.liste_w2) * 2.0)
+             vale_dsp = (
+                 calc_dsp_FR(self.sampler.liste_w2, fgt, amo, R0, R2, self.FREQ_CORNER, So=S_cst)
+                 * l_FIT
+diff -ru a/code_aster/MacroCommands/calc_stab_pente_ops.py b/code_aster/MacroCommands/calc_stab_pente_ops.py
+--- a/code_aster/MacroCommands/calc_stab_pente_ops.py	2026-09-14 09:10:37.511931794 +0200
++++ b/code_aster/MacroCommands/calc_stab_pente_ops.py	2026-09-14 09:10:37.563934151 +0200
+@@ -1427,11 +1427,11 @@
+                         + l_pente[ipos - 1]
+                     )
+                 # calcul de la force de pression
+-                pres_v[ind_s, :] = np.trapz(p_slice[:, 2:], l_pente, axis=0)
++                pres_v[ind_s, :] = np.trapezoid(p_slice[:, 2:], l_pente, axis=0)
+                 # calcul du moment de pression
+                 coor_c = centre if len(centre.shape) == 1 else centre[ind_s, :]
+                 vec_c = p_slice[:, :2] - coor_c
+-                moment += np.trapz(np.cross(vec_c, p_slice[:, 2:]), l_pente)
++                moment += np.trapezoid(np.cross(vec_c, p_slice[:, 2:]), l_pente)
+ 
+             char_ext.update(
+                 {
+diff -ru a/code_aster/MacroCommands/gene_acce_seisme_ops.py b/code_aster/MacroCommands/gene_acce_seisme_ops.py
+--- a/code_aster/MacroCommands/gene_acce_seisme_ops.py	2026-09-14 09:10:37.529265913 +0200
++++ b/code_aster/MacroCommands/gene_acce_seisme_ops.py	2026-09-14 09:10:37.563934151 +0200
+@@ -343,7 +343,7 @@
+             # calcul du facteur de normalisation
+             dsp = calc_dsp_KT(self, self.DSP_args["FREQ_FOND"], self.DSP_args["AMORT"])
+             # constante de normalisation pour que ecart_type=1:
+-            S_cst = 1.0 / (NP.trapz(dsp, self.sampler.liste_w2) * 2.0)
++            S_cst = 1.0 / (NP.trapezoid(dsp, self.sampler.liste_w2) * 2.0)
+             # calcul de la DSP KT
+             vale_dsp_KT = calc_dsp_KT(
+                 self, self.DSP_args["FREQ_FOND"], self.DSP_args["AMORT"], S_cst
+@@ -607,17 +607,17 @@
+         elif "ECART_TYPE" in self.modul_params:
+             N1 = NP.searchsorted(sample_time, T1)
+             N2 = NP.searchsorted(sample_time, T2)
+-            int12 = NP.trapz((fqt[N1:N2]) ** 2, sample_time[N1:N2])
++            int12 = NP.trapezoid((fqt[N1:N2]) ** 2, sample_time[N1:N2])
+             fqt = fqt * self.modul_params["ECART_TYPE"] * sqrt(self.DUREE_PHASE_FORTE / int12)
+         elif "ACCE_MAX" in self.modul_params:
+             N1 = NP.searchsorted(sample_time, T1)
+             N2 = NP.searchsorted(sample_time, T2)
+-            int12 = NP.trapz(fqt[N1:N2] ** 2, sample_time[N1:N2])
++            int12 = NP.trapezoid(fqt[N1:N2] ** 2, sample_time[N1:N2])
+             fqt = fqt * self.sigma * sqrt(self.DUREE_PHASE_FORTE / int12)
+         else:
+             # equivalence energie totale avec signal module par CONSTANT sur
+             # DUREE
+-            int12 = NP.trapz(fqt**2, sample_time)
++            int12 = NP.trapezoid(fqt**2, sample_time)
+             fqt = fqt * sqrt(self.DUREE_PHASE_FORTE / int12)
+         f_mod = t_fonction(sample_time, fqt, para=self.para_fonc_modul)
+         self.fonc_modul = f_mod
+diff -ru a/code_aster/MacroCommands/info_fonction_ops.py b/code_aster/MacroCommands/info_fonction_ops.py
+--- a/code_aster/MacroCommands/info_fonction_ops.py	2026-09-14 09:10:37.520598855 +0200
++++ b/code_aster/MacroCommands/info_fonction_ops.py	2026-09-14 09:10:37.563934151 +0200
+@@ -348,7 +348,7 @@
+                     )
+                 )
+                 __srov = __so.convert().l_fonc[0]
+-                ASA_R = 1.0 / (ratio * freq_osci) * NP.trapz(__srov.vale_y, __srov.vale_x)
++                ASA_R = 1.0 / (ratio * freq_osci) * NP.trapezoid(__srov.vale_y, __srov.vale_x)
+                 l_table.append(_F(LISTE_R=ASA_R, PARA="ASA"))
+                 l_table.append(_F(LISTE_R=ratio, PARA="RATIO"))
+                 if option == "ASA":
+diff -ru a/code_aster/MacroCommands/post_endo_fiss_ops.py b/code_aster/MacroCommands/post_endo_fiss_ops.py
+--- a/code_aster/MacroCommands/post_endo_fiss_ops.py	2026-09-14 09:10:37.550933562 +0200
++++ b/code_aster/MacroCommands/post_endo_fiss_ops.py	2026-09-14 09:10:37.568267681 +0200
+@@ -124,7 +124,7 @@
+     idxNoeud = NP.array(Noeybar)
+     Coorx = NP.take(Xtot, idxNoeud)
+     Coory = NP.take(Ytot, idxNoeud)
+-    coorIni3 = int(NP.nonzero(dnor)[0])
++    coorIni3 = int(NP.nonzero(dnor)[0][0])
+     NormTot = Coortot[coorIni3 : len(Coortot) : 3]
+     CoorNor = NP.take(NormTot, idxNoeud)
+     zCoupe = CoorNor[0]  # On dit que dans la coupe tous les valeurs sont constants
