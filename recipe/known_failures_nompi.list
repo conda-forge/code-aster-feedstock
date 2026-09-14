@@ -1,0 +1,6 @@
+# code_aster testcases additionally excluded in the sequential (nompi) build
+
+# require petsc4py / the PETSc solver, only available in the MPI build
+hrom001c
+hrom001d
+zzzz513i

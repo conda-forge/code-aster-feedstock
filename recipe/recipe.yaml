@@ -56,7 +56,10 @@ outputs:
       name: ${{ name }}
       version: ${{ version }}
     build:
-      script: build.sh
+      script:
+        file: build.sh
+        env:
+          ASTER_BUILD_TESTS: ${{ env.get("ASTER_BUILD_TESTS", default="submit") }}
       string: py${{ python | version_to_buildstring }}_${{ mpi_prefix }}_h${{ hash }}_${{ build_num }}
       prefix_detection:
         ignore_binary_files: true
