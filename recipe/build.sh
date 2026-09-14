@@ -177,8 +177,24 @@ if [[ "${ASTER_BUILD_TESTS}" != "none" ]]; then
   )
   echo "Running code_aster testcases: run_ctest ${ctest_args[*]}"
   # rerun failed testcases twice, as done in code_aster CI
-  run_ctest "${ctest_args[@]}" \
-    || run_ctest "${ctest_args[@]}" --rerun-failed \
-    || run_ctest "${ctest_args[@]}" --rerun-failed \
-    || { echo "code_aster testcases failed"; exit 1; }
+  if ! { run_ctest "${ctest_args[@]}" \
+      || run_ctest "${ctest_args[@]}" --rerun-failed \
+      || run_ctest "${ctest_args[@]}" --rerun-failed; }; then
+    # print the diagnostics of the failed testcases, their output files are not kept by CI
+    failed_list="${SRC_DIR}/build_testcases/Testing/Temporary/LastTestsFailed.log"
+    for name in $(sed -e 's/^[0-9]*:ASTER_[0-9.]*_//' "${failed_list}"); do
+      mess="${SRC_DIR}/build_testcases/${name}.mess"
+      echo "::group::code_aster testcase ${name}"
+      if [[ -f "${mess}" ]]; then
+        grep -nE "<F>|<E>|<EXCEPTION>|NOOK|Traceback|Error|DIAGNOSTIC JOB" "${mess}" | head -n 40
+        echo "--- last lines of ${name}.mess:"
+        tail -n 80 "${mess}"
+      else
+        echo "no output file for ${name}"
+      fi
+      echo "::endgroup::"
+    done
+    echo "code_aster testcases failed"
+    exit 1
+  fi
 fi
