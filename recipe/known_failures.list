@@ -1,0 +1,36 @@
+# code_aster testcases excluded from the run_ctest step in build.sh
+# (one testcase name per line, with the reason)
+
+# xmgrace (grace) is not available on conda-forge
+forma10a
+forma10b
+forma30b
+sdnl105a
+sdnl105b
+tplp107b
+
+# MACR_RECAL imports the 'asrun' module (codeaster-frontend), which is not packaged
+ssna110a
+ssnv228b
+
+# spell checking of messages requires aspell with dictionaries (developer check)
+supv002a
+
+# testcase files themselves are not compatible with numpy >= 2.4 / conda-forge medcoupling 9.14
+shll102a
+zzzz136c
+zzzz143a
+
+# numerical results differ from the reference values with conda-forge dependencies
+# (to be reported upstream / investigated)
+sdls504e
+sdls505a
+ssls101o
+zzzz213b
+
+# checks the output of the med 'mdump' tool, which differs with conda-forge libmed 4.2
+zzzz413a
+
+# numpy.linalg.eigvals returns complex values for the reference computed in the
+# testcase file, rejected by TEST_RESU (depends on the numpy/LAPACK build)
+zzzz208b

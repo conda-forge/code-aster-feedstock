@@ -2,14 +2,17 @@ schema_version: 1
 
 context:
   name: code-aster
-  version: "18.0.12"
-  sha256: 29c7732f0c682d63a28d0fb6fee991c66565f185ae7c8e80f22911cf32529552
-  build_base: 1
-  mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
+  version: "18.1.6"
+  sha256: 3f29c820559d9345c79fd85a6150445518b3d45ee40f0b9d1f1640d744cf03f2
   build: 0
+  mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
+  build_num: ${{ build|int + mpi_num }}
   mpi_prefix: ${{ mpi or 'nompi' }}
+  # code-aster-tests (noarch) is built, and the full testcase set used, only in the nompi job of the lowest python
+  tests_python: ${{ python_min }}
+  is_tests_job: ${{ mpi == 'nompi' and (python | version_to_buildstring) == (tests_python | replace('.', '')) }}
 
-package:
+recipe:
   name: ${{ name|lower }}
   version: ${{ version }}
 
@@ -18,114 +21,181 @@ source:
     sha256: ${{ sha256 }}
     patches:
       - patches/make_shared_use_env_FC_fallback.patch
-  # Modified version of Metis changing integer sizes for indexes (IDXTYPEWIDTH 64) and including headers for direct linking to Aster
-  # Modified version of Mumps changing integer, complex and real sizes to four bytes (fortran kind=4), waf configuration and metis renumbering
-  - url: https://www.code-aster.org/FICHIERS/prerequisites/codeaster-prerequisites-20221225-oss.tar.gz
-    sha256: 40243be37c647c6df05437d5baadd4522b9cab5de97a76e1d1fb79d1645dd5fc
+      # numpy >= 2.4: trapz was removed, int() of a 1-element array raises;
+      # medcoupling python 3.13 bindings: MEDFileFields iterator is not iterable
+      - patches/numpy_py313_compat.patch
+      # petsc >= 3.25 Fortran modules export interfaces that clash with aster_petsc_module.F90
+      - patches/petsc_3_25_compat.patch
+  # code_aster prerequisites sources (only homard is built from it); 18.0.2+ requires version 20251026
+  # https://gitlab.com/codeaster-opensource-documentation/opensource-installation-development/-/blob/main/devel/changelog.md
+  - url: https://gitlab.com/api/v4/projects/codeaster-opensource-documentation%2Fopensource-installation-development/packages/generic/codeaster-prerequisites/20251026/codeaster-prerequisites-20251026-oss.tar.gz
+    sha256: e450bbbee0047cf17f6f9423400a7ac83fc633e6e62e596111825016e945e7df
     target_directory: codeaster-prerequisites/
 
 build:
-  number: 1
+  number: ${{ build_num }}
   skip: osx or win or (python_impl == 'pypy')
-  string: py${{ python | version_to_buildstring }}_${{ mpi_prefix }}_h${{ hash }}_${{ build }}
-  prefix_detection:
-    ignore_binary_files: true
-  dynamic_linking:
-    rpaths:
-      - lib/
-      - lib/aster/
-      - if: mpi != "nompi"
-        then: lib/petsc4py/lib
-    missing_dso_allowlist:
-      - if: linux
-        then:
-          - "*/libbibfor.so"
-          - "*/libbibfor_ext.so"
-          - "*/libbibc.so"
-          - "*/libbibcxx.so"
-          - "*/libAsterGC.so"
-          - lib64/aster/libaster.so
 
-requirements:
-  build:
-    - ${{ compiler('c') }}
-    - ${{ stdlib('c') }}
-    - ${{ compiler('cxx') }}
-    - ${{ compiler('fortran') }}
-    - if: linux
-      then: libgomp
-    - cmake <4
-    - setuptools
-    - bison
-    - flex
-    - swig 4.2.1.*
-    - waf ==2.1.5
-    - if: "mpi != 'nompi'"
-      then: ${{ mpi }}
-  host:
-    - python
-    - numpy
-    - libboost-devel
-    - libblas >=3.9.0
-    - liblapack >=3.9.0
-    - libxml2-devel
-    - openblas >=0.3.20
-    - zlib
-    - scotch
-    - mfront
-    - mgis
-    - miss3d
-    - metis
-    - hdf5 >=1.14 *${{ mpi }}*
-    - libmed * *${{ mpi }}*
-    - medcoupling * *${{ mpi }}*
-    - scipy
-    - mumps-include
-    - if: (mpi == 'nompi') and not win
-      then:
-        - mumps-seq
-    - if: (mpi != 'nompi') and not win
-      then:
-        - ${{ mpi }}
-        - scalapack >=2.2.0,<3
-        - mumps-mpi
-        - parmetis
-        - petsc
-        - slepc
-        - mpi4py
-        - petsc4py
-        - slepc4py
-  run:
-    - ${{ pin_compatible('mgis', upper_bound='x.x') }}
-    - ${{ pin_compatible('mfront', upper_bound='x.x.x') }}
-    - ${{ pin_compatible('miss3d', upper_bound='x.x') }}
-    - ${{ pin_compatible('medcoupling', upper_bound='x.x') }}
-    - ${{ pin_compatible('libmed', upper_bound='x.x') }}
-    - ${{ pin_compatible('numpy', upper_bound='x.x') }}
-    - libopenblas
-    - libxml2-devel
-    - python
-    - libxcrypt
-    - scipy
-    - if: (mpi != 'nompi') and not win
-      then:
-        - petsc4py
-  run_exports:
-    - ${{ pin_subpackage('code-aster', upper_bound='x.x') }}
+outputs:
+  - package:
+      name: ${{ name }}-tests
+      version: ${{ version }}
+    build:
+      number: ${{ build }}
+      string: h${{ hash }}_${{ build }}
+      script: copy_tests.sh
+      noarch: generic
+      # noarch output: build it in a single CI job only.
+      # No variant.ignore_keys here: conda-smithy distributes CI jobs over the intersection of
+      # every output's loop vars, so ignoring mpi/python would collapse the matrix into one job.
+      skip: not (is_tests_job and linux and x86_64)
+    tests:
+      - package_contents:
+          files:
+            - share/aster/tests/forma01a.export
+            - share/aster/tests/zzzz121a.export
 
-tests:
-  - python:
-      imports:
-        - code_aster
-        - medcoupling
-  - requirements:
-      run:
+  - package:
+      name: ${{ name }}
+      version: ${{ version }}
+    build:
+      script:
+        file: build.sh
+        env:
+          ASTER_BUILD_TESTS: ${{ env.get("ASTER_BUILD_TESTS", default="submit") }}
+      string: py${{ python | version_to_buildstring }}_${{ mpi_prefix }}_h${{ hash }}_${{ build_num }}
+      prefix_detection:
+        ignore_binary_files: true
+      dynamic_linking:
+        rpaths:
+          - lib/
+          - lib/aster/
+          - if: mpi != "nompi"
+            then: lib/petsc4py/lib
+        missing_dso_allowlist:
+          - if: linux
+            then:
+              - "*/libbibfor.so"
+              - "*/libbibfor_ext.so"
+              - "*/libbibc.so"
+              - "*/libbibcxx.so"
+              - "*/libAsterGC.so"
+              - lib64/aster/libaster.so
+
+    requirements:
+      build:
+        - ${{ compiler('c') }}
+        - ${{ stdlib('c') }}
+        - ${{ compiler('cxx') }}
         - ${{ compiler('fortran') }}
-        - cmake
-    script:
+        - if: linux
+          then: libgomp
+        - cmake <4
+        - setuptools
+        - bison
+        - flex
+        - swig 4.2.1.*
+        - waf ==2.1.5
+        # 'mfront --obuild' (CREA_LIB_MFRONT) runs make in the testcases
+        - make
+        - if: "mpi != 'nompi'"
+          then: ${{ mpi }}
+      host:
+        - python
+        - numpy
+        - libboost-devel
+        - libblas >=3.9.0
+        - liblapack >=3.9.0
+        - libxml2-devel
+        - openblas >=0.3.20
+        - zlib
+        - scotch
+        - mfront
+        - mgis
+        - miss3d
+        - metis
+        - hdf5 >=1.14 *${{ mpi }}*
+        - libmed * *${{ mpi }}*
+        # ParaMEDMEM.CFEMDEC (code_aster.Coupling) requires medcoupling >= 9.16
+        - medcoupling >=9.16 *${{ mpi }}*
+        - scipy
+        - mumps-include
+        - if: (mpi == 'nompi') and not win
+          then:
+            - mumps-seq
+        - if: (mpi != 'nompi') and not win
+          then:
+            - ${{ mpi }}
+            - scalapack >=2.2.0,<3
+            - mumps-mpi
+            - parmetis
+            - petsc
+            - slepc
+            - mpi4py
+            - petsc4py
+            - slepc4py
+      run:
+        - ${{ pin_compatible('mgis', upper_bound='x.x') }}
+        - ${{ pin_compatible('mfront', upper_bound='x.x.x') }}
+        - ${{ pin_compatible('miss3d', upper_bound='x.x') }}
+        - ${{ pin_compatible('medcoupling', upper_bound='x.x') }}
+        - ${{ pin_compatible('libmed', upper_bound='x.x') }}
+        - ${{ pin_compatible('numpy', upper_bound='x.x') }}
+        - libopenblas
+        - libxml2-devel
+        - python
+        - libxcrypt
+        - scipy
+        - if: (mpi != 'nompi') and not win
+          then:
+            - petsc4py
+      run_exports:
+        - ${{ pin_subpackage('code-aster', upper_bound='x.x') }}
+
+    tests:
+      - python:
+          imports:
+            - code_aster
+            - medcoupling
+      - package_contents:
+          include:
+            - asterc_config.h
+            - asterf_config.h
+          files:
+            exists:
+              - share/aster/CTestTestfile.cmake
+              - share/aster/run_aster_for_ctest
+            # testcases are shipped by code-aster-tests
+            not_exists:
+              - share/aster/tests/**
       # This would run ALL sequential (currently passing 99%). Few failures due to missing xmgrace
       #- run_ctest --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} -L submit ${{ '-L sequential' if mpi == 'nompi' else '' }} -LE need_data --timefactor=10.0 --only-failed-results --clean
-      - run_ctest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
+      - if: is_tests_job
+        then:
+          # code-aster-tests is built in this job: run against the installed testcases (share/aster/tests)
+          requirements:
+            run:
+              - ${{ compiler('fortran') }}
+              - cmake
+              - ${{ name }}-tests ==${{ version }}
+          script:
+            - run_ctest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
+        else:
+          # code-aster-tests is not available in the other jobs: only copy the few testcases needed
+          files:
+            source:
+              - astest/forma01a.*
+              - astest/sslp114a.*
+              - astest/mumps05a.*
+              - astest/mumps01a.*
+              - astest/umat001a.*
+              - astest/zzzz121a.*
+          requirements:
+            run:
+              - ${{ compiler('fortran') }}
+              - cmake
+          script:
+            - run_ctest --testdir=astest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
 
 about:
   license: GPL-3.0-only AND CECILL-C AND Apache-2.0 AND LGPL-3.0-only
