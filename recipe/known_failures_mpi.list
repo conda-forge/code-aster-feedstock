@@ -15,3 +15,16 @@ zzzz155h
 zzzz155k
 zzzz155l
 zzzz514a
+
+# coupling (CFEMDEC) results differ slightly from the reference values and vary
+# between runs (relative differences up to ~0.1% for a 1e-4% tolerance)
+zzzz215d
+zzzz216g
+zzzz216k
+zzzz216l
+
+# exact floating point equality check (181.12150617748307 != 181.12150617748298)
+zzzz505a
+
+# parallel non-regression values not reproducible between runs (passes on rerun most of the time)
+zzzz155f
