@@ -94,6 +94,8 @@ outputs:
         - flex
         - swig 4.2.1.*
         - waf ==2.1.5
+        # 'mfront --obuild' (CREA_LIB_MFRONT) runs make in the testcases
+        - make
         - if: "mpi != 'nompi'"
           then: ${{ mpi }}
       host:

@@ -186,9 +186,9 @@ if [[ "${ASTER_BUILD_TESTS}" != "none" ]]; then
       mess="${SRC_DIR}/build_testcases/${name}.mess"
       echo "::group::code_aster testcase ${name}"
       if [[ -f "${mess}" ]]; then
-        grep -nE "<F>|<E>|<EXCEPTION>|NOOK|Traceback|Error|DIAGNOSTIC JOB" "${mess}" | head -n 40
+        grep -a -n -A 20 -E "<F>|<EXCEPTION>|NOOK|Traceback" "${mess}" | head -n 150
         echo "--- last lines of ${name}.mess:"
-        tail -n 80 "${mess}"
+        tail -n 40 "${mess}"
       else
         echo "no output file for ${name}"
       fi
