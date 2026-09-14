@@ -21,8 +21,9 @@ source:
     sha256: ${{ sha256 }}
     patches:
       - patches/make_shared_use_env_FC_fallback.patch
-      # numpy >= 2.4: trapz was removed, int() of a 1-element array raises
-      - patches/numpy_2_4_compat.patch
+      # numpy >= 2.4: trapz was removed, int() of a 1-element array raises;
+      # medcoupling python 3.13 bindings: MEDFileFields iterator is not iterable
+      - patches/numpy_py313_compat.patch
   # code_aster prerequisites sources (only homard is built from it); 18.0.2+ requires version 20251026
   # https://gitlab.com/codeaster-opensource-documentation/opensource-installation-development/-/blob/main/devel/changelog.md
   - url: https://gitlab.com/api/v4/projects/codeaster-opensource-documentation%2Fopensource-installation-development/packages/generic/codeaster-prerequisites/20251026/codeaster-prerequisites-20251026-oss.tar.gz

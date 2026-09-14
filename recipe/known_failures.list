@@ -30,3 +30,7 @@ zzzz213b
 
 # checks the output of the med 'mdump' tool, which differs with conda-forge libmed 4.2
 zzzz413a
+
+# numpy.linalg.eigvals returns complex values for the reference computed in the
+# testcase file, rejected by TEST_RESU (depends on the numpy/LAPACK build)
+zzzz208b
