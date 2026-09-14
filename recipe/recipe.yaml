@@ -112,7 +112,8 @@ outputs:
         - metis
         - hdf5 >=1.14 *${{ mpi }}*
         - libmed * *${{ mpi }}*
-        - medcoupling * *${{ mpi }}*
+        # ParaMEDMEM.CFEMDEC (code_aster.Coupling) requires medcoupling >= 9.16
+        - medcoupling >=9.16 *${{ mpi }}*
         - scipy
         - mumps-include
         - if: (mpi == 'nompi') and not win

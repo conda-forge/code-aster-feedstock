@@ -1,22 +1,5 @@
 # code_aster testcases additionally excluded in the MPI build
 
-# ParaMEDMEM.CFEMDEC requires medcoupling >= 9.15 (conda-forge has 9.14)
-hsnv100z
-zzzz178d
-zzzz178e
-zzzz215d
-zzzz216b
-zzzz216c
-zzzz216d
-zzzz216e
-zzzz216f
-zzzz216g
-zzzz216i
-zzzz216j
-zzzz216k
-zzzz216l
-zzzz216m
-
 # conda-forge petsc is built without HPDDM
 sslp116e
 zzzz178b
