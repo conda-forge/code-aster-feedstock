@@ -97,4 +97,12 @@ if %JOBS% GTR 8 set JOBS=8
 waf install -j %JOBS%
 if errorlevel 1 exit 1
 
+:: Run the code_aster testcases from the source tree against the installed
+:: build, mirroring the run_ctest step of build.sh on Linux. See
+:: config/run_win_testcases.py for the label/known-failures/rerun logic
+:: (kept out of batch: delayed-expansion/quoting make that class of logic
+:: much more error-prone here than in Python).
+python "%RECIPE_DIR%\config\run_win_testcases.py"
+if errorlevel 1 exit 1
+
 endlocal

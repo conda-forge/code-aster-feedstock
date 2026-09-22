@@ -188,6 +188,22 @@ outputs:
         - if: (mpi != 'nompi') and not win
           then:
             - petsc4py
+        # Windows: bibfor.dll/bibfor_ext.dll/AsterGC.dll/dmumps.dll all need
+        # the ifx runtime (libifcoremd.dll, libmmd.dll, svml_dispmd.dll).
+        # Reproduced directly in a built test env: `import code_aster` raised
+        # "Could not load bibc.dll. Error: The specified module could not be
+        # found" (bibc.dll itself was found and loaded via its absolute path
+        # -- ERROR_MOD_NOT_FOUND there only means one of ITS dependencies
+        # didn't resolve); copying these 3 DLLs in was enough to fix it.
+        # hdf5/libmed/metis/scotch/mumps-seq are NOT missing -- they're
+        # already present transitively via medcoupling/mumps-seq-fortran-
+        # devel/mkl's own real dependencies. No run_export carries the ifx
+        # runtime itself here: `ifx_win-64` (what compiler('fortran')
+        # resolves to) has no run_exports of its own; the strong run_export
+        # lives one level down on its dependency ifx_impl_win-64, and that
+        # doesn't appear to propagate transitively in this setup.
+        - if: win
+          then: intel-fortran-rt
       run_exports:
         - ${{ pin_subpackage('code-aster', upper_bound='x.x') }}
 
