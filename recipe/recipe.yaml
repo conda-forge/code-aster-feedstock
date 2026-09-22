@@ -2,11 +2,11 @@ schema_version: 1
 
 context:
   name: code-aster
-  version: "18.1.6"
-  sha256: 3f29c820559d9345c79fd85a6150445518b3d45ee40f0b9d1f1640d744cf03f2
+  version: "18.1.7"
+  sha256: cdaaa8743dba56f298e2279518ee718cb73eb4f6b9048713b8a6413f6defb88a
   build: 0
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
-  build_num: ${{ build|int + mpi_num }}
+  build_num: 0
   mpi_prefix: ${{ mpi or 'nompi' }}
   # code-aster-tests (noarch) is built, and the full testcase set used, only in the nompi job of the lowest python
   tests_python: ${{ python_min }}
