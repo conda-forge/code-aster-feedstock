@@ -4,8 +4,11 @@ context:
   name: code-aster
   version: "18.1.7"
   sha256: cdaaa8743dba56f298e2279518ee718cb73eb4f6b9048713b8a6413f6defb88a
-  build_num: 1
+  # Enter build number here
+  build: 1
+  # this is where the final build number is calculated depending on the matrix of python/mpi variants
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
+  build_num: ${{ build + mpi_num }}
   mpi_prefix: ${{ mpi or 'nompi' }}
   # code-aster-tests (noarch) is built, and the full testcase set used, only in the nompi job of the lowest python
   tests_python: ${{ python_min }}
@@ -46,8 +49,8 @@ outputs:
       name: ${{ name }}-tests
       version: ${{ version }}
     build:
-      number: ${{ build }}
-      string: h${{ hash }}_${{ build }}
+      number: ${{ build_num }}
+      string: h${{ hash }}_${{ build_num }}
       script: copy_tests.sh
       noarch: generic
       # noarch output: build it in a single CI job only.
