@@ -90,12 +90,21 @@ def aster_env(prefix):
     return env
 
 
-def run_ctest(host_python, ctest_args, env, rerun_failed=False):
+def run_ctest(host_python, ctest_args, env, cwd, rerun_failed=False):
     cmd = [host_python, "-m", "run_aster.run_ctest_main"] + ctest_args
     if rerun_failed:
         cmd.append("--rerun-failed")
     print("Running code_aster testcases:", " ".join(cmd))
-    return subprocess.run(cmd, env=env).returncode
+    # cwd must NOT be SRC_DIR: 'python -m' prepends the working directory to
+    # sys.path, and the source tree has its own run_aster/ package, which
+    # would shadow the installed one. The source copy then resolves
+    # RUNASTER_ROOT by walking up from its own location looking for "Lib",
+    # never finds it, and silently falls through to the drive root --
+    # every testcase then fails with
+    #   Unable to find executable: C:/Library/share/aster/run_aster_for_ctest.bat
+    # All paths passed to run_ctest_main are absolute, so any stable
+    # directory works; PREFIX has no top-level run_aster/ to shadow with.
+    return subprocess.run(cmd, env=env, cwd=cwd).returncode
 
 
 def print_failure_diagnostics(resutest):
@@ -168,11 +177,11 @@ def main():
     env = aster_env(prefix)
 
     # Rerun failed testcases twice, as done in code_aster CI.
-    rc = run_ctest(host_python, ctest_args, env)
+    rc = run_ctest(host_python, ctest_args, env, prefix)
     if rc != 0:
-        rc = run_ctest(host_python, ctest_args, env, rerun_failed=True)
+        rc = run_ctest(host_python, ctest_args, env, prefix, rerun_failed=True)
     if rc != 0:
-        rc = run_ctest(host_python, ctest_args, env, rerun_failed=True)
+        rc = run_ctest(host_python, ctest_args, env, prefix, rerun_failed=True)
     if rc != 0:
         print_failure_diagnostics(resutest)
         print("code_aster testcases failed")

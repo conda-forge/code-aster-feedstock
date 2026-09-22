@@ -1,5 +1,5 @@
 diff --git a/bibc/include/aster_depend.h b/bibc/include/aster_depend.h
-index d81c1cfc5a..1d4c2429ea 100644
+index d81c1cfc5a..cc1dd10165 100644
 --- a/bibc/include/aster_depend.h
 +++ b/bibc/include/aster_depend.h
 @@ -51,11 +51,16 @@
@@ -23,6 +23,19 @@ index d81c1cfc5a..1d4c2429ea 100644
  #endif
  
  /* MS Windows platforms */
+@@ -108,7 +113,11 @@ typedef ASTER_C_FORTRAN_LOGICAL ASTERLOGICAL;
+ 
+ /* Comportement par défaut des FPE dans matfpe pour les blas/lapack */
+ /* On non GNU/Linux systems, FPE are always enabled */
+-#if defined ASTER_PLATFORM_LINUX || defined ASTER_PLATFORM_MINGW
++/* ASTER_PLATFORM_WINDOWS (MSVC) supports this too: inisig.c unmasks
++ * _EM_ZERODIVIDE|_EM_OVERFLOW there, so without this matfpe() is a no-op and
++ * every FPE shield around BLAS/LAPACK is dead -- MKL then traps inside its own
++ * kernels (seen crashing numpy.linalg.eigh via MKL). */
++#if defined ASTER_PLATFORM_LINUX || defined ASTER_PLATFORM_MINGW || defined ASTER_PLATFORM_WINDOWS
+ #ifndef ASTER_HAVE_SUPPORT_FPE
+ #define ASTER_HAVE_SUPPORT_FPE
+ #endif
 diff --git a/bibc/include/aster_mpi.h b/bibc/include/aster_mpi.h
 index b316d4bcaa..3b2e414960 100644
 --- a/bibc/include/aster_mpi.h
@@ -44,8 +57,41 @@ index b316d4bcaa..3b2e414960 100644
  
  #define CALL_ASABRT( a ) CALLP( ASABRT, asabrt, a )
  extern void DEFP( ASABRT, asabrt, _IN ASTERINTEGER * );
+diff --git a/bibc/supervis/aster_core_module.c b/bibc/supervis/aster_core_module.c
+index 6eb7fd48e9..db68c67393 100644
+--- a/bibc/supervis/aster_core_module.c
++++ b/bibc/supervis/aster_core_module.c
+@@ -337,7 +337,7 @@ static PyObject *asterc_get_mem_stat( PyObject *self, PyObject *args ) {
+     /* retour de la fonction */
+     t_res = PyTuple_New( 2 );
+     PyTuple_SetItem( t_res, 0, t_valres );
+-    PyTuple_SetItem( t_res, 1, PyLong_FromLong( (long)codret ) );
++    PyTuple_SetItem( t_res, 1, PyLong_FromLongLong( (long long)codret ) );
+ 
+     FreeStr( nompar );
+     free( valres );
+@@ -381,7 +381,7 @@ void DEFSPSPSPPPPS( UTPRIN, utprin, _IN char *typmess, _IN STRING_SIZE ltype,
+ 
+     tup_vali = PyTuple_New( (Py_ssize_t)*nbi );
+     for ( i = 0; i < *nbi; i++ ) {
+-        PyTuple_SetItem( tup_vali, i, PyLong_FromLong( (long)vali[i] ) );
++        PyTuple_SetItem( tup_vali, i, PyLong_FromLongLong( (long long)vali[i] ) );
+     }
+ 
+     tup_valr = PyTuple_New( (Py_ssize_t)*nbr );
+@@ -533,8 +533,8 @@ void DEFSSPPPPPPPPPPPP( TESTRESU_PRINT, testresu_print, _IN char *refer, _IN STR
+         val = PyFloat_FromDouble( (double)( *valr ) );
+         break;
+     case 2:
+-        ref = PyLong_FromLong( (long)( *refi ) );
+-        val = PyLong_FromLong( (long)( *vali ) );
++        ref = PyLong_FromLongLong( (long long)( *refi ) );
++        val = PyLong_FromLongLong( (long long)( *vali ) );
+         break;
+     case 3:
+         ref = PyComplex_FromDoubles( (double)( *refc ), (double)( *( refc + 1 ) ) );
 diff --git a/bibc/supervis/aster_module.c b/bibc/supervis/aster_module.c
-index bc4a9de730..fe85aa404b 100644
+index bc4a9de730..706b4445ab 100644
 --- a/bibc/supervis/aster_module.c
 +++ b/bibc/supervis/aster_module.c
 @@ -38,6 +38,13 @@
@@ -62,6 +108,24 @@ index bc4a9de730..fe85aa404b 100644
  #ifdef ASTER_HAVE_PETSC
  #include "petsc.h"
  
+@@ -1035,7 +1042,7 @@ static PyObject *aster_getvectjev( PyObject *self, PyObject *args ) {
+             l = (ASTERINTEGER *)iaddr;
+             tup = PyTuple_New( (Py_ssize_t)lcon );
+             for ( i = 0; i < lcon; i++ ) {
+-                PyTuple_SetItem( tup, i, PyLong_FromLong( (long)l[i] ) );
++                PyTuple_SetItem( tup, i, PyLong_FromLongLong( (long long)l[i] ) );
+             }
+         } else if ( ctype == 9 ) {
+             /* ENTIER COURT */
+@@ -1158,7 +1165,7 @@ static PyObject *aster_getcolljev( PyObject *self, PyObject *args ) {
+                 l = (ASTERINTEGER *)iaddr;
+                 tup = PyTuple_New( (Py_ssize_t)lcon );
+                 for ( i = 0; i < lcon; i++ ) {
+-                    PyTuple_SetItem( tup, i, PyLong_FromLong( (long)l[i] ) );
++                    PyTuple_SetItem( tup, i, PyLong_FromLongLong( (long long)l[i] ) );
+                 }
+                 DictSetAndDecRef( dico, key, tup );
+                 break;
 @@ -1942,6 +1949,25 @@ static struct PyModuleDef aster_def = { PyModuleDef_HEAD_INIT,
  PyObject *PyInit_aster( void ) {
      PyObject *aster = (PyObject *)0;
@@ -134,6 +198,28 @@ index dec61d695a..7cfd9a778a 100644
  /*
   *   PRIVATE FUNCTIONS
   *
+diff --git a/bibc/supervis/aster_utils.c b/bibc/supervis/aster_utils.c
+index 65fa441e67..25528c7bcd 100644
+--- a/bibc/supervis/aster_utils.c
++++ b/bibc/supervis/aster_utils.c
+@@ -391,7 +391,7 @@ PyObject *MakeTupleInt( long nbval, ASTERINTEGER *kval ) {
+     PyObject *tupl;
+     tupl = PyTuple_New( (Py_ssize_t)nbval );
+     for ( i = 0; i < nbval; i++ ) {
+-        if ( PyTuple_SetItem( tupl, i, PyLong_FromLong( (long)kval[i] ) ) ) {
++        if ( PyTuple_SetItem( tupl, i, PyLong_FromLongLong( (long long)kval[i] ) ) ) {
+             Py_DECREF( tupl );
+             return NULL;
+         }
+@@ -413,7 +413,7 @@ PyObject *MakeListInt( long nbval, ASTERINTEGER *kval ) {
+     int i;
+     PyObject *l = PyList_New( (Py_ssize_t)nbval );
+     for ( i = 0; i < nbval; i++ ) {
+-        if ( PyList_SetItem( l, i, PyLong_FromLong( (long)kval[i] ) ) ) {
++        if ( PyList_SetItem( l, i, PyLong_FromLongLong( (long long)kval[i] ) ) ) {
+             Py_DECREF( l );
+             return NULL;
+         }
 diff --git a/bibc/supervis/dll_interface.c b/bibc/supervis/dll_interface.c
 index 314c0f304c..b2c1ed277d 100644
 --- a/bibc/supervis/dll_interface.c
@@ -228,6 +314,96 @@ index 03e0e07e87..cce4f92fc9 100644
      _clearfp();
      cw = _controlfp( 0, 0 );
      cw &= ~( _EM_OVERFLOW | _EM_ZERODIVIDE );
+diff --git a/bibc/utilitai/iodr.c b/bibc/utilitai/iodr.c
+index 363453b4da..09187ac1a3 100644
+--- a/bibc/utilitai/iodr.c
++++ b/bibc/utilitai/iodr.c
+@@ -26,7 +26,13 @@
+ #define OFF_INIT ASTER_INT_SIZE
+ 
+ static FILE *fpfile[MAX_FAC];
+-static long nenr[MAX_FAC];
++/* nenr holds the record length, read/written as OFF_INIT (= ASTER_INT_SIZE = 8)
++ * bytes and used in the file-offset arithmetic below. It must therefore be an
++ * 8-byte type: as `long` it is only 4 bytes on LLP64 (Windows), so the fread at
++ * OPENDR overran into nenr[iu+1] and the fwrite at WRITDR emitted 4 bytes of
++ * the neighbouring slot as part of the record-length header. It also made the
++ * offset multiply 32-bit. */
++static ASTERINTEGER nenr[MAX_FAC];
+ 
+ static long nbFAC = 0;
+ static char *nomFAC[MAX_FAC];
+@@ -142,7 +148,9 @@ void DEFSP( CLOSDR, closdr, char *dfname, STRING_SIZE len_dfname, ASTERINTEGER *
+ 
+ void DEFSPPPP( READDR, readdr, char *dfname, STRING_SIZE len_dfname, void *buf,
+                ASTERINTEGER *nbytes, ASTERINTEGER *irec, ASTERINTEGER *ierr ) {
+-#if defined ASTER_HAVE_LONG_LONG
++/* ASTER_HAVE_LONG_LONG is only defined for MinGW, so MSVC fell back to a 32-bit
++ * `long` offset and plain fseek(): any base over 2 GB silently corrupted. */
++#if defined ASTER_HAVE_LONG_LONG || defined ASTER_PLATFORM_WINDOWS
+     long long offset;
+ #else
+     long offset;
+@@ -170,7 +178,7 @@ void DEFSPPPP( READDR, readdr, char *dfname, STRING_SIZE len_dfname, void *buf,
+         return;
+     }
+     offset = ( *irec - 1 ) * nenr[iu] + OFF_INIT;
+-#if defined ASTER_HAVE_LONG_LONG
++#if defined ASTER_HAVE_LONG_LONG || defined ASTER_PLATFORM_WINDOWS
+     nbseek = _fseeki64( fpfile[iu], offset, SEEK_SET );
+ #else
+     nbseek = fseek( fpfile[iu], offset, SEEK_SET );
+@@ -184,7 +192,8 @@ void DEFSPPPP( READDR, readdr, char *dfname, STRING_SIZE len_dfname, void *buf,
+ 
+ void DEFSPPPP( WRITDR, writdr, char *dfname, STRING_SIZE len_dfname, void *buf,
+                ASTERINTEGER *nbytes, ASTERINTEGER *irec, ASTERINTEGER *ierr ) {
+-#if defined ASTER_HAVE_LONG_LONG
++/* see READDR above */
++#if defined ASTER_HAVE_LONG_LONG || defined ASTER_PLATFORM_WINDOWS
+     long long offset;
+ #else
+     long offset;
+@@ -211,7 +220,7 @@ void DEFSPPPP( WRITDR, writdr, char *dfname, STRING_SIZE len_dfname, void *buf,
+         nbwrite = fwrite( &nenr[iu], OFF_INIT, 1, fpfile[iu] );
+     }
+     offset = ( *irec - 1 ) * ( nenr[iu] ) + OFF_INIT;
+-#if defined ASTER_HAVE_LONG_LONG
++#if defined ASTER_HAVE_LONG_LONG || defined ASTER_PLATFORM_WINDOWS
+     nbseek = _fseeki64( fpfile[iu], offset, SEEK_SET );
+ #else
+     nbseek = fseek( fpfile[iu], offset, SEEK_SET );
+diff --git a/bibc/utilitai/matfpe.c b/bibc/utilitai/matfpe.c
+index 564c9f1852..18f29b3921 100644
+--- a/bibc/utilitai/matfpe.c
++++ b/bibc/utilitai/matfpe.c
+@@ -52,12 +52,16 @@ void DEFP( MATFPE, matfpe, ASTERINTEGER *enable ) {
+ 
+     /* permet juste de vérifier où on en est si besoin ! */
+     if ( *enable == 0 ) {
+-        printf( "#MATFPE var = %ld (compteur %d)\n", *enable, compteur_fpe );
++        /* ASTERINTEGER is 64-bit; %ld is 32-bit on LLP64 (Windows) */
++        printf( "#MATFPE var = %lld (compteur %d)\n", (long long)*enable, compteur_fpe );
+         return;
+     }
+     compteur_fpe = compteur_fpe + *enable;
+     if ( compteur_fpe < 1 ) {
+-#if defined ASTER_PLATFORM_MINGW
++/* fe{enable,disable,clear}except are GNU extensions: they do not exist in the
++ * MSVC CRT (and <fenv.h> is only included on POSIX above). Windows -- MinGW and
++ * MSVC alike -- uses the _controlfp mask API instead. */
++#if defined ASTER_PLATFORM_MINGW || defined ASTER_PLATFORM_WINDOWS
+         _controlfp( _MCW_EM, _MCW_EM );
+ #else
+         fedisableexcept( ASTER_SIGFPE );
+@@ -66,7 +70,7 @@ void DEFP( MATFPE, matfpe, ASTERINTEGER *enable ) {
+         signal( SIGFPE, hanfpe );
+     } else if ( compteur_fpe >= 1 ) {
+         /* avant de reactiver le controle des FPE, on abaisse les flags */
+-#if defined ASTER_PLATFORM_MINGW
++#if defined ASTER_PLATFORM_MINGW || defined ASTER_PLATFORM_WINDOWS
+         _clearfp();
+         _controlfp( _EM_UNDERFLOW | _EM_DENORMAL | _EM_INEXACT, _MCW_EM );
+ #else
 diff --git a/bibc/utilitai/mempid.c b/bibc/utilitai/mempid.c
 index 8f8a56ef1f..bd3b9e835a 100644
 --- a/bibc/utilitai/mempid.c
@@ -1190,7 +1366,7 @@ index 016cc60a20..db4201c08c 100644
      implicit none
  #include "jeveux.h"
 diff --git a/bibfor/wscript b/bibfor/wscript
-index a65a680ab4..3bbbd66c8d 100644
+index a65a680ab4..8f3e1f1931 100644
 --- a/bibfor/wscript
 +++ b/bibfor/wscript
 @@ -56,7 +56,10 @@ def build(self):
@@ -1298,7 +1474,7 @@ index a65a680ab4..3bbbd66c8d 100644
      self.remove_flags("FCFLAGS", "^-O[0-9]")
      self.setenv("debug")
      self.start_msg("Setting fortran debug flags")
-@@ -543,6 +587,25 @@ def check_optimization_fcflags(self):
+@@ -543,6 +587,31 @@ def check_optimization_fcflags(self):
      self.end_msg(optflag)
  
  
@@ -1316,7 +1492,13 @@ index a65a680ab4..3bbbd66c8d 100644
 +
 +    self.setenv("release")
 +    self.start_msg("Setting Fortran optimization flags for ifx")
-+    flags = ["/Od"]
++    # The release build must be optimized: this is the whole solver. /Od here
++    # left every Fortran routine unoptimized (release C/C++ is correctly /O2),
++    # which also inflates stack usage because nothing is reused across slots.
++    # /traceback is kept in release so the ifx crash handler can still symbolize
++    # a native stack (that is what makes the <F> DVP_2 reports readable).
++    self.remove_flags("FCFLAGS", "^/O[0-9a-z]")
++    flags = ["/O2", "/traceback"]
 +    self.env.append_unique("FCFLAGS", flags)
 +    self.end_msg(flags)
 +
@@ -3127,10 +3309,10 @@ index 1c8c0633b1..c66146b8e0 100644
  # for as_run --messages, --get, --show..., and astout
  SRCPY          | src     | -     | $ASTER_ROOT\@BASE_PREFIX@\lib\aster\code_aster\Utilities
 diff --git a/data/profile.bat.tmpl b/data/profile.bat.tmpl
-index 88679657fd..52f8d6875f 100644
+index 88679657fd..9bd57759ee 100644
 --- a/data/profile.bat.tmpl
 +++ b/data/profile.bat.tmpl
-@@ -1,10 +1,25 @@
+@@ -1,10 +1,27 @@
  :: created by waf using data/wscript
 +@echo off
  
@@ -3156,18 +3338,26 @@ index 88679657fd..52f8d6875f 100644
 +    set "_ASTER_LIB_SUBDIR=%ASTER_ROOT%\@BASE_PREFIX@\lib"
 +)
 +REM Update PYTHONPATH using selected lib directory
-+set "PYTHONPATH=%_ASTER_LIB_SUBDIR%;%ASTER_ROOT%\lib\site-packages;%PYTHONPATH%"
++REM The trailing "." matches profile.sh.tmpl: testcases import helper modules
++REM copied next to the command file in the working directory.
++set "PYTHONPATH=%_ASTER_LIB_SUBDIR%;%ASTER_ROOT%\lib\site-packages;%PYTHONPATH%;."
 +
 +set "ASTER_DATADIR=%ASTER_ROOT%\@BASE_PREFIX@\share\aster"
 +set "ASTER_LIBDIR=%_ASTER_LIB_SUBDIR%"
 +set "ASTER_LOCALEDIR=%ASTER_ROOT%\@BASE_PREFIX@\share\locale\aster"
 +set "ASTER_ELEMENTSDIR=%_ASTER_LIB_SUBDIR%"
 diff --git a/data/run_aster.bat b/data/run_aster.bat
-index ccbdb1f4f3..b8aa604c5e 100644
+index ccbdb1f4f3..3c0f6df082 100644
 --- a/data/run_aster.bat
 +++ b/data/run_aster.bat
-@@ -2,11 +2,20 @@ echo OFF
- setlocal
+@@ -1,12 +1,26 @@
+ echo OFF
+-setlocal
++:: enabledelayedexpansion: cmd.exe expands %VAR% when it PARSES a parenthesized
++:: block, i.e. before any 'set' inside that block has run. The non-conda branch
++:: below builds each variable from the previous one, so it must use !VAR! or it
++:: would resolve them all to empty (ASTER_ROOT would become just "\..").
++setlocal enabledelayedexpansion
  set PYTHONIOENCODING=UTF-8
  chcp 65001
 -set RUNASTER_ROOT=%~dp0..
@@ -3179,28 +3369,34 @@ index ccbdb1f4f3..b8aa604c5e 100644
 +:: If not CONDA_PREFIX is defined, set these variables
 +if not defined CONDA_PREFIX (
 +    set "RUNASTER_ROOT=%~dp0.."
-+    set "ASTER_ROOT=%RUNASTER_ROOT%\.."
-+    set "OUTILS=%ASTER_ROOT%\outils"
-+    set "PYTHONHOME=%ASTER_ROOT%"
-+    set "PYTHONPATH=%ASTER_ROOT%\lib\site-packages;%RUNASTER_ROOT%\lib\aster"
-+    set "PATH=%PYTHONHOME%;%OUTILS%;%PATH%"
++    set "ASTER_ROOT=!RUNASTER_ROOT!\.."
++    set "OUTILS=!ASTER_ROOT!\outils"
++    set "PYTHONHOME=!ASTER_ROOT!"
++    :: trailing "." matches profile.sh.tmpl: testcases import helper modules
++    :: copied next to the command file in the working directory
++    set "PYTHONPATH=!ASTER_ROOT!\lib\site-packages;!RUNASTER_ROOT!\lib\aster;."
++    set "PATH=!PYTHONHOME!;!OUTILS!;!PATH!"
 +) else (
 +    set "ASTER_ROOT=%CONDA_PREFIX%\Library"
-+
 +)
 +
-+call "%ASTER_ROOT%\share\aster\profile.bat"
++call "!ASTER_ROOT!\share\aster\profile.bat"
  
  python -m run_aster.run_aster_main %*
 diff --git a/data/run_ctest.bat b/data/run_ctest.bat
-index eb8e564614..3e617b9327 100644
+index eb8e564614..e2b03bb8ce 100644
 --- a/data/run_ctest.bat
 +++ b/data/run_ctest.bat
-@@ -1,12 +1,22 @@
+@@ -1,12 +1,28 @@
 -echo OFF
+-setlocal
 +@echo OFF
 +
- setlocal
++:: enabledelayedexpansion: cmd.exe expands %VAR% when it PARSES a parenthesized
++:: block, i.e. before any 'set' inside that block has run. The non-conda branch
++:: below builds each variable from the previous one, so it must use !VAR! or it
++:: would resolve them all to empty (ASTER_ROOT would become just "\..").
++setlocal enabledelayedexpansion
  set PYTHONIOENCODING=UTF-8
  chcp 65001
 -set RUNASTER_ROOT=%~dp0..
@@ -3214,12 +3410,14 @@ index eb8e564614..3e617b9327 100644
 +    call "%CONDA_PREFIX%\Library\share\aster\profile.bat"
 +) else (
 +    set "RUNASTER_ROOT=%~dp0.."
-+    set "ASTER_ROOT=%RUNASTER_ROOT%\.."
-+    set "OUTILS=%ASTER_ROOT%\outils"
-+    set "PYTHONHOME=%ASTER_ROOT%"
-+    set "PYTHONPATH=%ASTER_ROOT%\lib\site-packages;%RUNASTER_ROOT%\lib\aster"
-+    set "PATH=%PYTHONHOME%;%OUTILS%;%PATH%"
-+    call "%RUNASTER_ROOT%\share\aster\profile.bat"
++    set "ASTER_ROOT=!RUNASTER_ROOT!\.."
++    set "OUTILS=!ASTER_ROOT!\outils"
++    set "PYTHONHOME=!ASTER_ROOT!"
++    :: trailing "." matches profile.sh.tmpl: testcases import helper modules
++    :: copied next to the command file in the working directory
++    set "PYTHONPATH=!ASTER_ROOT!\lib\site-packages;!RUNASTER_ROOT!\lib\aster;."
++    set "PATH=!PYTHONHOME!;!OUTILS!;!PATH!"
++    call "!RUNASTER_ROOT!\share\aster\profile.bat"
 +)
  
  python -m run_aster.run_ctest_main %*
@@ -6900,10 +7098,26 @@ index 6a049d1461..3b57e6858c 100644
  
      state = 0
 diff --git a/run_aster/utils.py b/run_aster/utils.py
-index 0ae8962a08..52fad78f87 100644
+index 0ae8962a08..34f6d2966c 100644
 --- a/run_aster/utils.py
 +++ b/run_aster/utils.py
-@@ -215,7 +215,10 @@ def _waitstatus_to_exitcode(status):
+@@ -201,9 +201,12 @@ def _waitstatus_to_exitcode(status):
+         int: exit code.
+     """
+     if RUNASTER_PLATFORM == "win":
+-        # https://stackoverflow.com/questions/10931134
+-        #   /return-value-of-system-function-call-in-c-used-to-run-a-python-program
+-        return status >> 8
++        # os.system() on Windows returns the child's exit code directly (see the
++        # comment on the assignment below), not a Unix-style wait status, so it
++        # must NOT be shifted: >> 8 turned every code below 256 into 0, i.e. a
++        # failed execution reported as success whenever no exitcode file was
++        # written.
++        return status
+     if os.WIFSIGNALED(status):
+         returncode = -os.WTERMSIG(status)
+     elif os.WIFEXITED(status):
+@@ -215,7 +218,10 @@ def _waitstatus_to_exitcode(status):
      return returncode
  
  

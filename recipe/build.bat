@@ -37,7 +37,22 @@ set "CXXFLAGS=/std:c++20 /EHs /permissive- /MD /FS"
 :: code_aster Fortran is built with 64-bit default integers/reals (ASTER_INT8).
 :: The conda-forge ifx MUMPS headers use explicit INTEGER(4), so its derived
 :: types keep the library layout under /integer-size:64.
-set "FCFLAGS=%FCFLAGS% /fpp /integer-size:64 /real-size:64 /MD /names:lowercase /assume:underscore /assume:nobscc /fpe:0 /traceback /nologo"
+::
+:: /fpscomp:logicals -- aster_logical is logical(kind=1) and the SAME bytes are
+::   read on the C++ side as `bool` (bibcxx/Supervis/astercxx.h ASTERBOOL,
+::   JeveuxVector<bool>, SimpleFieldOnCells::hasValue). ifx's default
+::   representation writes .TRUE. as 0xFF, but the C++ `bool` contract requires
+::   0/1, so `b == true` compares against 1 and fails -- and conversely a C++
+::   `true` (0x01) tested by ifx with .eqv. .TRUE. (bit compare vs 0xFF) is
+::   false. This flag makes ifx emit 1 and treat any nonzero as true, which
+::   fixes both directions. (/standard-semantics would also do it but drags in
+::   a dozen unrelated semantic changes.)
+:: /heap-arrays:0 -- ifx puts automatic/temporary arrays on the stack. The host
+::   process is python.exe with a ~2 MB stack reserve and cannot be relinked;
+::   Linux gets `ulimit -s unlimited` instead, which has no Windows equivalent.
+::   The deep nonlinear call chains (behaviour integration / assembly) overflow
+::   it. Cost is a heap allocation per automatic array.
+set "FCFLAGS=%FCFLAGS% /fpp /integer-size:64 /real-size:64 /MD /names:lowercase /assume:underscore /assume:nobscc /fpscomp:logicals /heap-arrays:0 /fpe:0 /traceback /nologo"
 
 set "LDFLAGS=%LDFLAGS% /LIBPATH:%LIB_ROOT%/lib /LIBPATH:%LIB_ROOT%/bin /LIBPATH:%PREF_ROOT%/libs"
 set "LDFLAGS=%LDFLAGS% mkl_intel_lp64_dll.lib mkl_intel_thread_dll.lib mkl_core_dll.lib libiomp5md.lib"
