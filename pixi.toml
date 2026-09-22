@@ -4,10 +4,10 @@
 "$schema" = "https://pixi.sh/v0.59.0/schema/manifest/schema.json"
 
 [workspace]
-name = "code-aster-feedstock"
-version = "2026.9.21"  # conda-smithy version used to generate this file
-description = "Pixi configuration for conda-forge/code-aster-feedstock"
-authors = ["@conda-forge/code-aster"]
+name = "cafs-feedstock"
+version = "2026.9.22"  # conda-smithy version used to generate this file
+description = "Pixi configuration for conda-forge/cafs-feedstock"
+authors = ["@conda-forge/cafs"]
 channels = ["conda-forge"]
 platforms = ["linux-64", "osx-64", "win-64"]
 requires-pixi = ">=0.59.0"
@@ -36,79 +36,115 @@ cmd = "inspect_artifacts --all-packages"
 description = "List contents of all packages found in rattler-build build directory."
 [feature.build.tasks.build]
 cmd = "rattler-build build --recipe recipe"
-description = "Build code-aster-feedstock directly (without setup scripts), no particular variant specified"
+description = "Build cafs-feedstock directly (without setup scripts), no particular variant specified"
 [feature.build.tasks."build-linux_64_mpinompipython3.11.____cpython"]
 cmd = "rattler-build build --recipe recipe -m .ci_support/linux_64_mpinompipython3.11.____cpython.yaml --target-platform linux-64"
-description = "Build code-aster-feedstock with variant linux_64_mpinompipython3.11.____cpython directly (without setup scripts)"
+description = "Build cafs-feedstock with variant linux_64_mpinompipython3.11.____cpython directly (without setup scripts)"
 [feature.build.tasks."debug-linux_64_mpinompipython3.11.____cpython"]
 cmd = "rattler-build debug setup --recipe recipe -m .ci_support/linux_64_mpinompipython3.11.____cpython.yaml --target-platform linux-64"
-description = "Debug code-aster-feedstock with variant linux_64_mpinompipython3.11.____cpython directly (without setup scripts)"
+description = "Debug cafs-feedstock with variant linux_64_mpinompipython3.11.____cpython directly (without setup scripts)"
 [feature.build.tasks."inspect-linux_64_mpinompipython3.11.____cpython"]
 cmd = "inspect_artifacts --recipe-dir recipe -m .ci_support/linux_64_mpinompipython3.11.____cpython.yaml"
-description = "List contents of code-aster-feedstock packages built for variant linux_64_mpinompipython3.11.____cpython"
+description = "List contents of cafs-feedstock packages built for variant linux_64_mpinompipython3.11.____cpython"
 [feature.build.tasks."build-linux_64_mpinompipython3.12.____cpython"]
 cmd = "rattler-build build --recipe recipe -m .ci_support/linux_64_mpinompipython3.12.____cpython.yaml --target-platform linux-64"
-description = "Build code-aster-feedstock with variant linux_64_mpinompipython3.12.____cpython directly (without setup scripts)"
+description = "Build cafs-feedstock with variant linux_64_mpinompipython3.12.____cpython directly (without setup scripts)"
 [feature.build.tasks."debug-linux_64_mpinompipython3.12.____cpython"]
 cmd = "rattler-build debug setup --recipe recipe -m .ci_support/linux_64_mpinompipython3.12.____cpython.yaml --target-platform linux-64"
-description = "Debug code-aster-feedstock with variant linux_64_mpinompipython3.12.____cpython directly (without setup scripts)"
+description = "Debug cafs-feedstock with variant linux_64_mpinompipython3.12.____cpython directly (without setup scripts)"
 [feature.build.tasks."inspect-linux_64_mpinompipython3.12.____cpython"]
 cmd = "inspect_artifacts --recipe-dir recipe -m .ci_support/linux_64_mpinompipython3.12.____cpython.yaml"
-description = "List contents of code-aster-feedstock packages built for variant linux_64_mpinompipython3.12.____cpython"
+description = "List contents of cafs-feedstock packages built for variant linux_64_mpinompipython3.12.____cpython"
 [feature.build.tasks."build-linux_64_mpinompipython3.13.____cp313"]
 cmd = "rattler-build build --recipe recipe -m .ci_support/linux_64_mpinompipython3.13.____cp313.yaml --target-platform linux-64"
-description = "Build code-aster-feedstock with variant linux_64_mpinompipython3.13.____cp313 directly (without setup scripts)"
+description = "Build cafs-feedstock with variant linux_64_mpinompipython3.13.____cp313 directly (without setup scripts)"
 [feature.build.tasks."debug-linux_64_mpinompipython3.13.____cp313"]
 cmd = "rattler-build debug setup --recipe recipe -m .ci_support/linux_64_mpinompipython3.13.____cp313.yaml --target-platform linux-64"
-description = "Debug code-aster-feedstock with variant linux_64_mpinompipython3.13.____cp313 directly (without setup scripts)"
+description = "Debug cafs-feedstock with variant linux_64_mpinompipython3.13.____cp313 directly (without setup scripts)"
 [feature.build.tasks."inspect-linux_64_mpinompipython3.13.____cp313"]
 cmd = "inspect_artifacts --recipe-dir recipe -m .ci_support/linux_64_mpinompipython3.13.____cp313.yaml"
-description = "List contents of code-aster-feedstock packages built for variant linux_64_mpinompipython3.13.____cp313"
+description = "List contents of cafs-feedstock packages built for variant linux_64_mpinompipython3.13.____cp313"
 [feature.build.tasks."build-linux_64_mpinompipython3.14.____cp314"]
 cmd = "rattler-build build --recipe recipe -m .ci_support/linux_64_mpinompipython3.14.____cp314.yaml --target-platform linux-64"
-description = "Build code-aster-feedstock with variant linux_64_mpinompipython3.14.____cp314 directly (without setup scripts)"
+description = "Build cafs-feedstock with variant linux_64_mpinompipython3.14.____cp314 directly (without setup scripts)"
 [feature.build.tasks."debug-linux_64_mpinompipython3.14.____cp314"]
 cmd = "rattler-build debug setup --recipe recipe -m .ci_support/linux_64_mpinompipython3.14.____cp314.yaml --target-platform linux-64"
-description = "Debug code-aster-feedstock with variant linux_64_mpinompipython3.14.____cp314 directly (without setup scripts)"
+description = "Debug cafs-feedstock with variant linux_64_mpinompipython3.14.____cp314 directly (without setup scripts)"
 [feature.build.tasks."inspect-linux_64_mpinompipython3.14.____cp314"]
 cmd = "inspect_artifacts --recipe-dir recipe -m .ci_support/linux_64_mpinompipython3.14.____cp314.yaml"
-description = "List contents of code-aster-feedstock packages built for variant linux_64_mpinompipython3.14.____cp314"
+description = "List contents of cafs-feedstock packages built for variant linux_64_mpinompipython3.14.____cp314"
 [feature.build.tasks."build-linux_64_mpiopenmpipython3.11.____cpython"]
 cmd = "rattler-build build --recipe recipe -m .ci_support/linux_64_mpiopenmpipython3.11.____cpython.yaml --target-platform linux-64"
-description = "Build code-aster-feedstock with variant linux_64_mpiopenmpipython3.11.____cpython directly (without setup scripts)"
+description = "Build cafs-feedstock with variant linux_64_mpiopenmpipython3.11.____cpython directly (without setup scripts)"
 [feature.build.tasks."debug-linux_64_mpiopenmpipython3.11.____cpython"]
 cmd = "rattler-build debug setup --recipe recipe -m .ci_support/linux_64_mpiopenmpipython3.11.____cpython.yaml --target-platform linux-64"
-description = "Debug code-aster-feedstock with variant linux_64_mpiopenmpipython3.11.____cpython directly (without setup scripts)"
+description = "Debug cafs-feedstock with variant linux_64_mpiopenmpipython3.11.____cpython directly (without setup scripts)"
 [feature.build.tasks."inspect-linux_64_mpiopenmpipython3.11.____cpython"]
 cmd = "inspect_artifacts --recipe-dir recipe -m .ci_support/linux_64_mpiopenmpipython3.11.____cpython.yaml"
-description = "List contents of code-aster-feedstock packages built for variant linux_64_mpiopenmpipython3.11.____cpython"
+description = "List contents of cafs-feedstock packages built for variant linux_64_mpiopenmpipython3.11.____cpython"
 [feature.build.tasks."build-linux_64_mpiopenmpipython3.12.____cpython"]
 cmd = "rattler-build build --recipe recipe -m .ci_support/linux_64_mpiopenmpipython3.12.____cpython.yaml --target-platform linux-64"
-description = "Build code-aster-feedstock with variant linux_64_mpiopenmpipython3.12.____cpython directly (without setup scripts)"
+description = "Build cafs-feedstock with variant linux_64_mpiopenmpipython3.12.____cpython directly (without setup scripts)"
 [feature.build.tasks."debug-linux_64_mpiopenmpipython3.12.____cpython"]
 cmd = "rattler-build debug setup --recipe recipe -m .ci_support/linux_64_mpiopenmpipython3.12.____cpython.yaml --target-platform linux-64"
-description = "Debug code-aster-feedstock with variant linux_64_mpiopenmpipython3.12.____cpython directly (without setup scripts)"
+description = "Debug cafs-feedstock with variant linux_64_mpiopenmpipython3.12.____cpython directly (without setup scripts)"
 [feature.build.tasks."inspect-linux_64_mpiopenmpipython3.12.____cpython"]
 cmd = "inspect_artifacts --recipe-dir recipe -m .ci_support/linux_64_mpiopenmpipython3.12.____cpython.yaml"
-description = "List contents of code-aster-feedstock packages built for variant linux_64_mpiopenmpipython3.12.____cpython"
+description = "List contents of cafs-feedstock packages built for variant linux_64_mpiopenmpipython3.12.____cpython"
 [feature.build.tasks."build-linux_64_mpiopenmpipython3.13.____cp313"]
 cmd = "rattler-build build --recipe recipe -m .ci_support/linux_64_mpiopenmpipython3.13.____cp313.yaml --target-platform linux-64"
-description = "Build code-aster-feedstock with variant linux_64_mpiopenmpipython3.13.____cp313 directly (without setup scripts)"
+description = "Build cafs-feedstock with variant linux_64_mpiopenmpipython3.13.____cp313 directly (without setup scripts)"
 [feature.build.tasks."debug-linux_64_mpiopenmpipython3.13.____cp313"]
 cmd = "rattler-build debug setup --recipe recipe -m .ci_support/linux_64_mpiopenmpipython3.13.____cp313.yaml --target-platform linux-64"
-description = "Debug code-aster-feedstock with variant linux_64_mpiopenmpipython3.13.____cp313 directly (without setup scripts)"
+description = "Debug cafs-feedstock with variant linux_64_mpiopenmpipython3.13.____cp313 directly (without setup scripts)"
 [feature.build.tasks."inspect-linux_64_mpiopenmpipython3.13.____cp313"]
 cmd = "inspect_artifacts --recipe-dir recipe -m .ci_support/linux_64_mpiopenmpipython3.13.____cp313.yaml"
-description = "List contents of code-aster-feedstock packages built for variant linux_64_mpiopenmpipython3.13.____cp313"
+description = "List contents of cafs-feedstock packages built for variant linux_64_mpiopenmpipython3.13.____cp313"
 [feature.build.tasks."build-linux_64_mpiopenmpipython3.14.____cp314"]
 cmd = "rattler-build build --recipe recipe -m .ci_support/linux_64_mpiopenmpipython3.14.____cp314.yaml --target-platform linux-64"
-description = "Build code-aster-feedstock with variant linux_64_mpiopenmpipython3.14.____cp314 directly (without setup scripts)"
+description = "Build cafs-feedstock with variant linux_64_mpiopenmpipython3.14.____cp314 directly (without setup scripts)"
 [feature.build.tasks."debug-linux_64_mpiopenmpipython3.14.____cp314"]
 cmd = "rattler-build debug setup --recipe recipe -m .ci_support/linux_64_mpiopenmpipython3.14.____cp314.yaml --target-platform linux-64"
-description = "Debug code-aster-feedstock with variant linux_64_mpiopenmpipython3.14.____cp314 directly (without setup scripts)"
+description = "Debug cafs-feedstock with variant linux_64_mpiopenmpipython3.14.____cp314 directly (without setup scripts)"
 [feature.build.tasks."inspect-linux_64_mpiopenmpipython3.14.____cp314"]
 cmd = "inspect_artifacts --recipe-dir recipe -m .ci_support/linux_64_mpiopenmpipython3.14.____cp314.yaml"
-description = "List contents of code-aster-feedstock packages built for variant linux_64_mpiopenmpipython3.14.____cp314"
+description = "List contents of cafs-feedstock packages built for variant linux_64_mpiopenmpipython3.14.____cp314"
+[feature.build.tasks."build-win_64_mpinompipython3.11.____cpython"]
+cmd = "rattler-build build --recipe recipe -m .ci_support/win_64_mpinompipython3.11.____cpython.yaml --target-platform win-64"
+description = "Build cafs-feedstock with variant win_64_mpinompipython3.11.____cpython directly (without setup scripts)"
+[feature.build.tasks."debug-win_64_mpinompipython3.11.____cpython"]
+cmd = "rattler-build debug setup --recipe recipe -m .ci_support/win_64_mpinompipython3.11.____cpython.yaml --target-platform win-64"
+description = "Debug cafs-feedstock with variant win_64_mpinompipython3.11.____cpython directly (without setup scripts)"
+[feature.build.tasks."inspect-win_64_mpinompipython3.11.____cpython"]
+cmd = "inspect_artifacts --recipe-dir recipe -m .ci_support/win_64_mpinompipython3.11.____cpython.yaml"
+description = "List contents of cafs-feedstock packages built for variant win_64_mpinompipython3.11.____cpython"
+[feature.build.tasks."build-win_64_mpinompipython3.12.____cpython"]
+cmd = "rattler-build build --recipe recipe -m .ci_support/win_64_mpinompipython3.12.____cpython.yaml --target-platform win-64"
+description = "Build cafs-feedstock with variant win_64_mpinompipython3.12.____cpython directly (without setup scripts)"
+[feature.build.tasks."debug-win_64_mpinompipython3.12.____cpython"]
+cmd = "rattler-build debug setup --recipe recipe -m .ci_support/win_64_mpinompipython3.12.____cpython.yaml --target-platform win-64"
+description = "Debug cafs-feedstock with variant win_64_mpinompipython3.12.____cpython directly (without setup scripts)"
+[feature.build.tasks."inspect-win_64_mpinompipython3.12.____cpython"]
+cmd = "inspect_artifacts --recipe-dir recipe -m .ci_support/win_64_mpinompipython3.12.____cpython.yaml"
+description = "List contents of cafs-feedstock packages built for variant win_64_mpinompipython3.12.____cpython"
+[feature.build.tasks."build-win_64_mpinompipython3.13.____cp313"]
+cmd = "rattler-build build --recipe recipe -m .ci_support/win_64_mpinompipython3.13.____cp313.yaml --target-platform win-64"
+description = "Build cafs-feedstock with variant win_64_mpinompipython3.13.____cp313 directly (without setup scripts)"
+[feature.build.tasks."debug-win_64_mpinompipython3.13.____cp313"]
+cmd = "rattler-build debug setup --recipe recipe -m .ci_support/win_64_mpinompipython3.13.____cp313.yaml --target-platform win-64"
+description = "Debug cafs-feedstock with variant win_64_mpinompipython3.13.____cp313 directly (without setup scripts)"
+[feature.build.tasks."inspect-win_64_mpinompipython3.13.____cp313"]
+cmd = "inspect_artifacts --recipe-dir recipe -m .ci_support/win_64_mpinompipython3.13.____cp313.yaml"
+description = "List contents of cafs-feedstock packages built for variant win_64_mpinompipython3.13.____cp313"
+[feature.build.tasks."build-win_64_mpinompipython3.14.____cp314"]
+cmd = "rattler-build build --recipe recipe -m .ci_support/win_64_mpinompipython3.14.____cp314.yaml --target-platform win-64"
+description = "Build cafs-feedstock with variant win_64_mpinompipython3.14.____cp314 directly (without setup scripts)"
+[feature.build.tasks."debug-win_64_mpinompipython3.14.____cp314"]
+cmd = "rattler-build debug setup --recipe recipe -m .ci_support/win_64_mpinompipython3.14.____cp314.yaml --target-platform win-64"
+description = "Debug cafs-feedstock with variant win_64_mpinompipython3.14.____cp314 directly (without setup scripts)"
+[feature.build.tasks."inspect-win_64_mpinompipython3.14.____cp314"]
+cmd = "inspect_artifacts --recipe-dir recipe -m .ci_support/win_64_mpinompipython3.14.____cp314.yaml"
+description = "List contents of cafs-feedstock packages built for variant win_64_mpinompipython3.14.____cp314"
 
 [environments]
 build = ["build"]

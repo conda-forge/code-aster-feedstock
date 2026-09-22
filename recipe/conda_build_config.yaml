@@ -4,3 +4,9 @@ mpi:
 
 openmpi:
   - '5'
+
+# Windows: Intel ifx, the Fortran ABI of the conda-forge mumps-seq ifx_* build
+fortran_compiler:           # [win]
+  - ifx                     # [win]
+fortran_compiler_version:   # [win]
+  - '2026.1'                # [win]
