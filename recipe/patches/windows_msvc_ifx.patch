@@ -595,6 +595,28 @@ index e2d23cf473..a3a90acbb2 100644
  !
          mpi = .false.
          if (present(parallel)) mpi = parallel
+diff --git a/bibfor/fracture/cgComputeGtheta.F90 b/bibfor/fracture/cgComputeGtheta.F90
+index dcdc317ae6..f3a7e8e905 100644
+--- a/bibfor/fracture/cgComputeGtheta.F90
++++ b/bibfor/fracture/cgComputeGtheta.F90
+@@ -86,6 +86,7 @@ subroutine cgComputeGtheta(cgField, cgTheta, cgStudy, cgTable, cgStat)
+     character(len=24) :: chgeom, chsig, chgtheta
+     character(len=24) :: pavolu, papres, pa2d3d, pepsin, pa1d2d, iscplan
+     character(len=24) :: lchin(50), lchout(1)
++    character(len=24) :: dummyElemAffe
+     aster_logical     :: lfonc, inco
+     integer(kind=8), pointer :: v_cesv(:) => null()
+     integer(kind=8), pointer :: v_liel(:) => null()
+@@ -167,7 +168,8 @@ subroutine cgComputeGtheta(cgField, cgTheta, cgStudy, cgTable, cgStat)
+ !   Cas 2D : creation du champ ISCPLAN
+     if (cgField%ndim .eq. 2) then
+ !       Recuperation de la modelisation
+-        outExicp = exicp(cgStudy%model, ASTER_TRUE, "", 0)
++        dummyElemAffe = ' '
++        outExicp = exicp(cgStudy%model, ASTER_TRUE, dummyElemAffe, 0)
+ !
+ !       Creation d'un champ simple par elements
+         call cescre('V', chscpl, 'ELEM', cgStudy%mesh, 'NEUT_I', &
 diff --git a/bibfor/hho/HHO_matrix_module.F90 b/bibfor/hho/HHO_matrix_module.F90
 index e524590ede..a3bd3aa315 100644
 --- a/bibfor/hho/HHO_matrix_module.F90
@@ -4694,10 +4716,10 @@ index 0000000000..da14f812d0
 +
 diff --git a/msvc/def_gen_cpp.py b/msvc/def_gen_cpp.py
 new file mode 100644
-index 0000000000..a2050e1314
+index 0000000000..b9f60a801a
 --- /dev/null
 +++ b/msvc/def_gen_cpp.py
-@@ -0,0 +1,302 @@
+@@ -0,0 +1,306 @@
 +#!/usr/bin/env python3
 +"""
 +Generate bibcxx.def file for MSVC from compiled C++ object files.
@@ -4780,6 +4802,10 @@ index 0000000000..a2050e1314
 +        "BP2_qu9_Fortran",
 +        "BP4_qu9_Fortran",
 +        "BP5_qu9_Fortran",
++        "BP1_tr6_Fortran",
++        "BP2_tr6_Fortran",
++        "BP4_tr6_Fortran",
++        "BP5_tr6_Fortran",
 +        # Result manager C++ function called from Fortran
 +        "add_field_in_current_result_",
 +    }

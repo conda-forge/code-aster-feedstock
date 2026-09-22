@@ -88,7 +88,13 @@ if errorlevel 1 (
   exit 1
 )
 
-waf install -j %CPU_COUNT%
+:: bibcxx's templated C++ (pybind11 bindings, Exceptions.h) is memory-hungry under
+:: clang-cl; -j == full core count (e.g. 24 cores / 32 GB) OOMs the frontend
+:: ("LLVM ERROR: out of memory"). Cap parallelism instead of using every core.
+set /a JOBS=%CPU_COUNT%
+if %JOBS% GTR 8 set JOBS=8
+
+waf install -j %JOBS%
 if errorlevel 1 exit 1
 
 endlocal
