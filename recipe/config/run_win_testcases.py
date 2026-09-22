@@ -64,7 +64,7 @@ def total_memory_mb():
 def build_known_failures(recipe_dir, src_dir):
     dest = osp.join(src_dir, "known_failures_win.list")
     with open(dest, "w", encoding="utf-8") as out:
-        for name in ("known_failures.list", "known_failures_nompi.list"):
+        for name in ("known_failures.list", "known_failures_nompi.list", "known_failures_windows.list"):
             path = osp.join(recipe_dir, name)
             if osp.isfile(path):
                 out.write(open(path, encoding="utf-8").read())
@@ -140,6 +140,11 @@ def print_failure_diagnostics(resutest):
 
 
 def main():
+    # The build-env console is cp1252: code_aster .mess files contain box-drawing
+    # characters (e.g. U+2551), which would otherwise raise UnicodeEncodeError in
+    # print_failure_diagnostics() and hide every failure diagnostic.
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
     aster_build_tests = os.environ.get("ASTER_BUILD_TESTS", "submit")
     if aster_build_tests == "none":
         print("ASTER_BUILD_TESTS=none, skipping code_aster testcases")

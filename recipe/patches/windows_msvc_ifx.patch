@@ -1,3 +1,24 @@
+diff --git a/astest/vocab01b.comm b/astest/vocab01b.comm
+index ea405b9042..914dfddbca 100644
+--- a/astest/vocab01b.comm
++++ b/astest/vocab01b.comm
+@@ -18,6 +18,7 @@
+ # --------------------------------------------------------------------
+ 
+ import os
++import sys
+ import os.path as osp
+ from subprocess import call
+ 
+@@ -64,7 +65,7 @@ print("=" * 80)
+ print("Checking import of code_aster...")
+ 
+ # run externally to not corrupt currently loaded catalog
+-iret = call(["python3", "test_import.py"])
++iret = call([sys.executable, "test_import.py"])
+ 
+ print("=" * 80)
+ 
 diff --git a/bibc/include/aster_depend.h b/bibc/include/aster_depend.h
 index d81c1cfc5a..cc1dd10165 100644
 --- a/bibc/include/aster_depend.h
@@ -238,6 +259,76 @@ index 314c0f304c..b2c1ed277d 100644
  #else
  #include <dlfcn.h>
  #endif
+diff --git a/bibc/supervis/dll_umat.c b/bibc/supervis/dll_umat.c
+index cdc67765a6..ab83a3a78b 100644
+--- a/bibc/supervis/dll_umat.c
++++ b/bibc/supervis/dll_umat.c
+@@ -23,8 +23,46 @@
+ #include "definition_pt.h"
+ #include "dll_register.h"
+ 
+-#ifdef ASTER_PLATFORM_POSIX
++#if defined ASTER_PLATFORM_POSIX || defined ASTER_PLATFORM_WINDOWS
++#define ASTER_HAVE_UMAT_DLL
++#endif
++
++#ifdef ASTER_HAVE_UMAT_DLL
++#ifdef ASTER_PLATFORM_WINDOWS
++/* minimal dlopen/dlsym/dlerror over the Win32 API */
++#include <windows.h>
++static char *umat_dlerr = NULL;
++static void *umat_dlopen( const char *libname ) {
++    /* a library in the working directory is not reliably in the DLL search
++     * path: load it by its full path */
++    char path[MAX_PATH];
++    HMODULE handle = NULL;
++    if ( GetFileAttributesA( libname ) != INVALID_FILE_ATTRIBUTES &&
++         GetFullPathNameA( libname, MAX_PATH, path, NULL ) > 0 ) {
++        handle = LoadLibraryExA( path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH );
++    } else {
++        handle = LoadLibraryA( libname );
++    }
++    umat_dlerr = handle ? NULL : "LoadLibrary failed";
++    return (void *)handle;
++}
++static void *umat_dlsym( void *handle, const char *symbol ) {
++    void *func = (void *)GetProcAddress( (HMODULE)handle, symbol );
++    umat_dlerr = func ? NULL : "GetProcAddress: symbol not found";
++    return func;
++}
++static char *umat_dlerror( void ) {
++    char *err = umat_dlerr;
++    umat_dlerr = NULL;
++    return err;
++}
++#define dlopen( libname, flag ) umat_dlopen( libname )
++#define dlsym umat_dlsym
++#define dlerror umat_dlerror
++#define RTLD_NOW 0
++#else
+ #include <dlfcn.h>
++#endif
+ PyObject *get_dll_register_dict();
+ 
+ /* *********************************************************************
+@@ -101,7 +139,7 @@ void load_umat_lib( const char *libname, const char *symbol ) {
+ 
+ void DEFSSP( UMAT_GET_FUNCTION, umat_get_function, char *nomlib, STRING_SIZE lnomlib, char *nomsub,
+              STRING_SIZE lnomsub, ASTERINTEGER *pfumat ) {
+-#ifdef ASTER_PLATFORM_POSIX
++#ifdef ASTER_HAVE_UMAT_DLL
+     /* UMAT WraPper : wrapper to get the UMAT function.
+      */
+     char *libname, *symbol;
+@@ -140,7 +178,7 @@ void DEFPPPPPPPPPPPPPPPPPPPSPPPPPPPPPPPPPPPPPP(
+     ASTERDOUBLE *pnewdt, ASTERDOUBLE *celent, ASTERDOUBLE *dfgrd0, ASTERDOUBLE *dfgrd1,
+     ASTERINTEGER *noel, ASTERINTEGER *npt, ASTERINTEGER *layer, ASTERINTEGER *kspt,
+     ASTERINTEGER *kstep, ASTERINTEGER *kinc ) {
+-#ifdef ASTER_PLATFORM_POSIX
++#ifdef ASTER_HAVE_UMAT_DLL
+     /* UMAT WraPper : wrapper to the UMAT function through the function pointer
+      * Load the library if necessary (at the first call).
+      */
 diff --git a/bibc/supervis/libinfos.c b/bibc/supervis/libinfos.c
 index 2d95a41c76..ee5dee7fd7 100644
 --- a/bibc/supervis/libinfos.c
@@ -372,8 +463,21 @@ index 363453b4da..09187ac1a3 100644
      nbseek = _fseeki64( fpfile[iu], offset, SEEK_SET );
  #else
      nbseek = fseek( fpfile[iu], offset, SEEK_SET );
+diff --git a/bibc/utilitai/kloklo.c b/bibc/utilitai/kloklo.c
+index 7891d59d51..fbec6e7762 100644
+--- a/bibc/utilitai/kloklo.c
++++ b/bibc/utilitai/kloklo.c
+@@ -18,6 +18,8 @@
+ 
+ #include "aster.h"
+ 
++#include <time.h>
++
+ /***************************************************************
+  *
+  *  Sous programme       : KLOKLO
 diff --git a/bibc/utilitai/matfpe.c b/bibc/utilitai/matfpe.c
-index 564c9f1852..18f29b3921 100644
+index 564c9f1852..f43058d90d 100644
 --- a/bibc/utilitai/matfpe.c
 +++ b/bibc/utilitai/matfpe.c
 @@ -52,12 +52,16 @@ void DEFP( MATFPE, matfpe, ASTERINTEGER *enable ) {
@@ -395,15 +499,21 @@ index 564c9f1852..18f29b3921 100644
          _controlfp( _MCW_EM, _MCW_EM );
  #else
          fedisableexcept( ASTER_SIGFPE );
-@@ -66,7 +70,7 @@ void DEFP( MATFPE, matfpe, ASTERINTEGER *enable ) {
+@@ -66,9 +70,12 @@ void DEFP( MATFPE, matfpe, ASTERINTEGER *enable ) {
          signal( SIGFPE, hanfpe );
      } else if ( compteur_fpe >= 1 ) {
          /* avant de reactiver le controle des FPE, on abaisse les flags */
 -#if defined ASTER_PLATFORM_MINGW
 +#if defined ASTER_PLATFORM_MINGW || defined ASTER_PLATFORM_WINDOWS
          _clearfp();
-         _controlfp( _EM_UNDERFLOW | _EM_DENORMAL | _EM_INEXACT, _MCW_EM );
+-        _controlfp( _EM_UNDERFLOW | _EM_DENORMAL | _EM_INEXACT, _MCW_EM );
++        /* re-enable only what inisig enables (ASTER_SIGFPE: zero-divide and
++         * overflow); unmasking _EM_INVALID here too made every NaN comparison
++         * trap after the first matfpe(-1)/matfpe(1) pair */
++        _controlfp( _MCW_EM & ~( _EM_ZERODIVIDE | _EM_OVERFLOW ), _MCW_EM );
  #else
+         feclearexcept( ASTER_SIGFPE );
+         feenableexcept( ASTER_SIGFPE );
 diff --git a/bibc/utilitai/mempid.c b/bibc/utilitai/mempid.c
 index 8f8a56ef1f..bd3b9e835a 100644
 --- a/bibc/utilitai/mempid.c
@@ -709,6 +819,58 @@ index 957b855d6b..56111e59cc 100644
          AS_ALLOCATE(vk8=nom_appuis, size=nbocc)
          do iocc = 1, nbocc
              call getvtx(keywordfact, 'NOM_APPUI', iocc=iocc, nbval=0, nbret=na)
+diff --git a/bibfor/algeline/vppfac.F90 b/bibfor/algeline/vppfac.F90
+index caf4469f7b..eafeb5fa68 100644
+--- a/bibfor/algeline/vppfac.F90
++++ b/bibfor/algeline/vppfac.F90
+@@ -259,7 +259,6 @@ subroutine vppfac(lmasse, masgen, vect, neq, nbvect, &
+                     ! INER_EFFE_D*
+                     inemodz(ivect, iddl2) = rval*raux
+                     ! INER_EFFE_UN_D*
+-                    inemodz(ivect, iddl) = rval*raux/massTotDirUnit
+                     if (massTotDirUnit .gt. epsi) then
+                         inemodz(ivect, iddl) = rval*raux/massTotDirUnit
+                     else
+diff --git a/bibfor/algorith/resi_refe_module.F90 b/bibfor/algorith/resi_refe_module.F90
+index 4da8d2f2dd..2d8199f5c3 100644
+--- a/bibfor/algorith/resi_refe_module.F90
++++ b/bibfor/algorith/resi_refe_module.F90
+@@ -64,7 +64,6 @@ contains
+         character(len=*), intent(in):: comp_name_
+         real(kind=8) :: vale_refe
+         ! ------------------------------------------------------------------------------------------
+-        integer(kind=8), pointer:: pos(:) => null()
+         integer(kind=8):: idx
+         character(len=8):: comp_name
+         character(len=16) :: kmess(2)
+@@ -72,9 +71,9 @@ contains
+         ASSERT(self%maxi_refe .ne. 0)
+         comp_name = comp_name_
+ 
+-        pos = findloc(self%names, comp_name)
+-        ASSERT(size(pos) .eq. 1)
+-        idx = pos(1)
++        ! scalar findloc: the result used to be assigned to an unassociated
++        ! pointer array (undefined behaviour; ifx compiles it to a trap)
++        idx = findloc(self%names, comp_name, dim=1)
+         ASSERT(idx .ge. 1 .and. idx .le. self%maxi_refe)
+ 
+         vale_refe = self%values(idx)
+diff --git a/bibfor/assembla/asseVectSuper.F90 b/bibfor/assembla/asseVectSuper.F90
+index 901e77854f..3ef2edc014 100644
+--- a/bibfor/assembla/asseVectSuper.F90
++++ b/bibfor/assembla/asseVectSuper.F90
+@@ -46,7 +46,9 @@ subroutine asseVectSuper(model, mesh, vectElem, &
+     real(kind=8), intent(in) :: vectElemCoef
+     character(len=8), pointer :: nomacr(:)
+     integer(kind=8), intent(in) :: meshNbNode, nbCmp, nec, nbecmx
+-    integer(kind=8), intent(in) :: iapsdl, ianueq, jvale, jresl
++    integer(kind=8), intent(in) :: iapsdl, ianueq, jvale
++    ! jresl is (re)set by ssvalv: it must not be intent(in)
++    integer(kind=8), intent(inout) :: jresl
+     integer(kind=8), intent(in) :: idprn1, idprn2
+     integer(kind=8), intent(inout) :: icodla(nbecmx), icodge(nbecmx)
+ !
 diff --git a/bibfor/calculel/uthk.F90 b/bibfor/calculel/uthk.F90
 index 782f9618f2..a3e61ac6a9 100644
 --- a/bibfor/calculel/uthk.F90
@@ -746,6 +908,20 @@ index 782f9618f2..a3e61ac6a9 100644
  !
  !====
  ! 6. PYRAMIDE : PLUS GRANDE DIAGONALE OU PLUS GRANDE ARETE
+diff --git a/bibfor/comport/czm_frot_mix_module.F90 b/bibfor/comport/czm_frot_mix_module.F90
+index a44e049c37..05fe96c171 100644
+--- a/bibfor/comport/czm_frot_mix_module.F90
++++ b/bibfor/comport/czm_frot_mix_module.F90
+@@ -196,6 +196,9 @@ contains
+         dphi_delta = 0.d0
+         dka = 0.d0
+         tel = 0.d0
++        ! nel is only computed on slip, but the prediction tangent may use the
++        ! previous (slip) state: do not read it uninitialized
++        nel = 0.d0
+         id = 0.d0
+         if (self%mat%ad) then
+             alpha_n = 1.d0
 diff --git a/bibfor/echange/as_med_module.F90 b/bibfor/echange/as_med_module.F90
 index e2d23cf473..a3a90acbb2 100644
 --- a/bibfor/echange/as_med_module.F90
@@ -771,6 +947,25 @@ index e2d23cf473..a3a90acbb2 100644
  !
          mpi = .false.
          if (present(parallel)) mpi = parallel
+diff --git a/bibfor/elements/dis_choc_frot_syme.F90 b/bibfor/elements/dis_choc_frot_syme.F90
+index 88f647152a..18c7e14189 100644
+--- a/bibfor/elements/dis_choc_frot_syme.F90
++++ b/bibfor/elements/dis_choc_frot_syme.F90
+@@ -266,10 +266,12 @@ subroutine dis_choc_frot_syme(DD, icodma, ulp, xg, klv, &
+                     ! Force dans le repère local
+                     if (DD%ndim .eq. 3) then
+                         call utpsgl(DD%nno, DD%nc, DD%pgl, kgv, klv)
+-                        call utpvgl(DD%nno, DD%nc, DD%pgl, forceglob, force)
++                        ! one 3-component vector (forceglob(3) -> force(3)), as for
++                        ! depxyz above: (nno, nc) wrote nno*nc values past force(3)
++                        call utpvgl(1, 3, DD%pgl, forceglob, force)
+                     else
+                         call ut2mgl(DD%nno, DD%nc, DD%pgl, kgv, klv)
+-                        call ut2vgl(DD%nno, DD%nc, DD%pgl, forceglob, force)
++                        call ut2vgl(1, 2, DD%pgl, forceglob, force)
+                     end if
+                 end if
+             else
 diff --git a/bibfor/fracture/cgComputeGtheta.F90 b/bibfor/fracture/cgComputeGtheta.F90
 index dcdc317ae6..f3a7e8e905 100644
 --- a/bibfor/fracture/cgComputeGtheta.F90
@@ -793,6 +988,41 @@ index dcdc317ae6..f3a7e8e905 100644
  !
  !       Creation d'un champ simple par elements
          call cescre('V', chscpl, 'ELEM', cgStudy%mesh, 'NEUT_I', &
+diff --git a/bibfor/hho/HHO_inertia_module.F90 b/bibfor/hho/HHO_inertia_module.F90
+index 2dd7c68953..e1e386c95e 100644
+--- a/bibfor/hho/HHO_inertia_module.F90
++++ b/bibfor/hho/HHO_inertia_module.F90
+@@ -29,6 +29,7 @@ module HHO_inertia_module
+     private
+ #include "asterf_types.h"
+ #include "asterf_debug.h"
++#include "asterc/matfpe.h"
+ #include "asterfort/assert.h"
+ #include "asterfort/HHO_size_module.h"
+ #include "blas/dsyev.h"
+@@ -92,8 +93,11 @@ contains
+         b_n = to_blas_int(hhoCell%ndim)
+         b_lda = to_blas_int(3)
+         b_lwork = to_blas_int(50)
++        ! LAPACK (MKL) may raise floating point exceptions internally
++        call matfpe(-1)
+         call dsyev('V', 'U', b_n, axes, b_lda, &
+                    evalues, work, b_lwork, info)
++        call matfpe(1)
+         ASSERT(info == 0)
+ !
+         do idim = 1, hhoCell%ndim
+@@ -152,8 +156,10 @@ contains
+ 
+ !
+ ! ----- Compute eigenvector
++            call matfpe(-1)
+             call dsyev('V', 'U', b_n, axes_3d, b_lda, &
+                        evalues, work, b_lwork, info)
++            call matfpe(1)
+             ASSERT(info == 0)
+             ASSERT(minloc(evalues(1:hhoFace%ndim+1), dim=1) == 1)
+ !
 diff --git a/bibfor/hho/HHO_matrix_module.F90 b/bibfor/hho/HHO_matrix_module.F90
 index e524590ede..a3bd3aa315 100644
 --- a/bibfor/hho/HHO_matrix_module.F90
@@ -821,6 +1051,21 @@ index 0000000000..9ca85afc42
 +    end subroutine abort_custom
 +end interface
 \ No newline at end of file
+diff --git a/bibfor/include/asterfort/asseVectSuper.h b/bibfor/include/asterfort/asseVectSuper.h
+index 81e6bc670d..20db287372 100644
+--- a/bibfor/include/asterfort/asseVectSuper.h
++++ b/bibfor/include/asterfort/asseVectSuper.h
+@@ -30,7 +30,9 @@ interface
+         real(kind=8), intent(in) :: vectElemCoef
+         character(len=8), pointer :: nomacr(:)
+         integer(kind=8), intent(in) :: meshNbNode, nbCmp, nec, nbecmx
+-        integer(kind=8), intent(in) :: iapsdl, ianueq, jvale, jresl
++        integer(kind=8), intent(in) :: iapsdl, ianueq, jvale
++        ! jresl is (re)set by ssvalv: it must not be intent(in)
++        integer(kind=8), intent(inout) :: jresl
+         integer(kind=8), intent(in) :: idprn1, idprn2
+         integer(kind=8), intent(inout) :: icodla(nbecmx), icodge(nbecmx)
+     end subroutine asseVectSuper
 diff --git a/bibfor/include/asterfort/chckVari.h b/bibfor/include/asterfort/chckVari.h
 index bc8bad5946..721df5ffb2 100644
 --- a/bibfor/include/asterfort/chckVari.h
@@ -948,6 +1193,40 @@ index 7ff476c3f9..95b2f24190 100644
          idx = 1
          iret = 0
          do while (iret .eq. 0 .and. idx .lt. 99)
+diff --git a/bibfor/te/te0146.F90 b/bibfor/te/te0146.F90
+index 7e9d0544e2..6e72352a9b 100644
+--- a/bibfor/te/te0146.F90
++++ b/bibfor/te/te0146.F90
+@@ -535,11 +535,13 @@ subroutine te0146(option, nomte)
+                         call utmess('A', 'CALCULEL7_38')
+                     end if
+ 
+-                elseif ((N .gt. 0.d0) .and. (abs(M/N) .lt. ht/6.d0)) then
++                ! |M/N| < ht/6 written without dividing: Fortran does not
++                ! short-circuit .and., so M/N may be evaluated with N = 0
++                elseif ((N .gt. 0.d0) .and. (abs(M) .lt. N*ht/6.d0)) then
+                     ! Full compression
+                     Asmininf = 0.d0
+                     Asminsup = 0.d0
+-                elseif ((N .lt. 0.d0) .and. (abs(-M/N) .lt. ht/6.d0)) then
++                elseif ((N .lt. 0.d0) .and. (abs(M) .lt. -N*ht/6.d0)) then
+                     ! Full tension
+ 
+                     Act = b*ht
+diff --git a/bibfor/te/te0363.F90 b/bibfor/te/te0363.F90
+index 7bff38e4de..f0f5b6bb6b 100644
+--- a/bibfor/te/te0363.F90
++++ b/bibfor/te/te0363.F90
+@@ -153,6 +153,9 @@ subroutine te0363(option, nomte)
+                          codret)
+     lMatr = ASTER_FALSE
+     lElas = ASTER_TRUE
++    ! only set when lMatr, but always passed to nmspfm (ktan(nddlsym))
++    matsym = ASTER_TRUE
++    nddlsym = 0
+ 
+ ! - Get output fields
+     if (lMatr) then
 diff --git a/bibfor/third_party_interf/amumpc.F90 b/bibfor/third_party_interf/amumpc.F90
 index 22dc8faaca..e018e3f262 100644
 --- a/bibfor/third_party_interf/amumpc.F90
@@ -1365,6 +1644,24 @@ index 016cc60a20..db4201c08c 100644
                    arret, ier)
      implicit none
  #include "jeveux.h"
+diff --git a/bibfor/utilitai/ulopen.F90 b/bibfor/utilitai/ulopen.F90
+index 43c5439fb7..6ae5e5d612 100644
+--- a/bibfor/utilitai/ulopen.F90
++++ b/bibfor/utilitai/ulopen.F90
+@@ -150,7 +150,13 @@ subroutine ulopen(unit, fichie, name, acces, autor)
+         inquire (unit=unit, opened=v11, iostat=ier1)
+         if (ier1 .eq. 0) then
+             if (.not. v11 .and. unit .ne. 6) then
++#ifdef ASTER_PLATFORM_MSVC64
++! ifx opens files deny-write by default on Windows: Python code (e.g.
++! IMPR_TABLE) writing to a file held by a DEFI_FICHIER unit would then fail.
++                open (unit=unit, file=namell, share='DENYNONE', iostat=ier2)
++#else
+                 open (unit=unit, file=namell, iostat=ier2)
++#endif
+                 if (ier2 .ne. 0) then
+                     valk(1) = k4b
+                     valk(2) = namell
 diff --git a/bibfor/wscript b/bibfor/wscript
 index a65a680ab4..8f3e1f1931 100644
 --- a/bibfor/wscript
@@ -1596,6 +1893,40 @@ index 04d4e379ab..b3feb4c4b4 100644
              filename = osp.join("src", libname)
              if not osp.exists(filename):
                  UTMESS("F", "MFRONT_4", valk=libname)
+diff --git a/code_aster/LinearAlgebra/POD/pod_analysis_base.py b/code_aster/LinearAlgebra/POD/pod_analysis_base.py
+index 1663645fdb..b0950cedda 100644
+--- a/code_aster/LinearAlgebra/POD/pod_analysis_base.py
++++ b/code_aster/LinearAlgebra/POD/pod_analysis_base.py
+@@ -19,7 +19,7 @@
+ from abc import abstractmethod, ABC
+ import scipy.sparse
+ import numpy as np
+-from ...Utilities import PETSc, SLEPc, MPI, no_new_attributes
++from ...Utilities import PETSc, SLEPc, MPI, disable_fpe, no_new_attributes
+ 
+ # GENERAL PARAMETERS FOR THE MODULE
+ TOL_NUM = 1e-9
+@@ -625,7 +625,9 @@ class PODAnalysisNumpy(PODAnalysis):
+             singval (numpy.ndarray): Singular values
+         """
+         ## - Apply SVD directly on the snapshot matrix
+-        U, sigma, _ = np.linalg.svd(matS, full_matrices=False)
++        # LAPACK (MKL) may raise floating point exceptions internally
++        with disable_fpe():
++            U, sigma, _ = np.linalg.svd(matS, full_matrices=False)
+         ## - Order eigenvalues and compute basis
+         n = np.where(sigma == 0)[0]
+         if n.size == 0:
+@@ -647,7 +649,8 @@ class PODAnalysisNumpy(PODAnalysis):
+         ## - Compute correlation matrix
+         corrMatrix = matS.T @ self._corrOperator @ matS
+         ## - Solve eigenproblem
+-        eigenvalues, eigenvectors = np.linalg.eigh(corrMatrix)
++        with disable_fpe():
++            eigenvalues, eigenvectors = np.linalg.eigh(corrMatrix)
+         ## - Order eigenvalues and compute basis
+         idx = np.argsort(eigenvalues)[::-1]
+         eigenvalues = eigenvalues[idx]
 diff --git a/code_aster/MacroCommands/impr_fonction_ops.py b/code_aster/MacroCommands/impr_fonction_ops.py
 index a0e90398c9..8bcf9e12d7 100644
 --- a/code_aster/MacroCommands/impr_fonction_ops.py
@@ -1663,7 +1994,7 @@ index f94b21d2d2..53eb9381c1 100644
      # Lecture du maillage de seg2 contenant toutes les lignes de coupe
      __macou = LIRE_MAILLAGE(FORMAT="ASTER", UNITE=UNITE_MAILLAGE)
 diff --git a/code_aster/MacroCommands/post_endo_fiss_ops.py b/code_aster/MacroCommands/post_endo_fiss_ops.py
-index d467d3bbdc..b1a8c9e688 100644
+index 3a8284008d..41c4073b07 100644
 --- a/code_aster/MacroCommands/post_endo_fiss_ops.py
 +++ b/code_aster/MacroCommands/post_endo_fiss_ops.py
 @@ -150,7 +150,7 @@ def cherche_trajet(
@@ -3745,10 +4076,10 @@ index 0000000000..f8bf33fdec
 +    dintelu
 diff --git a/msvc/bibfor_ext.def b/msvc/bibfor_ext.def
 new file mode 100644
-index 0000000000..2120c37a4b
+index 0000000000..6b18f9da7b
 --- /dev/null
 +++ b/msvc/bibfor_ext.def
-@@ -0,0 +1,106 @@
+@@ -0,0 +1,116 @@
 +LIBRARY bibfor_ext
 +EXPORTS
 +    amumpc_
@@ -3828,6 +4159,8 @@ index 0000000000..2120c37a4b
 +    elg_module_mp_build_elg_context_
 +    elg_resoud_
 +    elim75_
++    filter_rhs_
++    filter_rhs_c_
 +    filter_smd_
 +    irmhpc_
 +    ldsp1_
@@ -3844,6 +4177,10 @@ index 0000000000..2120c37a4b
 +    matrix_conversion_module_mp_csc2csr_
 +    matrix_conversion_module_mp_csc2dense_
 +    matrix_conversion_module_mp_matas2csc_
++    mumps_instance_mod_mp_cmps_
++    mumps_instance_mod_mp_dmps_
++    mumps_instance_mod_mp_smps_
++    mumps_instance_mod_mp_zmps_
 +    pchpddmdumpauxiliarymat_
 +    saddle_point_context_type_mp_free_saddle_point_context_
 +    saddle_point_context_type_mp_get_num_of_constraints_
@@ -3853,6 +4190,10 @@ index 0000000000..2120c37a4b
 +    saddle_point_module_mp_update_double_lagrange_
 +    vect_asse_from_petsc_
 +    vect_asse_update_ghost_values_
++    vector_comm_ghost_values_i_
++    vector_update_ghost_values_
++    vector_update_ghost_values_c_
++    vector_zero_late_values_
 +    verifels_
 +    verifelu_
 diff --git a/msvc/c_entrypoints/aster_core_proxy.def b/msvc/c_entrypoints/aster_core_proxy.def
@@ -7097,6 +7438,42 @@ index 6a049d1461..3b57e6858c 100644
          text = output
  
      state = 0
+diff --git a/run_aster/toolbox.py b/run_aster/toolbox.py
+index 7e545d1798..c337ea9d4f 100644
+--- a/run_aster/toolbox.py
++++ b/run_aster/toolbox.py
+@@ -23,6 +23,7 @@
+ """
+ 
+ import pathlib
++import re
+ from .config import CFG
+ from .utils import run_command
+ import os
+@@ -41,10 +42,21 @@ def make_shared(lib, src, *args):
+     fc = CFG.get("FC")
+     fcp = pathlib.Path(fc)
+     if not fcp.exists():
+-        fcp = pathlib.Path(os.getenv("FC"))
++        fcp = pathlib.Path(os.getenv("FC") or fc)
+     cmd = [fcp.as_posix()]
+     cmd.extend(CFG.get("FCFLAGS"))
+-    cmd.extend(["-shared", "-o", lib, src])
++    if os.name == "nt":
++        # ifx: build a DLL and export the Fortran routines explicitly, as
++        # dll_umat.c resolves them with GetProcAddress (e.g. 'umat_')
++        names = re.findall(
++            r"^[^!c*\n][^!\n]*?\b(?:subroutine|function)\s+(\w+)",
++            pathlib.Path(src).read_text(errors="replace"),
++            re.I | re.M,
++        )
++        cmd.extend(["/dll", f"/Fe:{lib}", src, "/link"])
++        cmd.extend(f"/EXPORT:{name.lower()}_" for name in dict.fromkeys(names))
++    else:
++        cmd.extend(["-shared", "-o", lib, src])
+     cmd.extend(args)
+     print("INFO make_shared command line:", " ".join(cmd))
+     return run_command(cmd)
 diff --git a/run_aster/utils.py b/run_aster/utils.py
 index 0ae8962a08..34f6d2966c 100644
 --- a/run_aster/utils.py

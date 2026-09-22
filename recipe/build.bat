@@ -52,7 +52,19 @@ set "CXXFLAGS=/std:c++20 /EHs /permissive- /MD /FS"
 ::   Linux gets `ulimit -s unlimited` instead, which has no Windows equivalent.
 ::   The deep nonlinear call chains (behaviour integration / assembly) overflow
 ::   it. Cost is a heap allocation per automatic array.
-set "FCFLAGS=%FCFLAGS% /fpp /integer-size:64 /real-size:64 /MD /names:lowercase /assume:underscore /assume:nobscc /fpscomp:logicals /heap-arrays:0 /fpe:0 /traceback /nologo"
+:: /fpe:3 -- leave FP exceptions masked at compile level; code_aster itself
+::   unmasks exactly zero-divide and overflow at startup (inisig.c/matfpe.c),
+::   like on Linux. /fpe:0 also unmasked *invalid*, so every comparison with
+::   a NaN sentinel (r8vide/r8nnem) trapped with 0xc0000090.
+:: /Qfp-speculation:safe -- with zero-divide trapping enabled, ifx must not
+::   hoist a division above the branch guarding it (e.g. `if (t .lt. tol)
+::   then ... else 1/t`) or compute it in unused SIMD lanes; either would trap
+::   although the source never divides by zero.
+:: /recursive -- the Linux build uses OpenMP, which implies recursive
+::   semantics (locals on the stack). Without it, ifx may give locals of
+::   self-recursive routines not declared RECURSIVE static storage, e.g.
+::   octree_module::split_node (access violation in mesh001m).
+set "FCFLAGS=%FCFLAGS% /fpp /integer-size:64 /real-size:64 /MD /names:lowercase /assume:underscore /assume:nobscc /fpscomp:logicals /heap-arrays:0 /fpe:3 /Qfp-speculation:safe /recursive /traceback /nologo"
 
 set "LDFLAGS=%LDFLAGS% /LIBPATH:%LIB_ROOT%/lib /LIBPATH:%LIB_ROOT%/bin /LIBPATH:%PREF_ROOT%/libs"
 set "LDFLAGS=%LDFLAGS% mkl_intel_lp64_dll.lib mkl_intel_thread_dll.lib mkl_core_dll.lib libiomp5md.lib"
