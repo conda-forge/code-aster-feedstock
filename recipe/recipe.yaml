@@ -108,7 +108,14 @@ outputs:
             - make
         # Windows: C/C++ are compiled with clang-cl against the MSVC toolchain
         - if: win
-          then: clang
+          then:
+            - clang
+            # 'waf' is launched by Scripts\waf.exe, bound to the build-env
+            # interpreter, so 'data/wscript' imports yaml from there, while the
+            # configure check ("Checking for python module 'yaml'") probes the
+            # host interpreter. Without this, CFG_EXT is 'yaml' but the build
+            # stage raises "NameError: name 'yaml' is not defined".
+            - pyyaml
         - waf ==2.1.5
         - if: "mpi != 'nompi'"
           then: ${{ mpi }}
