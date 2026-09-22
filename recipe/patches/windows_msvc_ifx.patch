@@ -772,6 +772,382 @@ index 7ff476c3f9..95b2f24190 100644
          idx = 1
          iret = 0
          do while (iret .eq. 0 .and. idx .lt. 99)
+diff --git a/bibfor/third_party_interf/amumpc.F90 b/bibfor/third_party_interf/amumpc.F90
+index 22dc8faaca..e018e3f262 100644
+--- a/bibfor/third_party_interf/amumpc.F90
++++ b/bibfor/third_party_interf/amumpc.F90
+@@ -20,6 +20,7 @@ subroutine amumpc(actionz, kxmps, csolu, vcine, nbsol, &
+                   iret, impr, ifmump, prepos, pcentp)
+ !
+ !
++    use mumps_instance_mod
+     implicit none
+ !--------------------------------------------------------------
+ ! OBJET: DRIVER EN MODE COMPLEXE DE LA RESOLUTION DE SYSTEMES LINEAIRES
+@@ -69,7 +70,7 @@ subroutine amumpc(actionz, kxmps, csolu, vcine, nbsol, &
+ #include "asterfort/jeveuo.h"
+ #include "asterfort/utmess.h"
+ #include "jeveux.h"
+-#include "mumps/cmumps.h"
++!
+ #include "asterfort/isParallelMatrix.h"
+ 
+     character(len=*) :: actionz
+@@ -80,7 +81,7 @@ subroutine amumpc(actionz, kxmps, csolu, vcine, nbsol, &
+     aster_logical :: prepos
+ !
+ #ifdef ASTER_HAVE_MUMPS
+-#include "asterf_mumps.h"
++!
+     type(cmumps_struc), pointer :: cmpsk => null()
+     integer(kind=8) :: rang, nbproc, niv, ifm, ibid, ietdeb, ifactm, nbfact
+     integer(kind=8) :: ietrat, nprec, ifact, iaux, vali(4), pcpi
+diff --git a/bibfor/third_party_interf/amumpd.F90 b/bibfor/third_party_interf/amumpd.F90
+index 735f0a136c..afa5109549 100644
+--- a/bibfor/third_party_interf/amumpd.F90
++++ b/bibfor/third_party_interf/amumpd.F90
+@@ -20,6 +20,7 @@ subroutine amumpd(actionz, kxmps, rsolu, vcine, nbsol, &
+                   iret, impr, ifmump, prepos, pcentp)
+ !
+ !
++    use mumps_instance_mod
+     implicit none
+ !--------------------------------------------------------------
+ ! OBJET: DRIVER EN MODE REEL DE LA RESOLUTION DE SYSTEMES LINEAIRES
+@@ -69,7 +70,7 @@ subroutine amumpd(actionz, kxmps, rsolu, vcine, nbsol, &
+ #include "asterfort/jeveuo.h"
+ #include "asterfort/utmess.h"
+ #include "jeveux.h"
+-#include "mumps/dmumps.h"
++!
+ #include "asterfort/isParallelMatrix.h"
+ 
+     character(len=*) :: actionz
+@@ -80,7 +81,7 @@ subroutine amumpd(actionz, kxmps, rsolu, vcine, nbsol, &
+     aster_logical :: prepos
+ !
+ #ifdef ASTER_HAVE_MUMPS
+-#include "asterf_mumps.h"
++!
+     type(dmumps_struc), pointer :: dmpsk => null()
+     integer(kind=8) :: rang, nbproc, niv, ifm, ibid, ietdeb, ifactm, nbfact
+     integer(kind=8) :: ietrat, nprec, ifact, iaux, vali(4), pcpi
+diff --git a/bibfor/third_party_interf/amumph.F90 b/bibfor/third_party_interf/amumph.F90
+index c81c26ace6..9536bc6eb4 100644
+--- a/bibfor/third_party_interf/amumph.F90
++++ b/bibfor/third_party_interf/amumph.F90
+@@ -20,6 +20,7 @@ subroutine amumph(actionz, solvez, matasz, rsolu, csolu, &
+                   vcinez, nbsol, iret, prepos)
+ !
+ !
++    use mumps_instance_mod
+     implicit none
+ !--------------------------------------------------------------
+ ! BUT : ROUTINE D'INTERFACE ENTRE CODE_ASTER ET LA BIBLIOTHEQUE
+@@ -83,7 +84,7 @@ subroutine amumph(actionz, solvez, matasz, rsolu, csolu, &
+ #include "asterfort/jemarq.h"
+ #include "asterfort/jeveuo.h"
+ #include "asterfort/utmess.h"
+-#include "mumps/dmumps.h"
++!
+ #include "asterfort/isParallelMatrix.h"
+ 
+     character(len=*) :: actionz, matasz, vcinez, solvez
+@@ -93,7 +94,7 @@ subroutine amumph(actionz, solvez, matasz, rsolu, csolu, &
+     aster_logical :: prepos
+ !
+ #ifdef ASTER_HAVE_MUMPS
+-#include "asterf_mumps.h"
++!
+ !
+     integer(kind=8) :: iprem
+     type(smumps_struc), pointer :: smpsk => null()
+diff --git a/bibfor/third_party_interf/amumpi.F90 b/bibfor/third_party_interf/amumpi.F90
+index fc9a1d2352..b88fdde845 100644
+--- a/bibfor/third_party_interf/amumpi.F90
++++ b/bibfor/third_party_interf/amumpi.F90
+@@ -19,6 +19,7 @@
+ subroutine amumpi(option, lquali, ldist, kxmps, type, lmhpc, lbloc)
+ !
+ !
++    use mumps_instance_mod
+     implicit none
+ !--------------------------------------------------------------
+ ! BUT : ROUTINE DE PARAMETRAGE MUMPS POUR AMUMPS/C/D/Z
+@@ -51,7 +52,7 @@ subroutine amumpi(option, lquali, ldist, kxmps, type, lmhpc, lbloc)
+     character(len=1) :: type
+ !
+ #ifdef ASTER_HAVE_MUMPS
+-#include "asterf_mumps.h"
++!
+     mpi_int :: mpicou, mpimum
+     integer(kind=8) :: nicntl, ncntl
+     parameter(nicntl=60, ncntl=15)
+diff --git a/bibfor/third_party_interf/amumpm.F90 b/bibfor/third_party_interf/amumpm.F90
+index 4e45842649..c531cee65f 100644
+--- a/bibfor/third_party_interf/amumpm.F90
++++ b/bibfor/third_party_interf/amumpm.F90
+@@ -21,6 +21,7 @@ subroutine amumpm(ldist, kxmps, kmonit, impr, ifmump, &
+                   lpreco, lmhpc, lbloc)
+ !
+ !
++    use mumps_instance_mod
+     implicit none
+ !--------------------------------------------------------------
+ ! BUT : REMPLIR LES OBJETS F90 DE MUMPS REPRESENTANT LA MATRICE A PARTIR
+@@ -78,7 +79,7 @@ subroutine amumpm(ldist, kxmps, kmonit, impr, ifmump, &
+     character(len=24) :: kmonit(12)
+ !
+ #ifdef ASTER_HAVE_MUMPS
+-#include "asterf_mumps.h"
++!
+ !
+ !
+     type(smumps_struc), pointer :: smpsk => null()
+diff --git a/bibfor/third_party_interf/amumpm_hpc.F90 b/bibfor/third_party_interf/amumpm_hpc.F90
+index 745fd3cd0b..6a9df7035a 100644
+--- a/bibfor/third_party_interf/amumpm_hpc.F90
++++ b/bibfor/third_party_interf/amumpm_hpc.F90
+@@ -21,6 +21,7 @@ subroutine amumpm_hpc(kxmps, kmonit, impr, ifmump, &
+                       lpreco, lbloc)
+ !
+ !
++    use mumps_instance_mod
+     implicit none
+ !--------------------------------------------------------------
+ ! BUT : REMPLIR LES OBJETS F90 DE MUMPS REPRESENTANT LA MATRICE A PARTIR
+@@ -74,7 +75,7 @@ subroutine amumpm_hpc(kxmps, kmonit, impr, ifmump, &
+     character(len=24) :: kmonit(12)
+ !
+ #ifdef ASTER_HAVE_MUMPS
+-#include "asterf_mumps.h"
++!
+ !
+ !
+     type(smumps_struc), pointer :: smpsk => null()
+diff --git a/bibfor/third_party_interf/amumpp.F90 b/bibfor/third_party_interf/amumpp.F90
+index 65e2ddfc57..18443890a4 100644
+--- a/bibfor/third_party_interf/amumpp.F90
++++ b/bibfor/third_party_interf/amumpp.F90
+@@ -22,6 +22,7 @@ subroutine amumpp(option, nbsol, kxmps, ldist, type, &
+ !
+ !
+     use iso_c_binding, only: c_ptr, c_f_pointer
++    use mumps_instance_mod
+     implicit none
+ !-----------------------------------------------------------------------
+ ! BUT : ROUTINE DE PRE/POST-TRAITEMENT DE LA SOLUTION ET DU
+@@ -87,7 +88,7 @@ subroutine amumpp(option, nbsol, kxmps, ldist, type, &
+     complex(kind=8) :: csolu(*)
+ !
+ #ifdef ASTER_HAVE_MUMPS
+-#include "asterf_mumps.h"
++!
+     type(smumps_struc), pointer :: smpsk => null()
+     type(cmumps_struc), pointer :: cmpsk => null()
+     type(dmumps_struc), pointer :: dmpsk => null()
+diff --git a/bibfor/third_party_interf/amumps.F90 b/bibfor/third_party_interf/amumps.F90
+index ae3dee537c..77f603b863 100644
+--- a/bibfor/third_party_interf/amumps.F90
++++ b/bibfor/third_party_interf/amumps.F90
+@@ -20,6 +20,7 @@ subroutine amumps(actionz, kxmps, rsolu, vcine, nbsol, &
+                   iret, impr, ifmump, prepos, pcentp)
+ !
+ !
++    use mumps_instance_mod
+     implicit none
+ !--------------------------------------------------------------
+ ! OBJET: DRIVER EN MODE REEL DE LA RESOLUTION DE SYSTEMES LINEAIRES
+@@ -69,7 +70,7 @@ subroutine amumps(actionz, kxmps, rsolu, vcine, nbsol, &
+ #include "asterfort/jeveuo.h"
+ #include "asterfort/utmess.h"
+ #include "jeveux.h"
+-#include "mumps/smumps.h"
++!
+ #include "asterfort/isParallelMatrix.h"
+ !
+     character(len=*) :: actionz
+@@ -80,7 +81,7 @@ subroutine amumps(actionz, kxmps, rsolu, vcine, nbsol, &
+     aster_logical :: prepos
+ !
+ #ifdef ASTER_HAVE_MUMPS
+-#include "asterf_mumps.h"
++!
+     type(smumps_struc), pointer :: smpsk => null()
+     integer(kind=8) :: rang, nbproc, niv, ifm, ibid, ietdeb, ifactm, nbfact
+     integer(kind=8) :: ietrat, nprec, ifact, iaux, vali(4), pcpi
+diff --git a/bibfor/third_party_interf/amumpt.F90 b/bibfor/third_party_interf/amumpt.F90
+index c34d1afcc6..46373ad77c 100644
+--- a/bibfor/third_party_interf/amumpt.F90
++++ b/bibfor/third_party_interf/amumpt.F90
+@@ -21,6 +21,7 @@ subroutine amumpt(option, kmonit, temps, rang, nbproc, &
+                   rctdeb, ldist)
+ !
+ !
++    use mumps_instance_mod
+     implicit none
+ !--------------------------------------------------------------
+ ! BUT : ROUTINE DE MONITORING POUR AMUMPS/C/D/Z.
+@@ -57,7 +58,7 @@ subroutine amumpt(option, kmonit, temps, rang, nbproc, &
+     aster_logical :: lquali, ldist
+ !
+ #ifdef ASTER_HAVE_MUMPS
+-#include "asterf_mumps.h"
++!
+     type(smumps_struc), pointer :: smpsk => null()
+     type(cmumps_struc), pointer :: cmpsk => null()
+     type(dmumps_struc), pointer :: dmpsk => null()
+diff --git a/bibfor/third_party_interf/amumpu.F90 b/bibfor/third_party_interf/amumpu.F90
+index d8c01ad88b..d31880ca60 100644
+--- a/bibfor/third_party_interf/amumpu.F90
++++ b/bibfor/third_party_interf/amumpu.F90
+@@ -20,6 +20,7 @@ subroutine amumpu(option, type, kxmps, usersm, nprec, &
+                   lresol, nbfact)
+ !
+ !
++    use mumps_instance_mod
+     implicit none
+ !--------------------------------------------------------------
+ ! BUT : UTILITAIRE POUR LES TRAITEMENTS CONNEXES LORS DU LANCEMENT
+@@ -65,10 +66,10 @@ subroutine amumpu(option, type, kxmps, usersm, nprec, &
+ #include "asterfort/utgtme.h"
+ #include "asterfort/utmess.h"
+ #include "asterfort/wkvect.h"
+-#include "mumps/cmumps.h"
+-#include "mumps/dmumps.h"
+-#include "mumps/smumps.h"
+-#include "mumps/zmumps.h"
++!
++!
++!
++!
+     integer(kind=4) :: option
+     integer(kind=8) :: kxmps, nprec, nbfact
+     character(len=1) :: type
+@@ -76,7 +77,7 @@ subroutine amumpu(option, type, kxmps, usersm, nprec, &
+     aster_logical :: lresol
+ !
+ #ifdef ASTER_HAVE_MUMPS
+-#include "asterf_mumps.h"
++!
+     type(smumps_struc), pointer :: smpsk => null()
+     type(cmumps_struc), pointer :: cmpsk => null()
+     type(dmumps_struc), pointer :: dmpsk => null()
+diff --git a/bibfor/third_party_interf/amumpz.F90 b/bibfor/third_party_interf/amumpz.F90
+index c023e4a203..0f9b3e98cb 100644
+--- a/bibfor/third_party_interf/amumpz.F90
++++ b/bibfor/third_party_interf/amumpz.F90
+@@ -20,6 +20,7 @@ subroutine amumpz(actionz, kxmps, csolu, vcine, nbsol, &
+                   iret, impr, ifmump, prepos, pcentp)
+ !
+ !
++    use mumps_instance_mod
+     implicit none
+ !--------------------------------------------------------------
+ ! OBJET: DRIVER EN MODE COMPLEXE DE LA RESOLUTION DE SYSTEMES LINEAIRES
+@@ -69,7 +70,7 @@ subroutine amumpz(actionz, kxmps, csolu, vcine, nbsol, &
+ #include "asterfort/jeveuo.h"
+ #include "asterfort/utmess.h"
+ #include "jeveux.h"
+-#include "mumps/zmumps.h"
++!
+ #include "asterfort/isParallelMatrix.h"
+ 
+     character(len=*) :: actionz
+@@ -80,7 +81,7 @@ subroutine amumpz(actionz, kxmps, csolu, vcine, nbsol, &
+     aster_logical :: prepos
+ !
+ #ifdef ASTER_HAVE_MUMPS
+-#include "asterf_mumps.h"
++!
+     type(zmumps_struc), pointer :: zmpsk => null()
+     integer(kind=8) :: rang, nbproc, niv, ifm, ibid, ietdeb, ifactm, nbfact
+     integer(kind=8) :: ietrat, nprec, ifact, iaux, vali(4), pcpi
+diff --git a/bibfor/third_party_interf/mumps_instance_mod.F90 b/bibfor/third_party_interf/mumps_instance_mod.F90
+new file mode 100644
+index 0000000000..9a1ac9a0de
+--- /dev/null
++++ b/bibfor/third_party_interf/mumps_instance_mod.F90
+@@ -0,0 +1,79 @@
++! --------------------------------------------------------------------
++! Copyright (C) 1991 - 2026 - EDF - www.code-aster.org
++! This file is part of code_aster.
++!
++! code_aster is free software: you can redistribute it and/or modify
++! it under the terms of the GNU General Public License as published by
++! the Free Software Foundation, either version 3 of the License, or
++! (at your option) any later version.
++!
++! code_aster is distributed in the hope that it will be useful,
++! but WITHOUT ANY WARRANTY; without even the implied warranty of
++! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++! GNU General Public License for more details.
++!
++! You should have received a copy of the GNU General Public License
++! along with code_aster.  If not, see <http://www.gnu.org/licenses/>.
++! --------------------------------------------------------------------
++!
++! Module providing MUMPS instance storage with correct struct layout.
++!
++! This module MUST be compiled WITHOUT integer-size promotion flags
++! (e.g. -fdefault-integer-8, /integer-size:64) so that bare INTEGER
++! in the MUMPS struct headers resolves to INTEGER(4), matching the
++! LP64 MUMPS library ABI.
++!
++! Callers compiled WITH integer-size promotion can safely USE this
++! module: Fortran module import preserves the type layout from the
++! module's compilation (SEQUENCE types have fixed layout).
++!
++module mumps_instance_mod
++#include "asterf.h"
++#ifdef ASTER_HAVE_MUMPS
++    implicit none
++!
++! --- MUMPS struct type definitions (LP64: INTEGER = 4 bytes here)
++#   include "smumps_struc.h"
++#   include "cmumps_struc.h"
++#   include "dmumps_struc.h"
++#   include "zmumps_struc.h"
++!
++! --- Maximum number of simultaneous MUMPS instances
++    integer(kind=8), parameter :: nmxins = 50
++!
++! --- Instance metadata (replaces COMMON /mumpsh/)
++    character(len=1)  :: roucs(nmxins), precs(nmxins)
++    character(len=4)  :: etams(nmxins)
++    character(len=14) :: nonus(nmxins)
++    character(len=19) :: nomats(nmxins), nosols(nmxins)
++!
++! --- MUMPS struct arrays (replaces COMMON /mumpss/, /mumpsc/, /mumpsd/, /mumpsz/)
++    type(smumps_struc), target :: smps(nmxins)
++    type(cmumps_struc), target :: cmps(nmxins)
++    type(dmumps_struc), target :: dmps(nmxins)
++    type(zmumps_struc), target :: zmps(nmxins)
++!
++! --- Interfaces to MUMPS library subroutines
++    interface
++        subroutine smumps(smpsk)
++            import :: smumps_struc
++            type(smumps_struc) :: smpsk
++        end subroutine smumps
++        subroutine cmumps(cmpsk)
++            import :: cmumps_struc
++            type(cmumps_struc) :: cmpsk
++        end subroutine cmumps
++        subroutine dmumps(dmpsk)
++            import :: dmumps_struc
++            type(dmumps_struc) :: dmpsk
++        end subroutine dmumps
++        subroutine zmumps(zmpsk)
++            import :: zmumps_struc
++            type(zmumps_struc) :: zmpsk
++        end subroutine zmumps
++    end interface
++#else
++    implicit none
++    integer(kind=8), parameter :: nmxins = 50
++#endif
++end module mumps_instance_mod
 diff --git a/bibfor/utilifor/abortf.F90 b/bibfor/utilifor/abortf.F90
 index c96f84e44a..bb05c2bba3 100644
 --- a/bibfor/utilifor/abortf.F90
@@ -814,20 +1190,64 @@ index 016cc60a20..db4201c08c 100644
      implicit none
  #include "jeveux.h"
 diff --git a/bibfor/wscript b/bibfor/wscript
-index a65a680ab4..23f45359ea 100644
+index a65a680ab4..3bbbd66c8d 100644
 --- a/bibfor/wscript
 +++ b/bibfor/wscript
-@@ -76,6 +76,9 @@ def build(self):
+@@ -56,7 +56,10 @@ def build(self):
+         use.append("OPENMP")
+ 
+     src_i8 = get_srcs("**/*.F90", excl="third_party_interf/*.F90")
+-    src_ext = get_srcs("third_party_interf/*.F90")
++    src_ext = get_srcs(
++        "third_party_interf/*.F90", excl="third_party_interf/mumps_instance_mod.F90"
++    )
++    src_mumps_mod = get_srcs("third_party_interf/mumps_instance_mod.F90")
+ 
+     # Determine install paths - DLLs go to BINDIR on Windows, libs stay in LIBDIR
+     if self.env.ASTER_PLATFORM_MSVC64:
+@@ -75,7 +78,41 @@ def build(self):
+         env=env.derive(),
          install_path=lib_install_path,
      )
++
++    # mumps_instance_mod: compiled with integer-size matching the MUMPS
++    # library ABI (ASTER_MUMPS_INT_SIZE, detected in waftools/mumps.py).
++    # On Linux, bibfor_ext already compiles without -fdefault-integer-8
++    # (see check_fortran_compiler_flags below), so no override is needed
++    # there. On Windows the global /integer-size:64 in FCFLAGS is
++    # required across bibfor/bibfor_ext for ABI consistency (ifx has no
++    # -fallow-argument-mismatch equivalent to tolerate a mix), which
++    # means the MUMPS struct/interface would otherwise silently inherit
++    # it too and no longer match the MUMPS library's own LP64 ABI --
++    # overridden here (last flag wins in ifx). Files that `use` this
++    # module still get the module's own (correct) struct layout,
++    # regardless of their own /integer-size flag: Fortran module import
++    # preserves the type layout from the module's compilation.
++    mumps_mod_env = env.derive()
++    if self.env.ASTER_PLATFORM_MSVC64:
++        mumps_int_bits = self.env.ASTER_MUMPS_INT_SIZE * 8
++        mumps_mod_env.append_value(
++            "FCFLAGS", ["/integer-size:%d" % mumps_int_bits, "/real-size:32"]
++        )
++    self(
++        features="fc",
++        name="mumps_instance_mod",
++        source=src_mumps_mod,
++        defines=["WITHOUT_INT64"],
++        use=use,
++        env=mumps_mod_env,
++    )
++
      # ... except for subroutines linked against external libraries
 +    # On MSVC, bibfor_ext links against bibfor so that the Jeveux COMMON
 +    # blocks (exported as DATA from bibfor.dll) are shared between DLLs.
-+    use_ext = use + ["asterbibfor"] if self.env.ASTER_PLATFORM_MSVC64 else use
++    use_ext = use + ["asterbibfor", "mumps_instance_mod"]
++    if not self.env.ASTER_PLATFORM_MSVC64:
++        use_ext = use + ["mumps_instance_mod"]
      self(
          features=("fc fcstlib" if self.env.ASTER_PLATFORM_MINGW else "fc fcshlib"),
          name="asterbibfor_ext",
-@@ -83,7 +86,7 @@ def build(self):
+@@ -83,7 +120,7 @@ def build(self):
          rpath="$ORIGIN",
          source=src_ext,
          defines=["WITHOUT_INT64"],
@@ -836,7 +1256,7 @@ index a65a680ab4..23f45359ea 100644
          env=env.derive(),
          install_path=lib_install_path,
      )
-@@ -95,8 +98,9 @@ MAIN = "      program main\n      end program main\n"
+@@ -95,8 +132,9 @@ MAIN = "      program main\n      end program main\n"
  
  @Configure.conf
  def check_fortran_compiler_flags(self):
@@ -848,7 +1268,7 @@ index a65a680ab4..23f45359ea 100644
      if "gfortran" in self.env.FC_NAME.lower():
          if "64" in self.env.DEST_CPU:
              self.check_fortran_compiler_options("-fdefault-integer-8", dest="FCFLAGS_INT64")
-@@ -109,11 +113,15 @@ def check_fortran_compiler_flags(self):
+@@ -109,11 +147,15 @@ def check_fortran_compiler_flags(self):
          # long lines after preprocessing
          self.check_fortran_compiler_options("-ffree-line-length-none")
      if self.env.FC_IS_INTEL:
@@ -869,7 +1289,7 @@ index a65a680ab4..23f45359ea 100644
          # TODO: "-xCORE-AVX2" with execute=True
          # all Intel specific features must use:
          #   ASTER_HAVE_INTEL_IFORT && ASTER_HAVE_xxx
-@@ -465,6 +473,8 @@ def check_c_fortran_real8(self):
+@@ -465,6 +507,8 @@ def check_c_fortran_real8(self):
  @Configure.conf
  def check_optimization_fcflags(self):
      """Check for optimization FCFLAGS."""
@@ -878,7 +1298,7 @@ index a65a680ab4..23f45359ea 100644
      self.remove_flags("FCFLAGS", "^-O[0-9]")
      self.setenv("debug")
      self.start_msg("Setting fortran debug flags")
-@@ -543,6 +553,25 @@ def check_optimization_fcflags(self):
+@@ -543,6 +587,25 @@ def check_optimization_fcflags(self):
      self.end_msg(optflag)
  
  
