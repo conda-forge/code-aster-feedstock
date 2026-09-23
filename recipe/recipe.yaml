@@ -136,6 +136,11 @@ outputs:
             - mkl-devel
             - libblas >=3.9.0 *mkl
             - liblapack >=3.9.0 *mkl
+            # ifx runtime in PREFIX for the testcases run by build.bat, as in an
+            # installed env (run dep below): Python >= 3.8 does not use PATH to
+            # resolve extension-module DLL dependencies, so a bare
+            # 'import libAsterGC' (ssll13d.py, ssls134b.py) otherwise fails
+            - intel-fortran-rt
         - libxml2-devel
         - zlib
         - scotch

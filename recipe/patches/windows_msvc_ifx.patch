@@ -342,6 +342,19 @@ index 2d95a41c76..ee5dee7fd7 100644
  #include <stdint.h>
  #endif
  #endif
+diff --git a/bibc/utilitai/datetoi.c b/bibc/utilitai/datetoi.c
+index e551159af7..f5cd8ee2e0 100644
+--- a/bibc/utilitai/datetoi.c
++++ b/bibc/utilitai/datetoi.c
+@@ -18,6 +18,8 @@
+ 
+ #include "aster.h"
+ 
++#include <time.h>
++
+ void DEFP( DATETOI, datetoi, ASTERINTEGER itab[6] ) {
+     time_t ltime;
+     struct tm *today;
 diff --git a/bibc/utilitai/debugging.c b/bibc/utilitai/debugging.c
 index 9d52c3b6c3..a88313d9a2 100644
 --- a/bibc/utilitai/debugging.c

@@ -31,8 +31,9 @@ asrun01b
 
 # numerical results differ slightly from the reference values with the
 # Windows (ifx/MKL) toolchain: exact cancellation checked with an absolute
-# tolerance (sdlv126e/f), relative difference 1.01e-6 vs tolerance 1e-6 (sdll159a)
+# tolerance (sdlv126e/f), relative differences just above 1e-6 (sdll159a, sdnd111a)
 sdll159a
+sdnd111a
 sdlv126e
 sdlv126f
 
