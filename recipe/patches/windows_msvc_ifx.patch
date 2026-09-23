@@ -2071,6 +2071,21 @@ index f6bada3336..3f894a6852 100644
      field_profile.setName(profile_name)
  
      if len(restricted_cells) == medmesh.getNumberOfCells():
+diff --git a/code_aster/Solvers/Main/time_stepper.py b/code_aster/Solvers/Main/time_stepper.py
+index 54a6a0e0c2..52bdf1011a 100644
+--- a/code_aster/Solvers/Main/time_stepper.py
++++ b/code_aster/Solvers/Main/time_stepper.py
+@@ -168,7 +168,9 @@ class TimeStepper(Observer, EventSource):
+         if self._initStep is not None:
+             first = self.getCurrent()
+             dt0 = first - time
+-            if self._initStep < dt0:
++            # compare using epsilon: when first - time is PAS_INIT up to rounding,
++            # a strict comparison inserted a step equal to 'first' (null increment)
++            if self.cmp(time + self._initStep, first) < 0:
+                 logger.info(MessageLog.GetText("I", "DISCRETISATION3_87", valr=self._initStep))
+                 self._insert(0, time + self._initStep)
+             else:
 diff --git a/config/ifort.py b/config/ifort.py
 new file mode 100644
 index 0000000000..4fa1a5d4f7
