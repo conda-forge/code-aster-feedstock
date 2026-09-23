@@ -2086,6 +2086,20 @@ index 54a6a0e0c2..52bdf1011a 100644
                  logger.info(MessageLog.GetText("I", "DISCRETISATION3_87", valr=self._initStep))
                  self._insert(0, time + self._initStep)
              else:
+diff --git a/code_aster/aster_pkginfo.pytmpl b/code_aster/aster_pkginfo.pytmpl
+index d0c6e19563..6e274a903b 100644
+--- a/code_aster/aster_pkginfo.pytmpl
++++ b/code_aster/aster_pkginfo.pytmpl
+@@ -22,7 +22,8 @@
+ 
+ from collections import namedtuple
+ 
+-locale_dir = '@ASTERLOCALEDIR@'
++# raw string: Windows paths contain backslashes
++locale_dir = r'@ASTERLOCALEDIR@'
+ 
+ version_info = namedtuple('version_info', [
+ 'version', 'parentid', 'branch', 'date', 'from_branch', 'changes', 'uncommitted'
 diff --git a/config/ifort.py b/config/ifort.py
 new file mode 100644
 index 0000000000..4fa1a5d4f7
