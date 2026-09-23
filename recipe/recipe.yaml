@@ -5,7 +5,7 @@ context:
   version: "18.1.7"
   sha256: cdaaa8743dba56f298e2279518ee718cb73eb4f6b9048713b8a6413f6defb88a
   # Enter build number here
-  build: 1
+  build: 2
   # this is where the final build number is calculated depending on the matrix of python/mpi variants
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
   build_num: ${{ build + mpi_num }}
@@ -208,7 +208,10 @@ outputs:
         # lives one level down on its dependency ifx_impl_win-64, and that
         # doesn't appear to propagate transitively in this setup.
         - if: win
-          then: intel-fortran-rt
+          then:
+            - intel-fortran-rt
+            # bibfor.dll links the OpenMP runtime (libomp.dll) directly
+            - llvm-openmp
       run_exports:
         - ${{ pin_subpackage('code-aster', upper_bound='x.x') }}
 
