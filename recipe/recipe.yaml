@@ -4,9 +4,11 @@ context:
   name: code-aster
   version: "18.1.7"
   sha256: cdaaa8743dba56f298e2279518ee718cb73eb4f6b9048713b8a6413f6defb88a
-  build: 0
+  # Enter build number here
+  build: 1
+  # this is where the final build number is calculated depending on the matrix of python/mpi variants
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
-  build_num: 0
+  build_num: ${{ build + mpi_num }}
   mpi_prefix: ${{ mpi or 'nompi' }}
   # code-aster-tests (noarch) is built, and the full testcase set used, only in the nompi job of the lowest python
   tests_python: ${{ python_min }}
@@ -26,23 +28,29 @@ source:
       - patches/numpy_py313_compat.patch
       # petsc >= 3.25 Fortran modules export interfaces that clash with aster_petsc_module.F90
       - patches/petsc_3_25_compat.patch
+      # Windows: MSVC (clang-cl) + Intel ifx toolchain, .def exports and pybind11 proxy modules
+      - if: win
+        then: patches/windows_msvc_ifx.patch
   # code_aster prerequisites sources (only homard is built from it); 18.0.2+ requires version 20251026
   # https://gitlab.com/codeaster-opensource-documentation/opensource-installation-development/-/blob/main/devel/changelog.md
-  - url: https://gitlab.com/api/v4/projects/codeaster-opensource-documentation%2Fopensource-installation-development/packages/generic/codeaster-prerequisites/20251026/codeaster-prerequisites-20251026-oss.tar.gz
-    sha256: e450bbbee0047cf17f6f9423400a7ac83fc633e6e62e596111825016e945e7df
-    target_directory: codeaster-prerequisites/
+  - if: unix
+    then:
+      url: https://gitlab.com/api/v4/projects/codeaster-opensource-documentation%2Fopensource-installation-development/packages/generic/codeaster-prerequisites/20251026/codeaster-prerequisites-20251026-oss.tar.gz
+      sha256: e450bbbee0047cf17f6f9423400a7ac83fc633e6e62e596111825016e945e7df
+      target_directory: codeaster-prerequisites/
 
 build:
   number: ${{ build_num }}
-  skip: osx or win or (python_impl == 'pypy')
+  # Windows: sequential only (no MPI MUMPS/PETSc build for ifx)
+  skip: osx or (win and mpi != 'nompi') or (python_impl == 'pypy')
 
 outputs:
   - package:
       name: ${{ name }}-tests
       version: ${{ version }}
     build:
-      number: ${{ build }}
-      string: h${{ hash }}_${{ build }}
+      number: ${{ build_num }}
+      string: h${{ hash }}_${{ build_num }}
       script: copy_tests.sh
       noarch: generic
       # noarch output: build it in a single CI job only.
@@ -60,7 +68,8 @@ outputs:
       version: ${{ version }}
     build:
       script:
-        file: build.sh
+        # build.sh on unix, build.bat on Windows
+        file: build
         env:
           ASTER_BUILD_TESTS: ${{ env.get("ASTER_BUILD_TESTS", default="submit") }}
       string: py${{ python | version_to_buildstring }}_${{ mpi_prefix }}_h${{ hash }}_${{ build_num }}
@@ -92,34 +101,66 @@ outputs:
           then: libgomp
         - cmake <4
         - setuptools
-        - bison
-        - flex
-        - swig 4.2.1.*
+        - if: unix
+          then:
+            - bison
+            - flex
+            - swig 4.2.1.*
+            # 'mfront --obuild' (CREA_LIB_MFRONT) runs make in the testcases
+            - make
+        # Windows: C/C++ are compiled with clang-cl against the MSVC toolchain
+        - if: win
+          then:
+            - clang
+            # 'waf' is launched by Scripts\waf.exe, bound to the build-env
+            # interpreter, so 'data/wscript' imports yaml from there, while the
+            # configure check ("Checking for python module 'yaml'") probes the
+            # host interpreter. Without this, CFG_EXT is 'yaml' but the build
+            # stage raises "NameError: name 'yaml' is not defined".
+            - pyyaml
         - waf ==2.1.5
-        # 'mfront --obuild' (CREA_LIB_MFRONT) runs make in the testcases
-        - make
         - if: "mpi != 'nompi'"
           then: ${{ mpi }}
       host:
         - python
         - numpy
         - libboost-devel
-        - libblas >=3.9.0
-        - liblapack >=3.9.0
+        - if: unix
+          then:
+            - libblas >=3.9.0
+            - liblapack >=3.9.0
+            - openblas >=0.3.20
+        # Windows: MKL, matching the conda-forge ifx MUMPS build
+        - if: win
+          then:
+            - mkl-devel
+            - libblas >=3.9.0 *mkl
+            - liblapack >=3.9.0 *mkl
+            # ifx runtime in PREFIX for the testcases run by build.bat, as in an
+            # installed env (run dep below): Python >= 3.8 does not use PATH to
+            # resolve extension-module DLL dependencies, so a bare
+            # 'import libAsterGC' (ssll13d.py, ssls134b.py) otherwise fails
+            - intel-fortran-rt
         - libxml2-devel
-        - openblas >=0.3.20
         - zlib
         - scotch
         - mfront
         - mgis
-        - miss3d
+        # miss3d (CALC_MISS) on win-64 is an old flang-5/m2w64 build, incompatible with the ifx stack
+        - if: unix
+          then: miss3d
         - metis
         - hdf5 >=1.14 *${{ mpi }}*
         - libmed * *${{ mpi }}*
         # ParaMEDMEM.CFEMDEC (code_aster.Coupling) requires medcoupling >= 9.16
         - medcoupling >=9.16 *${{ mpi }}*
         - scipy
-        - mumps-include
+        - if: unix
+          then: mumps-include
+        # code_aster calls MUMPS through its Fortran interface: pick the ifx ABI build,
+        # which run-exports the matching mumps-seq ifx_*
+        - if: win
+          then: mumps-seq-fortran-devel * ifx_*
         - if: (mpi == 'nompi') and not win
           then:
             - mumps-seq
@@ -137,18 +178,37 @@ outputs:
       run:
         - ${{ pin_compatible('mgis', upper_bound='x.x') }}
         - ${{ pin_compatible('mfront', upper_bound='x.x.x') }}
-        - ${{ pin_compatible('miss3d', upper_bound='x.x') }}
+        - if: unix
+          then: ${{ pin_compatible('miss3d', upper_bound='x.x') }}
         - ${{ pin_compatible('medcoupling', upper_bound='x.x') }}
         - ${{ pin_compatible('libmed', upper_bound='x.x') }}
         - ${{ pin_compatible('numpy', upper_bound='x.x') }}
-        - libopenblas
+        - if: unix
+          then: libopenblas
         - libxml2-devel
         - python
-        - libxcrypt
+        - if: linux
+          then: libxcrypt
         - scipy
         - if: (mpi != 'nompi') and not win
           then:
             - petsc4py
+        # Windows: bibfor.dll/bibfor_ext.dll/AsterGC.dll/dmumps.dll all need
+        # the ifx runtime (libifcoremd.dll, libmmd.dll, svml_dispmd.dll).
+        # Reproduced directly in a built test env: `import code_aster` raised
+        # "Could not load bibc.dll. Error: The specified module could not be
+        # found" (bibc.dll itself was found and loaded via its absolute path
+        # -- ERROR_MOD_NOT_FOUND there only means one of ITS dependencies
+        # didn't resolve); copying these 3 DLLs in was enough to fix it.
+        # hdf5/libmed/metis/scotch/mumps-seq are NOT missing -- they're
+        # already present transitively via medcoupling/mumps-seq-fortran-
+        # devel/mkl's own real dependencies. No run_export carries the ifx
+        # runtime itself here: `ifx_win-64` (what compiler('fortran')
+        # resolves to) has no run_exports of its own; the strong run_export
+        # lives one level down on its dependency ifx_impl_win-64, and that
+        # doesn't appear to propagate transitively in this setup.
+        - if: win
+          then: intel-fortran-rt
       run_exports:
         - ${{ pin_subpackage('code-aster', upper_bound='x.x') }}
 
@@ -163,14 +223,20 @@ outputs:
             - asterf_config.h
           files:
             exists:
-              - share/aster/CTestTestfile.cmake
-              - share/aster/run_aster_for_ctest
+              - if: unix
+                then:
+                  - share/aster/CTestTestfile.cmake
+                  - share/aster/run_aster_for_ctest
+                else:
+                  - Library/share/aster/CTestTestfile.cmake
+                  - Library/share/aster/run_aster_for_ctest.bat
             # testcases are shipped by code-aster-tests
             not_exists:
               - share/aster/tests/**
+              - Library/share/aster/tests/**
       # This would run ALL sequential (currently passing 99%). Few failures due to missing xmgrace
       #- run_ctest --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} -L submit ${{ '-L sequential' if mpi == 'nompi' else '' }} -LE need_data --timefactor=10.0 --only-failed-results --clean
-      - if: is_tests_job
+      - if: is_tests_job and unix
         then:
           # code-aster-tests is built in this job: run against the installed testcases (share/aster/tests)
           requirements:
@@ -180,8 +246,10 @@ outputs:
               - ${{ name }}-tests ==${{ version }}
           script:
             - run_ctest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
-        else:
-          # code-aster-tests is not available in the other jobs: only copy the few testcases needed
+      - if: not (is_tests_job and unix)
+        then:
+          # code-aster-tests is not available in the other jobs (and is only built on
+          # linux): only copy the few testcases needed
           files:
             source:
               - astest/forma01a.*
@@ -195,7 +263,11 @@ outputs:
               - ${{ compiler('fortran') }}
               - cmake
           script:
-            - run_ctest --testdir=astest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
+            - if: unix
+              then: run_ctest --testdir=astest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
+              # cmd.exe: the -R regex must be double-quoted
+              # zzzz121a uses HOMARD (MACR_INFO_MAIL), which is only built on unix
+              else: run_ctest --testdir=astest -R "forma01a|sslp114a|mumps05a|mumps01a|umat001a" --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
 
 about:
   license: GPL-3.0-only AND CECILL-C AND Apache-2.0 AND LGPL-3.0-only

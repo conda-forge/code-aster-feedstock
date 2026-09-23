@@ -1,0 +1,43 @@
+# code_aster testcases additionally excluded from the Windows (ifx) build
+# (read by config/run_win_testcases.py; one testcase name per line, with the reason)
+
+# HOMARD (MACR_ADAP_MAIL / MACR_INFO_MAIL) is only built on unix
+forma01b
+forma01c
+forma11a
+ssnv173k
+tpll01h
+tpll01j
+tplp305d
+wtnl100c
+wtnl100f
+zzzz121c
+zzzz121d
+zzzz121e
+zzzz175b
+zzzz319a
+zzzz319b
+zzzz356a
+
+# MISS3D (CALC_MISS) is not packaged for win-64 with the ifx stack
+sdls118a
+
+# reads /proc/<pid>/status to measure memory consumption (Linux only)
+func01e
+
+# unit tests of run_aster internals with POSIX assumptions (paths, os.times,
+# removal of temporary directories still in use)
+asrun01b
+
+# numerical results differ slightly from the reference values with the
+# Windows (ifx/MKL) toolchain: exact cancellation checked with an absolute
+# tolerance (sdlv126e/f), relative differences just above 1e-6 (sdll159a, sdnd111a)
+sdll159a
+sdnd111a
+sdlv126e
+sdlv126f
+
+# CREA_LIB_MFRONT: building a behaviour on the fly ('mfront --obuild',
+# cmake -G Ninja) fails on Windows and tfel reports it in a GUI message box,
+# which blocks until the testcase times out
+ssnv187x
