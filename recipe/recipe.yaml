@@ -236,7 +236,7 @@ outputs:
               - Library/share/aster/tests/**
       # This would run ALL sequential (currently passing 99%). Few failures due to missing xmgrace
       #- run_ctest --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} -L submit ${{ '-L sequential' if mpi == 'nompi' else '' }} -LE need_data --timefactor=10.0 --only-failed-results --clean
-      - if: is_tests_job
+      - if: is_tests_job and unix
         then:
           # code-aster-tests is built in this job: run against the installed testcases (share/aster/tests)
           requirements:
@@ -246,9 +246,10 @@ outputs:
               - ${{ name }}-tests ==${{ version }}
           script:
             - run_ctest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
-      - if: not is_tests_job
+      - if: not (is_tests_job and unix)
         then:
-          # code-aster-tests is not available in the other jobs: only copy the few testcases needed
+          # code-aster-tests is not available in the other jobs (and is only built on
+          # linux): only copy the few testcases needed
           files:
             source:
               - astest/forma01a.*
