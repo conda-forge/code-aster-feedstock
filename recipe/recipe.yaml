@@ -265,7 +265,8 @@ outputs:
             - if: unix
               then: run_ctest --testdir=astest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
               # cmd.exe: the -R regex must be double-quoted
-              else: run_ctest --testdir=astest -R "forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a" --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
+              # zzzz121a uses HOMARD (MACR_INFO_MAIL), which is only built on unix
+              else: run_ctest --testdir=astest -R "forma01a|sslp114a|mumps05a|mumps01a|umat001a" --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
 
 about:
   license: GPL-3.0-only AND CECILL-C AND Apache-2.0 AND LGPL-3.0-only
