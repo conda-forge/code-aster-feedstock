@@ -1115,6 +1115,41 @@ index 612cc82c9e..faceed666b 100644
  !
      volatile           zi4, zi, zr, zc, zl
      volatile           zk8, zk16, zk24, zk32, zk80
+diff --git a/bibfor/include/threading_interfaces.h b/bibfor/include/threading_interfaces.h
+index 27aefce854..04a81c96bc 100644
+--- a/bibfor/include/threading_interfaces.h
++++ b/bibfor/include/threading_interfaces.h
+@@ -22,6 +22,22 @@
+ !
+ interface
+ #ifdef ASTER_HAVE_OPENMP
++#ifdef ASTER_PLATFORM_MSVC64
++! Windows: bind to the OpenMP C API. The runtime exports no Fortran entry
++! matching /names:lowercase /assume:underscore ('omp_*_'), and the C types
++! are exact (int, by value) instead of relying on integer(kind=8) punning.
++    subroutine omp_set_num_threads(a) bind(c, name="omp_set_num_threads")
++        integer(kind=4), value, intent(in) :: a
++    end subroutine
++
++    function omp_get_max_threads() bind(c, name="omp_get_max_threads")
++        integer(kind=4) :: omp_get_max_threads
++    end function
++
++    function omp_get_thread_num() bind(c, name="omp_get_thread_num")
++        integer(kind=4) :: omp_get_thread_num
++    end function
++#else
+     subroutine omp_set_num_threads(a)
+         integer(kind=8), intent(in) :: a
+     end subroutine
+@@ -34,6 +50,7 @@ interface
+         integer(kind=8) :: omp_get_thread_num
+     end function
+ #endif
++#endif
+ 
+ #ifdef ASTER_HAVE_OPENBLAS
+     subroutine openblas_set_num_threads(a)
 diff --git a/bibfor/op/op0039.F90 b/bibfor/op/op0039.F90
 index 322a351983..edbcb30cfe 100644
 --- a/bibfor/op/op0039.F90
@@ -1206,6 +1241,22 @@ index 7ff476c3f9..95b2f24190 100644
          idx = 1
          iret = 0
          do while (iret .eq. 0 .and. idx .lt. 99)
+diff --git a/bibfor/supervis/superv_module.F90 b/bibfor/supervis/superv_module.F90
+index f45c22a97d..ca5e8ba5ad 100644
+--- a/bibfor/supervis/superv_module.F90
++++ b/bibfor/supervis/superv_module.F90
+@@ -150,7 +150,11 @@ contains
+         integer(kind=8), intent(in) :: nbThreads
+         integer(kind=8), intent(in), optional :: blas_max
+ #ifdef ASTER_HAVE_OPENMP
++#ifdef ASTER_PLATFORM_MSVC64
++        call omp_set_num_threads(int(nbThreads, 4))
++#else
+         call omp_set_num_threads(nbThreads)
++#endif
+ #endif
+         if (present(blas_max)) then
+             if (blas_max .eq. 1) then
 diff --git a/bibfor/te/te0146.F90 b/bibfor/te/te0146.F90
 index 7e9d0544e2..6e72352a9b 100644
 --- a/bibfor/te/te0146.F90
@@ -7623,7 +7674,7 @@ index 4ebafa7dc2..09f84ae254 100644
      if opts.mumps_libs:
          self.check_mumps_libs()
 diff --git a/waftools/parallel.py b/waftools/parallel.py
-index c898b5b03c..ad6a59af30 100644
+index c898b5b03c..13b7b55f01 100644
 --- a/waftools/parallel.py
 +++ b/waftools/parallel.py
 @@ -83,7 +83,12 @@ def configure(self):
@@ -7640,6 +7691,25 @@ index c898b5b03c..ad6a59af30 100644
      self.check_openmp()
      # self.check_vmsize() is executed after mpiexec checking
  
+@@ -178,7 +183,17 @@ def check_openmp(self):
+     # OpenMP interoperability is not secure
+     # we consider both compiler should be from same vendor
+     # Define CFLAGS_x and CCFLAGS_x to avoid ambiguous behaviour
+-    if self.env.FC_IS_INTEL and self.env.CC_IS_INTEL:
++    if Utils.is_win32 and self.env.FC_IS_INTEL:
++        # Windows: ifx for Fortran, clang-cl for C/C++. Only the Fortran code
++        # uses OpenMP, so enable it for ifx only; its objects pull in the Intel
++        # runtime (libiomp5md), the one MKL (mkl_intel_thread) uses as well.
++        self.env["FCFLAGS_OPENMP"] = ["/Qopenmp"]
++        self.env["FCLINKFLAGS_OPENMP"] = []
++        for var in ("CFLAGS", "CCFLAGS", "CCLINKFLAGS", "CXXFLAGS", "CXXLINKFLAGS"):
++            self.env[var + "_OPENMP"] = []
++        self.env.ASTER_HAVE_OPENMP = 1
++        self.msg("Checking for OpenMP flag /Qopenmp for Intel Fortran (Windows)", "yes", color="GREEN")
++    elif self.env.FC_IS_INTEL and self.env.CC_IS_INTEL:
+         self.env["FCFLAGS_OPENMP"] = ["-qopenmp"]
+         self.env["FCLINKFLAGS_OPENMP"] = ["-qopenmp"]
+         self.env["CFLAGS_OPENMP"] = self.env["FCFLAGS_OPENMP"]
 diff --git a/waftools/python_cfg.py b/waftools/python_cfg.py
 index d33ca927be..ec755a2111 100644
 --- a/waftools/python_cfg.py

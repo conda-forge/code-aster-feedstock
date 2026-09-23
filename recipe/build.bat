@@ -87,6 +87,11 @@ set "INCLUDE=%BUILD_PREFIX%\opt\compiler\include\intel64;%INCLUDE%"
 python "%RECIPE_DIR%\config\update_version.py"
 if errorlevel 1 exit 1
 
+:: --enable-openmp: OpenMP for the Fortran code only (ifx /Qopenmp; the C/C++
+:: code has none), on the Intel-ABI runtime (libiomp5md -> llvm-openmp's
+:: libomp) that MKL's mkl_intel_thread uses too. Threads are only used when
+:: requested (run_aster --numthreads / export ncpus, default 1); mainly
+:: speeds up the MULT_FRONT factorization.
 waf configure ^
   --safe ^
   --check-fortran-compiler=ifort ^
@@ -104,7 +109,7 @@ waf configure ^
   --enable-scotch ^
   --enable-mfront ^
   --disable-mpi ^
-  --disable-openmp ^
+  --enable-openmp ^
   --disable-petsc ^
   --maths-libs=auto ^
   --msvc-entry ^
