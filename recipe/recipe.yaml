@@ -2,13 +2,13 @@ schema_version: 1
 
 context:
   name: code-aster
-  version: "18.1.7"
-  sha256: cdaaa8743dba56f298e2279518ee718cb73eb4f6b9048713b8a6413f6defb88a
+  version: "18.1.8"
+  sha256: 3d251af38422e0123ce45f34252f820c5b27af17bf792811a87f9c3c4f80b182
   # Enter build number here
-  build: 2
+  build: 0
   # this is where the final build number is calculated depending on the matrix of python/mpi variants
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
-  build_num: ${{ build + mpi_num }}
+  build_num: 0
   mpi_prefix: ${{ mpi or 'nompi' }}
   # code-aster-tests (noarch) is built, and the full testcase set used, only in the nompi job of the lowest python
   tests_python: ${{ python_min }}
@@ -249,29 +249,10 @@ outputs:
               - ${{ name }}-tests ==${{ version }}
           script:
             - run_ctest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
-      - if: not (is_tests_job and unix)
-        then:
-          # code-aster-tests is not available in the other jobs (and is only built on
-          # linux): only copy the few testcases needed
-          files:
-            source:
-              - astest/forma01a.*
-              - astest/sslp114a.*
-              - astest/mumps05a.*
-              - astest/mumps01a.*
-              - astest/umat001a.*
-              - astest/zzzz121a.*
-          requirements:
-            run:
-              - ${{ compiler('fortran') }}
-              - cmake
-          script:
-            - if: unix
-              then: run_ctest --testdir=astest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
-              # cmd.exe: the -R regex must be double-quoted
-              # zzzz121a uses HOMARD (MACR_INFO_MAIL), which is only built on unix
-              else: run_ctest --testdir=astest -R "forma01a|sslp114a|mumps05a|mumps01a|umat001a" --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
-
+        else:
+          - files
+          - requirements
+          - script
 about:
   license: GPL-3.0-only AND CECILL-C AND Apache-2.0 AND LGPL-3.0-only
   license_file:
