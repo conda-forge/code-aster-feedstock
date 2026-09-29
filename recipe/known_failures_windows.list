@@ -36,8 +36,3 @@ sdll159a
 sdnd111a
 sdlv126e
 sdlv126f
-
-# CREA_LIB_MFRONT: building a behaviour on the fly ('mfront --obuild',
-# cmake -G Ninja) fails on Windows and tfel reports it in a GUI message box,
-# which blocks until the testcase times out
-ssnv187x
