@@ -1903,7 +1903,7 @@ index a0614ae48e..9e38555eaf 100644
          self._cache = params, values
          assert len(params) == len(values), (params, values)
 diff --git a/code_aster/Helpers/MGISHelper.py b/code_aster/Helpers/MGISHelper.py
-index 04d4e379ab..b3feb4c4b4 100644
+index 04d4e379ab..57f65c84f0 100644
 --- a/code_aster/Helpers/MGISHelper.py
 +++ b/code_aster/Helpers/MGISHelper.py
 @@ -20,6 +20,7 @@
@@ -1937,7 +1937,7 @@ index 04d4e379ab..b3feb4c4b4 100644
          return MGISBuilder.from_library(behaviour_name, libpath)
  
      @classmethod
-@@ -103,15 +114,17 @@ class MGISBuilder:
+@@ -103,18 +114,37 @@ class MGISBuilder:
  
      def compile(self, flags=None):
          """Compile a '.mfront' source file."""
@@ -1949,14 +1949,38 @@ index 04d4e379ab..b3feb4c4b4 100644
          cmd = [ExecutionParameter().get_option("prog:mfront"), "--build", "--interface=generic"]
          cmd.extend(flags or [])
          cmd.append(self._src)
++        env = None
++        libnames = ["libBehaviour.so"]
++        if sys.platform == "win32":
++            # mfront builds through a generated CMake project: with MSVC the
++            # library has no "lib" prefix, and a multi-config generator (conda's
++            # vs20XX activation sets CMAKE_GENERATOR="Visual Studio ...") puts it
++            # in the "Release" subdirectory.
++            libnames = [osp.join("Release", "Behaviour.dll"), "Behaviour.dll"]
++            env = os.environ.copy()
++            # Single-config generators (Ninja, mfront's default) otherwise use
++            # CMake's MSVC Debug flags (/MDd /RTC1) which conflict with tfel's /O2.
++            env.setdefault("CMAKE_BUILD_TYPE", "Release")
++            # Without TFELHOME (or a registry key set by the tfel installer),
++            # tfel-config fails and reports it in a blocking message box.
++            mfront = shutil.which(cmd[0])
++            if "TFELHOME" not in env and mfront:
++                env["TFELHOME"] = osp.dirname(osp.dirname(mfront))
          logger.debug("Execute command %r", cmd)
          try:
-             call(cmd)
+-            call(cmd)
 -            libname = "libBehaviour.so"
-+            libname = "libBehaviour" + _libext
-             filename = osp.join("src", libname)
-             if not osp.exists(filename):
-                 UTMESS("F", "MFRONT_4", valk=libname)
+-            filename = osp.join("src", libname)
+-            if not osp.exists(filename):
+-                UTMESS("F", "MFRONT_4", valk=libname)
++            call(cmd, env=env)
++            filenames = [osp.join("src", name) for name in libnames]
++            filename = next((name for name in filenames if osp.exists(name)), None)
++            if not filename:
++                UTMESS("F", "MFRONT_4", valk=osp.basename(libnames[0]))
+             shutil.copyfile(filename, self._lib)
+         finally:
+             for dname in ("src", "include"):
 diff --git a/code_aster/LinearAlgebra/POD/pod_analysis_base.py b/code_aster/LinearAlgebra/POD/pod_analysis_base.py
 index 1663645fdb..b0950cedda 100644
 --- a/code_aster/LinearAlgebra/POD/pod_analysis_base.py
