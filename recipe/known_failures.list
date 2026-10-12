@@ -34,3 +34,7 @@ zzzz413a
 # numpy.linalg.eigvals returns complex values for the reference computed in the
 # testcase file, rejected by TEST_RESU (depends on the numpy/LAPACK build)
 zzzz208b
+
+# CALC_MODES (fluid-structure, STURM check) intermittently ends in <F>_ABNORMAL_ABORT
+# without traceback, in both sequential and MPI builds (seen with 18.1.10)
+zzzz127e
