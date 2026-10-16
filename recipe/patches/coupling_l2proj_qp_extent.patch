@@ -1,0 +1,19 @@
+From: krande
+Subject: FuncValuesQP column must match hhoL2ProjFaceScal's dummy extent
+
+hhoL2ProjFaceScal declares FuncValuesQP(MSIZE_QP_FACE) (60), but the actual
+argument column was only MAX_QP_FACE (16) long: ifx rejects it (error #7983,
+storage extent of the dummy argument exceeds that of the actual argument).
+---
+diff -ru a/bibfor/coupling/coupling_computation_module.F90 b/bibfor/coupling/coupling_computation_module.F90
+--- a/bibfor/coupling/coupling_computation_module.F90
++++ b/bibfor/coupling/coupling_computation_module.F90
+@@ -243,7 +243,7 @@ contains
+ !
+         type(HHO_Quadrature) :: hhoQuadFace
+         type(FE_Basis) :: FEBasis
+-        real(kind=8) :: FuncValuesQP(MAX_QP_FACE, MAX_BS_CG)
++        real(kind=8) :: FuncValuesQP(MSIZE_QP_FACE, MAX_BS_CG)
+         real(kind=8) :: BSEval(MAX_BS_CG)
+         real(kind=8) :: coor_qp_fe(3), ksi_sl(2)
+         real(kind=8) :: normal_ma(3), tau_ma(3, 2), tau1_sl(3), tau2_sl(3)

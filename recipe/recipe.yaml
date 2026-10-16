@@ -2,13 +2,13 @@ schema_version: 1
 
 context:
   name: code-aster
-  version: "18.1.8"
-  sha256: 3d251af38422e0123ce45f34252f820c5b27af17bf792811a87f9c3c4f80b182
+  version: "18.1.10"
+  sha256: b15fccdcc789d69ff9dda38c0dfa42b22ffcb83e2a262cc7d7bd9754bfbf340b
   # Enter build number here
   build: 0
   # this is where the final build number is calculated depending on the matrix of python/mpi variants
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
-  build_num: ${{ build + mpi_num }}
+  build_num: 0
   mpi_prefix: ${{ mpi or 'nompi' }}
   # code-aster-tests (noarch) is built, and the full testcase set used, only in the nompi job of the lowest python
   tests_python: ${{ python_min }}
@@ -28,9 +28,16 @@ source:
       - patches/numpy_py313_compat.patch
       # petsc >= 3.25 Fortran modules export interfaces that clash with aster_petsc_module.F90
       - patches/petsc_3_25_compat.patch
+      # 18.1.10: FuncValuesQP column shorter than the hhoL2ProjFaceScal dummy (ifx error #7983)
+      - patches/coupling_l2proj_qp_extent.patch
+      # 18.1.10: LIAISON_PROJ reads 'mesh' before it is set (intermittent segfault, zzzz297*, zzzz127e)
+      - patches/liaison_proj_mesh_uninit.patch
       # Windows: MSVC (clang-cl) + Intel ifx toolchain, .def exports and pybind11 proxy modules
       - if: win
-        then: patches/windows_msvc_ifx.patch
+        then:
+          - patches/windows_msvc_ifx.patch
+          # 18.1.9+: catalo/wscript expands LD_PRELOAD with 'sh -c'
+          - patches/windows_catalo_no_sh.patch
   # code_aster prerequisites sources (only homard is built from it); 18.0.2+ requires version 20251026
   # https://gitlab.com/codeaster-opensource-documentation/opensource-installation-development/-/blob/main/devel/changelog.md
   - if: unix
@@ -249,28 +256,27 @@ outputs:
               - ${{ name }}-tests ==${{ version }}
           script:
             - run_ctest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
-      - if: not (is_tests_job and unix)
-        then:
+        else:
           # code-aster-tests is not available in the other jobs (and is only built on
           # linux): only copy the few testcases needed
-          files:
-            source:
-              - astest/forma01a.*
-              - astest/sslp114a.*
-              - astest/mumps05a.*
-              - astest/mumps01a.*
-              - astest/umat001a.*
-              - astest/zzzz121a.*
-          requirements:
-            run:
-              - ${{ compiler('fortran') }}
-              - cmake
-          script:
-            - if: unix
-              then: run_ctest --testdir=astest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
+          - files:
+              source:
+                - astest/forma01a.*
+                - astest/sslp114a.*
+                - astest/mumps05a.*
+                - astest/mumps01a.*
+                - astest/umat001a.*
+                - astest/zzzz121a.*
+            requirements:
+              run:
+                - ${{ compiler('fortran') }}
+                - cmake
+            script:
+              - if: unix
+                then: run_ctest --testdir=astest -R 'forma01a|sslp114a|mumps05a|mumps01a|umat001a|zzzz121a' --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
               # cmd.exe: the -R regex must be double-quoted
               # zzzz121a uses HOMARD (MACR_INFO_MAIL), which is only built on unix
-              else: run_ctest --testdir=astest -R "forma01a|sslp114a|mumps05a|mumps01a|umat001a" --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
+                else: run_ctest --testdir=astest -R "forma01a|sslp114a|mumps05a|mumps01a|umat001a" --resutest=${{ env.get("OUTPUT_DIR", default="temp/seq") }}/${{ mpi }} --clean
 
 about:
   license: GPL-3.0-only AND CECILL-C AND Apache-2.0 AND LGPL-3.0-only
