@@ -28,9 +28,16 @@ source:
       - patches/numpy_py313_compat.patch
       # petsc >= 3.25 Fortran modules export interfaces that clash with aster_petsc_module.F90
       - patches/petsc_3_25_compat.patch
+      # 18.1.10: FuncValuesQP column shorter than the hhoL2ProjFaceScal dummy (ifx error #7983)
+      - patches/coupling_l2proj_qp_extent.patch
+      # 18.1.10: LIAISON_PROJ reads 'mesh' before it is set (intermittent segfault, zzzz297*, zzzz127e)
+      - patches/liaison_proj_mesh_uninit.patch
       # Windows: MSVC (clang-cl) + Intel ifx toolchain, .def exports and pybind11 proxy modules
       - if: win
-        then: patches/windows_msvc_ifx.patch
+        then:
+          - patches/windows_msvc_ifx.patch
+          # 18.1.9+: catalo/wscript expands LD_PRELOAD with 'sh -c'
+          - patches/windows_catalo_no_sh.patch
   # code_aster prerequisites sources (only homard is built from it); 18.0.2+ requires version 20251026
   # https://gitlab.com/codeaster-opensource-documentation/opensource-installation-development/-/blob/main/devel/changelog.md
   - if: unix

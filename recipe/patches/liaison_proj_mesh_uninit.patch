@@ -1,0 +1,35 @@
+From: krande
+Subject: LIAISON_PROJ: 'mesh' used before being set in kineLoadLinkProj
+
+jeexin(mesh(1:8)//'.NOMNOE') was called before dismoi('NOM_MAILLA') sets
+'mesh', so JEVEUX looked up an uninitialised name (valgrind: use of
+uninitialised value in jjcren). AFFE_CHAR_MECA/LIAISON_PROJ intermittently
+segfaults (zzzz297a-f, zzzz127e: <F>_ABNORMAL_ABORT).
+---
+diff -ru a/bibfor/load/LoadKinematic_module.F90 b/bibfor/load/LoadKinematic_module.F90
+--- a/bibfor/load/LoadKinematic_module.F90
++++ b/bibfor/load/LoadKinematic_module.F90
+@@ -1885,11 +1885,6 @@ contains
+ !
+         valeType = valeTypeZ
+         ASSERT(valeType .eq. 'REEL')
+-        lcolle = .false.
+-        call jeexin(mesh(1:8)//'.NOMNOE', ier)
+-        if (ier .ne. 0) then
+-            lcolle = .true.
+-        end if
+ 
+ ! - List of rotation DOF
+         AS_ALLOCATE(vk8=dofRotaName, size=nbDofRota)
+@@ -1899,6 +1894,11 @@ contains
+ 
+ ! - About model
+         call dismoi('NOM_MAILLA', modelZ, 'MODELE', repk=mesh)
++        lcolle = .false.
++        call jeexin(mesh(1:8)//'.NOMNOE', ier)
++        if (ier .ne. 0) then
++            lcolle = .true.
++        end if
+         call dismoi('DIM_GEOM', modelZ, 'MODELE', repi=geomDime)
+         call dismoi('NOM_LIGREL', modelZ, 'MODELE', repk=modelLigrel)
+         call jeveuo(modelLigrel//'.PRNM', 'L', jvPrnm)
