@@ -2,8 +2,8 @@ schema_version: 1
 
 context:
   name: code-aster
-  version: "18.1.10"
-  sha256: b15fccdcc789d69ff9dda38c0dfa42b22ffcb83e2a262cc7d7bd9754bfbf340b
+  version: "18.1.11"
+  sha256: b231de9ba3ec8af7ae94d1b9d7a9d7e84efaf0eafb074d80fcd39e98a6b9a6b8
   # Enter build number here
   build: 0
   # this is where the final build number is calculated depending on the matrix of python/mpi variants
