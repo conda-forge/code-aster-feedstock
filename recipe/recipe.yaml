@@ -28,10 +28,6 @@ source:
       - patches/numpy_py313_compat.patch
       # petsc >= 3.25 Fortran modules export interfaces that clash with aster_petsc_module.F90
       - patches/petsc_3_25_compat.patch
-      # 18.1.10: FuncValuesQP column shorter than the hhoL2ProjFaceScal dummy (ifx error #7983)
-      - patches/coupling_l2proj_qp_extent.patch
-      # 18.1.10: LIAISON_PROJ reads 'mesh' before it is set (intermittent segfault, zzzz297*, zzzz127e)
-      - patches/liaison_proj_mesh_uninit.patch
       # Windows: MSVC (clang-cl) + Intel ifx toolchain, .def exports and pybind11 proxy modules
       - if: win
         then:
