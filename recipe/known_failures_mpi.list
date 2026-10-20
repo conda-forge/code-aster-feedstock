@@ -14,6 +14,9 @@ zzzz155d
 zzzz155h
 zzzz155k
 zzzz155l
+# 18.1.11: matches parallel/sequential nodes by coordinates, but the mesh has
+# coincident interface nodes, so the pairing depends on the partitioning
+zzzz155p
 zzzz514a
 
 # coupling (CFEMDEC) results differ slightly from the reference values and vary
