@@ -2,8 +2,8 @@ schema_version: 1
 
 context:
   name: code-aster
-  version: "18.1.10"
-  sha256: b15fccdcc789d69ff9dda38c0dfa42b22ffcb83e2a262cc7d7bd9754bfbf340b
+  version: "18.1.11"
+  sha256: b231de9ba3ec8af7ae94d1b9d7a9d7e84efaf0eafb074d80fcd39e98a6b9a6b8
   # Enter build number here
   build: 0
   # this is where the final build number is calculated depending on the matrix of python/mpi variants
@@ -28,10 +28,6 @@ source:
       - patches/numpy_py313_compat.patch
       # petsc >= 3.25 Fortran modules export interfaces that clash with aster_petsc_module.F90
       - patches/petsc_3_25_compat.patch
-      # 18.1.10: FuncValuesQP column shorter than the hhoL2ProjFaceScal dummy (ifx error #7983)
-      - patches/coupling_l2proj_qp_extent.patch
-      # 18.1.10: LIAISON_PROJ reads 'mesh' before it is set (intermittent segfault, zzzz297*, zzzz127e)
-      - patches/liaison_proj_mesh_uninit.patch
       # Windows: MSVC (clang-cl) + Intel ifx toolchain, .def exports and pybind11 proxy modules
       - if: win
         then:
