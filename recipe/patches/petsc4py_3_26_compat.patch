@@ -1,0 +1,144 @@
+diff -ru a/astest/petsc05b.comm b/astest/petsc05b.comm
+--- a/astest/petsc05b.comm
++++ b/astest/petsc05b.comm
+@@ -154,7 +154,7 @@
+     C.assemble()
+     Cm1.assemble()
+ 
+-    BtCm1B = Cm1.PtAP(K10)
++    BtCm1B = Cm1.ptap(K10)
+ 
+     P = PETSc.Mat().create(comm=comm)
+     P.createNest([[K00 + BtCm1B, None], [None, C]])
+diff -ru a/astest/sdlv102d.comm b/astest/sdlv102d.comm
+--- a/astest/sdlv102d.comm
++++ b/astest/sdlv102d.comm
+@@ -156,7 +156,7 @@
+ 
+         if nconv > 0:
+             # Create the results vectors
+-            vr, vi = K.getVecs()
++            vr, vi = K.createVecs()
+             # Print the eigenvalues
+             Print()
+             Print("        k          ||Ax-kx||/||kx|| ")
+diff -ru a/astest/zzzz502v.py b/astest/zzzz502v.py
+--- a/astest/zzzz502v.py
++++ b/astest/zzzz502v.py
+@@ -166,7 +166,7 @@
+ y = PETSc.Vec().create(comm=comm)
+ y.createNest([0 * rhs, rhs])
+ 
+-yy = A.getVecRight()
++yy = A.createVecRight()
+ yy[...] = y.getArray()[...]
+ 
+ optDB = PETSc.Options()
+diff -ru a/code_aster/LinearAlgebra/MatrixScaler.py b/code_aster/LinearAlgebra/MatrixScaler.py
+--- a/code_aster/LinearAlgebra/MatrixScaler.py
++++ b/code_aster/LinearAlgebra/MatrixScaler.py
+@@ -62,9 +62,9 @@
+     # the scaled matrix
+     As = A.duplicate(copy=True)
+     # the scaling vectors
+-    Dl = As.getVecLeft()
++    Dl = As.createVecLeft()
+     Dl.set(1.0)
+-    Dr = As.getVecRight()
++    Dr = As.createVecRight()
+     Dr.set(1.0)
+     # auxilliary vecs to store the square of Dr, Dl
+     Dr_2 = Dr.duplicate()
+diff -ru a/code_aster/Solvers/IterationSolver/raspen_solver.py b/code_aster/Solvers/IterationSolver/raspen_solver.py
+--- a/code_aster/Solvers/IterationSolver/raspen_solver.py
++++ b/code_aster/Solvers/IterationSolver/raspen_solver.py
+@@ -216,7 +216,7 @@
+ 
+         # register the function in charge of
+         # computing the nonlinear residual
+-        p_resi = p_jac.getVecRight()
++        p_resi = p_jac.createVecRight()
+         p_resi.set(0)
+ 
+         # Manage options
+@@ -284,7 +284,7 @@
+         # Matrix type
+         self.matrix_type = matrix_type
+         # Z0 and Z vectors
+-        self.locSol = locJac.getVecRight()
++        self.locSol = locJac.createVecRight()
+         self.locSol.set(0)
+         self.locSol0 = self.locSol.copy()
+         # aster solution
+@@ -1989,7 +1989,7 @@
+         assert isinstance(self.P, PETSc.Mat), "Prolongation not built yet"
+         # Getting a model vector for multiplication of
+         # the coarse prolongation from the right side
+-        self.Xc = self.P.getVecRight()
++        self.Xc = self.P.createVecRight()
+         # Number of coarse space vectors contributed by the subdomain
+         nl = self.Xc.getLocalSize()
+         # The total size of the coarse problem
+@@ -2113,7 +2113,7 @@
+         if condition:
+             locVec = self.Yloc.duplicate()
+             self.raspen.vecscatter(fineVec, locVec)
+-            temp = self.P.getVecLeft()
++            temp = self.P.createVecLeft()
+             temp.getArray()[:] = locVec.getArray()[self.intDofs]
+             self.P.multTranspose(temp, Y)
+         else:
+@@ -2127,7 +2127,7 @@
+ 
+         # locVec = self.Yloc.duplicate()
+         # self.raspen.vecscatter(fineVec,locVec)
+-        # temp = self.P.getVecLeft()
++        # temp = self.P.createVecLeft()
+         # temp.getArray()[:] = locVec.getArray()[self.DDPart.local_interior_dofs]
+         # self.P.multTranspose(temp,Y)
+ 
+@@ -2311,12 +2311,12 @@
+                 isRows = PETSc.IS().createGeneral(idxs)
+             self.redJac = Jc.createSubMatrices(isRows)[0]
+         # Creating the Vecscatter
+-        self.vecscatter = PETSc.Scatter().toZero(Jc.getVecRight())[0]
++        self.vecscatter = PETSc.Scatter().toZero(Jc.createVecRight())[0]
+         # Set up the linear solver
+         if self.redJac:
+             # Defining the redistribution vecscatter
+             if self.subCommSize > 1:
+-                self.vecscatter_red = PETSc.Scatter().toZero(self.redJac.getVecRight())[0]
++                self.vecscatter_red = PETSc.Scatter().toZero(self.redJac.createVecRight())[0]
+             comm = self.redJac.getComm()
+             # Create the linear solver (KSP)
+             ksp = PETSc.KSP().create(comm)
+@@ -2343,7 +2343,7 @@
+         assert self.redKSP is not None, "Sequential KSP is not built yet"
+         # Apply the sequential LU solve
+         if self.rank == 0:
+-            XSeq = self.redJac.getVecRight()
++            XSeq = self.redJac.createVecRight()
+         else:
+             # Dummy vector with size 0 on other ranks
+             XSeq = PETSc.Vec().createSeq(0, comm=MPI.ASTER_COMM_SELF)
+@@ -2387,7 +2387,7 @@
+         if self.redKSP:
+             start = time()
+             # The proc zero gets the RHS from procs of the subcomm
+-            Xred = self.redJac.getVecRight()
++            Xred = self.redJac.createVecRight()
+             self.vecscatter_red.scatter(XSeq, Xred, mode="reverse")
+             timings["red_Backward_scattering"] = time() - start
+ 
+diff -ru a/code_aster/Solvers/IterationSolver/snes_solver.py b/code_aster/Solvers/IterationSolver/snes_solver.py
+--- a/code_aster/Solvers/IterationSolver/snes_solver.py
++++ b/code_aster/Solvers/IterationSolver/snes_solver.py
+@@ -152,7 +152,7 @@
+ 
+         # register the function in charge of
+         # computing the nonlinear residual
+-        p_resi = p_jac.getVecRight()
++        p_resi = p_jac.createVecRight()
+         p_resi.set(0)
+ 
+         self._primal_incr = self.state.deltaU.copy()

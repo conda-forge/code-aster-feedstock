@@ -30,6 +30,9 @@ source:
       - patches/petsc_3_25_compat.patch
       # petsc >= 3.26 removed the Fortran PetscOffset datatype, which is only used in a kind() sanity check
       - patches/petsc_3_26_compat.patch
+      # petsc4py >= 3.26 removed the Mat.getVecLeft/getVecRight/getVecs/PtAP aliases of
+      # createVecLeft/createVecRight/createVecs/ptap (SNES and RASPEN solvers, MatrixScaler, testcases)
+      - patches/petsc4py_3_26_compat.patch
       # Windows: MSVC (clang-cl) + Intel ifx toolchain, .def exports and pybind11 proxy modules
       - if: win
         then:
