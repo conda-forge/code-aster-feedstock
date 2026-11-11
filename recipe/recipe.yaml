@@ -28,6 +28,8 @@ source:
       - patches/numpy_py313_compat.patch
       # petsc >= 3.25 Fortran modules export interfaces that clash with aster_petsc_module.F90
       - patches/petsc_3_25_compat.patch
+      # petsc >= 3.26 removed the Fortran PetscOffset datatype, which is only used in a kind() sanity check
+      - patches/petsc_3_26_compat.patch
       # Windows: MSVC (clang-cl) + Intel ifx toolchain, .def exports and pybind11 proxy modules
       - if: win
         then:
@@ -142,8 +144,11 @@ outputs:
             # ifx runtime in PREFIX for the testcases run by build.bat, as in an
             # installed env (run dep below): Python >= 3.8 does not use PATH to
             # resolve extension-module DLL dependencies, so a bare
-            # 'import libAsterGC' (ssll13d.py, ssls134b.py) otherwise fails
-            - intel-fortran-rt
+            # 'import libAsterGC' (ssll13d.py, ssls134b.py) otherwise fails.
+            # Same version as the compiler: the run_export of a newer runtime
+            # (>=2026.2) cannot be installed together with ifx 2026.1 (which
+            # pins its runtime exactly), as needed in the test environment
+            - intel-fortran-rt ${{ fortran_compiler_version }}.*
         - libxml2-devel
         - zlib
         - scotch
