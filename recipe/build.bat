@@ -87,6 +87,9 @@ set "CONDA_BUILD_INTEL_FORTRAN=1"
 set "PATH=%BUILD_PREFIX%\Library\bin\compiler;%PATH%"
 set "LIB=%BUILD_PREFIX%\Library\lib;%LIB%"
 set "INCLUDE=%BUILD_PREFIX%\opt\compiler\include\intel64;%INCLUDE%"
+:: ... and the host Python's headers, for the targets that do not go through INCLUDES_BIBC
+:: or the numpy check (AsterGC): the compilers read INCLUDE themselves.
+set "INCLUDE=%PY_INCLUDE_DIR:/=\%;%INCLUDE%"
 
 python "%RECIPE_DIR%\config\update_version.py"
 if errorlevel 1 exit 1
