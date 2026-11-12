@@ -7445,11 +7445,11 @@ index bada8ad969..2e2df7d6bc 100644
 +    # Windows' conda layout splits python (<prefix>\Lib\site-packages) from
 +    # compiled libraries/data (<prefix>\Library\{bin,lib,share}); "lib" (the
 +    # POSIX site-packages ancestor) never appears on this file's path at all
-+    # -- it is "Lib" here, a sibling of "Library", not an ancestor of it.
++    # -- it is "Lib" here ("lib" from Python 3.15 on), a sibling of "Library".
 +    # Without this, the comparison below never matches on Windows and the
 +    # loop silently walks all the way up to the drive root instead.
-+    target = "Lib" if is_windows else "lib"
-+    while path != path.parent and path.name != target:
++    target = "lib"  # compared without case on Windows
++    while path != path.parent and (path.name.lower() if is_windows else path.name) != target:
          path = path.parent
 -    return str(path.parent)
 +    root = path.parent

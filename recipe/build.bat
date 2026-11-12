@@ -73,8 +73,18 @@ set "LDFLAGS=%LDFLAGS% mumps_common.lib dmumps.lib smumps.lib cmumps.lib zmumps.
 set "LDFLAGS=%LDFLAGS% esmumps.lib scotch.lib scotcherr.lib scotcherrexit.lib metis.lib"
 set "LDFLAGS=%LDFLAGS% med.lib medC.lib medfwrap.lib medimport.lib"
 
-set "INCLUDES_BIBC=%PREF_ROOT%/include %SRC_DIR:\=/%/bibfor/include %INCLUDES_BIBC%"
+:: Where the host Python keeps Python.h: <prefix>/include up to 3.14, <prefix>/include/python
+:: from 3.15 on. Targets that take their includes from INCLUDES_BIBC alone (libs/gc) need it.
+for /f "usebackq delims=" %%i in (`%PYTHON% -c "import pathlib, sysconfig; print(pathlib.Path(sysconfig.get_path('include')).as_posix())"`) do set "PY_INCLUDE_DIR=%%i"
+if not defined PY_INCLUDE_DIR exit 1
+set "INCLUDES_BIBC=%PREF_ROOT%/include %PY_INCLUDE_DIR% %SRC_DIR:\=/%/bibfor/include %INCLUDES_BIBC%"
 set "DEFINES=H5_BUILT_AS_DYNAMIC_LIB _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN ASTER_PLATFORM_MSVC64 ASTER_INT8"
+:: pybind11 checks that the GIL is held on every reference count change unless NDEBUG is
+:: defined, which this build (unlike the Linux one) does not do. Under Python 3.15 the check
+:: aborts the interpreter at exit (0xC0000409 after FIN, first seen building the catalogue):
+:: a type object is released while the interpreter finalizes, when PyGILState_Check() is no
+:: longer true. Same behaviour as the Linux build; must be set for every translation unit.
+set "DEFINES=%DEFINES% PYBIND11_NO_ASSERT_GIL_HELD_INCREF_DECREF"
 
 :: tell config/ifort.py to take the activated conda ifx environment
 set "CONDA_BUILD_INTEL_FORTRAN=1"
@@ -83,6 +93,9 @@ set "CONDA_BUILD_INTEL_FORTRAN=1"
 set "PATH=%BUILD_PREFIX%\Library\bin\compiler;%PATH%"
 set "LIB=%BUILD_PREFIX%\Library\lib;%LIB%"
 set "INCLUDE=%BUILD_PREFIX%\opt\compiler\include\intel64;%INCLUDE%"
+:: ... and the host Python's headers, for the targets that do not go through INCLUDES_BIBC
+:: or the numpy check (AsterGC): the compilers read INCLUDE themselves.
+set "INCLUDE=%PY_INCLUDE_DIR:/=\%;%INCLUDE%"
 
 python "%RECIPE_DIR%\config\update_version.py"
 if errorlevel 1 exit 1
