@@ -79,6 +79,12 @@ for /f "usebackq delims=" %%i in (`%PYTHON% -c "import pathlib, sysconfig; print
 if not defined PY_INCLUDE_DIR exit 1
 set "INCLUDES_BIBC=%PREF_ROOT%/include %PY_INCLUDE_DIR% %SRC_DIR:\=/%/bibfor/include %INCLUDES_BIBC%"
 set "DEFINES=H5_BUILT_AS_DYNAMIC_LIB _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN ASTER_PLATFORM_MSVC64 ASTER_INT8"
+:: pybind11 checks that the GIL is held on every reference count change unless NDEBUG is
+:: defined, which this build (unlike the Linux one) does not do. Under Python 3.15 the check
+:: aborts the interpreter at exit (0xC0000409 after FIN, first seen building the catalogue):
+:: a type object is released while the interpreter finalizes, when PyGILState_Check() is no
+:: longer true. Same behaviour as the Linux build; must be set for every translation unit.
+set "DEFINES=%DEFINES% PYBIND11_NO_ASSERT_GIL_HELD_INCREF_DECREF"
 
 :: tell config/ifort.py to take the activated conda ifx environment
 set "CONDA_BUILD_INTEL_FORTRAN=1"
