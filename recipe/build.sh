@@ -187,6 +187,9 @@ if [[ "${ASTER_BUILD_TESTS}" != "none" ]]; then
       echo "::group::code_aster testcase ${name}"
       if [[ -f "${mess}" ]]; then
         grep -a -n -A 20 -E "<F>|<EXCEPTION>|NOOK|Traceback" "${mess}" | head -n 150
+        # the tracebacks of the MPI ranks are interleaved and cut above: print the errors themselves
+        echo "--- errors in ${name}.mess:"
+        grep -a -n -E "^(\[[0-9,]+\]<std(out|err)>: *)?[A-Za-z_.]+(Error|Exception): |PETSC ERROR" "${mess}" | head -n 40 || true
         echo "--- last lines of ${name}.mess:"
         tail -n 40 "${mess}"
       else

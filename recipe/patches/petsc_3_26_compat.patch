@@ -1,0 +1,46 @@
+diff -ru a/bibfor/third_party_interf/apetsc.F90 b/bibfor/third_party_interf/apetsc.F90
+--- a/bibfor/third_party_interf/apetsc.F90
++++ b/bibfor/third_party_interf/apetsc.F90
+@@ -103,7 +103,9 @@
+ !     Variables PETSc
+     PetscErrorCode :: ierr
+     PetscScalar :: sbid
++#if !PETSC_VERSION_GE(3, 26, 0)
+     PetscOffset :: offbid
++#endif
+     PetscReal :: rbid
+     PetscBool :: initialized
+     blas_int :: b_incx, b_incy, b_n
+@@ -157,7 +159,9 @@
+ !        -- quelques verifications sur la coherence Aster / Petsc :
+         ASSERT(kind(rbid) .eq. kind(r8))
+         ASSERT(kind(sbid) .eq. kind(r8))
++#if !PETSC_VERSION_GE(3, 26, 0)
+         ASSERT(kind(offbid) .eq. kind(np))
++#endif
+ !
+         ier2 = 0
+         call aster_petsc_initialize(myopt, ier2)
+diff -ru a/bibfor/third_party_interf/ap_on_off.F90 b/bibfor/third_party_interf/ap_on_off.F90
+--- a/bibfor/third_party_interf/ap_on_off.F90
++++ b/bibfor/third_party_interf/ap_on_off.F90
+@@ -56,7 +56,9 @@
+ !     Variables PETSc
+     PetscErrorCode :: ierr
+     PetscScalar :: sbid
++#if !PETSC_VERSION_GE(3, 26, 0)
+     PetscOffset :: offbid
++#endif
+     PetscReal :: rbid
+     PetscBool :: done
+ 
+@@ -82,7 +84,9 @@
+ !        -- quelques verifications sur la coherence Aster / Petsc :
+         ASSERT(kind(rbid) .eq. kind(r8))
+         ASSERT(kind(sbid) .eq. kind(r8))
++#if !PETSC_VERSION_GE(3, 26, 0)
+         ASSERT(kind(offbid) .eq. kind(np))
++#endif
+ !
+         ier2 = 0
+         call aster_petsc_initialize(option, ier2)
