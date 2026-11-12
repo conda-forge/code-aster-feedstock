@@ -5,10 +5,10 @@ context:
   version: "18.1.11"
   sha256: b231de9ba3ec8af7ae94d1b9d7a9d7e84efaf0eafb074d80fcd39e98a6b9a6b8
   # Enter build number here
-  build: 1
+  build: 2
   # this is where the final build number is calculated depending on the matrix of python/mpi variants
   mpi_num: ${{ 100 if mpi == 'nompi' else 0 }}
-  build_num: 1
+  build_num: 2
   mpi_prefix: ${{ mpi or 'nompi' }}
   # code-aster-tests (noarch) is built, and the full testcase set used, only in the nompi job of the lowest python
   tests_python: ${{ python_min }}
