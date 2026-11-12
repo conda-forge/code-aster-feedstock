@@ -73,7 +73,11 @@ set "LDFLAGS=%LDFLAGS% mumps_common.lib dmumps.lib smumps.lib cmumps.lib zmumps.
 set "LDFLAGS=%LDFLAGS% esmumps.lib scotch.lib scotcherr.lib scotcherrexit.lib metis.lib"
 set "LDFLAGS=%LDFLAGS% med.lib medC.lib medfwrap.lib medimport.lib"
 
-set "INCLUDES_BIBC=%PREF_ROOT%/include %SRC_DIR:\=/%/bibfor/include %INCLUDES_BIBC%"
+:: Where the host Python keeps Python.h: <prefix>/include up to 3.14, <prefix>/include/python
+:: from 3.15 on. Targets that take their includes from INCLUDES_BIBC alone (libs/gc) need it.
+for /f "usebackq delims=" %%i in (`%PYTHON% -c "import pathlib, sysconfig; print(pathlib.Path(sysconfig.get_path('include')).as_posix())"`) do set "PY_INCLUDE_DIR=%%i"
+if not defined PY_INCLUDE_DIR exit 1
+set "INCLUDES_BIBC=%PREF_ROOT%/include %PY_INCLUDE_DIR% %SRC_DIR:\=/%/bibfor/include %INCLUDES_BIBC%"
 set "DEFINES=H5_BUILT_AS_DYNAMIC_LIB _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN ASTER_PLATFORM_MSVC64 ASTER_INT8"
 
 :: tell config/ifort.py to take the activated conda ifx environment

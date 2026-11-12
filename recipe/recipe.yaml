@@ -131,6 +131,9 @@ outputs:
           then: ${{ mpi }}
       host:
         - python
+        # The Python shared library code_aster links against: its own package, which python
+        # itself stopped depending on with 3.15.
+        - libpython
         - numpy
         - libboost-devel
         - if: unix
